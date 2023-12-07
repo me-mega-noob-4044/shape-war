@@ -1,4 +1,5 @@
 (function () {
+    //window.isDev = true;
     var slotData = [{
         unlocked: true,
         used: true,
@@ -143,6 +144,21 @@
             `)}
         `)}
     `);
+    updateLogger.newLog("V46 UPDATE NOTES", `
+        ${updateLogger.marginBlock(10, `
+            ${updateLogger.lineBlock(["New Weapon(s): Redeemer", "Balance Changes", "Bug Fixes"])}
+            ${updateLogger.title("h2", `NEW WEAPON(S): Redeemer`)}
+            ${updateLogger.marginBlock(10, `
+                ${updateLogger.title("h3", `Redeemer:`)}
+                Heavy variant of Taran.
+            `)}
+            ${updateLogger.title("h2", `BALANCE CHANGES`)}
+            ${updateLogger.marginBlock(10, `
+                ${updateLogger.lineBlock(["Taran: -30% Damage"])}
+            `)}
+        `)}
+    `);
+    //30% dmg nerf on taran
     var mainDisplayText = updateLogger.grabHTML();
     document.getElementById("sideDisplay").innerHTML = "";
     function getValue(id) {
@@ -1153,8 +1169,8 @@
         Recommended Equipment: x3 Shatter + x1 Brisant / x3 Evora + x1 Veyron
         `,
         healthData: {
-            base: 160e3,
-            level: [0, 12e3, 12e3, 13e3, 15e3, 16e3, 18e3, 20e3, 22e3, 25e3, 25e3, 50e3],
+            base: 120e3,
+            level: [0, 6e3, 12e3, 13e3, 15e3, 16e3, 18e3, 20e3, 22e3, 25e3, 25e3, 30e3],
         },
         dotResistance: .2,
         ability: {
@@ -1173,7 +1189,7 @@
                 base: 440,
                 level: [0, 270, 300, 330, 360, 390, 420, 450, 480, 510, 540, 570],
             },
-            lastingTime: 16e3,
+            lastingTime: 14e3,
             reload: 6e3
         },
         hardpoints: {
@@ -1518,8 +1534,8 @@
         `,
         shieldData: {
             type: "yellow",
-            base: 69e3,
-            level: [0, 12e3, 12e3, 15e3, 15e3, 18e3, 18e3, 20e3, 20e3, 22e3, 26e3, 30e3],
+            base: 59e3,
+            level: [0, 6e3, 6e3, 8e3, 8e3, 10e3, 10e3, 10e3, 10e3, 11e3, 13e3, 25e3],
             regen: 0.25
         },
         builtInDefensePoints: 50,
@@ -1665,7 +1681,7 @@
         desc: `
         Making shapes go "boom" is what this shape does very well.
         <br><br>
-        Recommended Equipment: x4 Scald / x4 Shatter
+        Recommended Equipment: x4 Scald / x4 Shatter / x4 Labrys
         `,
         builtInDefensePoints: 50,
         healthData: {
@@ -2289,7 +2305,7 @@
         ammoEachReloadTick: 1,
         continuousReload: true,
         fireRate: 250,
-        ammo: 8,
+        ammo: 4,
         reload: 1875,
         range: 800,
         cost: {
@@ -2316,7 +2332,7 @@
         ammoEachReloadTick: 1,
         continuousReload: true,
         fireRate: 125,
-        ammo: 16,
+        ammo: 8,
         reload: 937.5,
         range: 800,
         cost: {
@@ -2886,7 +2902,7 @@
         desc: `
         Fast firing rust light energy machine gun that
         applies rust effect on to enemies.
-        Rust reduces the healing power of enemies (MAX 75% REDUCTION).
+        Rust reduces the healing power of enemies (MAX 100% REDUCTION).
         `,
         damageData: {
             base: 84,
@@ -2916,7 +2932,7 @@
         desc: `
         Fast firing rust heavy energy machine gun that
         applies rust effect on to enemies.
-        Rust reduces the healing power of enemies (MAX 75% REDUCTION).
+        Rust reduces the healing power of enemies (MAX 100% REDUCTION).
         `,
         damageData: {
             base: 168,
@@ -3201,27 +3217,116 @@
     }, {
         tier: 1,
         industryName: "Hexagon",
-        spread: 3,
         name: "Taran",
         type: "Light",
         projType: "energy",
         desc: `
-        Semi-automatic fireball cannon. Fast fire rate and large ammo pool
+        Light semi-automatic fireball cannon. Fast fire rate and large ammo pool
         allows weapon this to do a huge amount of damage.
         `,
         damageData: {
-            base: 575,
-            level: [0, 80, 80, 100, 100, 100, 120, 120, 120, 160, 160, 180],
+            base: 475,
+            level: [0, 40, 40, 50, 50, 50, 60, 80, 100, 100, 120, 180],
         },
         imageSource: "./images/weapons/taran.png",
-        fireRate: [850, 100, 100, 100],
+        fireRate: [700, 100, 100, 100],
         ammo: 32,
-        reload: 4e3,
+        reload: 5e3,
         range: 1e3,
         aoeRange: 50,
         cost: {
             sliver: 0,
             gold: 750
+        }
+    }, {
+        tier: 1,
+        industryName: "Hexagon",
+        name: "Redeemer",
+        type: "Heavy",
+        projType: "energy",
+        desc: `
+        Heavy semi-automatic fireball cannon. Fast fire rate and large ammo pool
+        allows weapon this to do a huge amount of damage.
+        `,
+        damageData: {
+            base: 745,
+            level: [0, 80, 80, 100, 100, 100, 120, 160, 200, 200, 240, 360],
+        },
+        imageSource: "./images/weapons/redeemer.png",
+        fireRate: [700, 100, 100, 100],
+        ammo: 32,
+        reload: 5e3,
+        range: 1e3,
+        aoeRange: 50,
+        cost: {
+            sliver: 100e3,
+            gold: 750
+        }
+    }, {
+        tier: 4,
+        industryName: "Circle",
+        name: "Labrys",
+        type: "Light",
+        projType: "energy",
+        desc: `
+        Light semi-automatic fireball cannon. Weapon emits blast effect, allowing it to deal a lot of damage.
+        `,
+        damageData: {
+            base: 1200,
+            level: [0, 100, 100, 100, 100, 150, 150, 200, 200, 200, 200, 200],
+        },
+        effectIncreaseData: {
+            base: 1,
+            effect: "blast",
+            level: [0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 2]
+        },
+        defenseBypassData: {
+            base: .05,
+            level: [0, 0, 0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05],
+        },
+        imageSource: "./images/weapons/labrys.png",
+        fireRate: [600, 100, 100, 100, 100],
+        ammo: 50,
+        reload: 5e3,
+        range: 2e3,
+        aoeRange: 75,
+        cost: {
+            sliver: 15e9,
+            gold: 150e3,
+            workshopPoints: 50e3
+        }
+    }, {
+        tier: 4,
+        industryName: "Circle",
+        name: "Cestus",
+        type: "Heavy",
+        projType: "energy",
+        desc: `
+        Heavy semi-automatic fireball cannon. Weapon emits blast effect, allowing it to deal a lot of damage.
+        `,
+        damageData: {
+            base: 2e3,
+            level: [0, 100, 100, 200, 200, 300, 300, 300, 300, 400, 400, 400],
+        },
+        effectIncreaseData: {
+            base: 2,
+            effect: "blast",
+            level: [0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 2]
+        },
+        defenseBypassData: {
+            base: .05,
+            level: [0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.1, 0.15],
+        },
+        imageSource: "./images/weapons/cestus.png",
+        fireRate: [250, 50, 50, 50, 50],
+        ammo: 100,
+        reload: 5e3,
+        range: 2e3,
+        aoeRange: 75,
+        cost: {
+            sliver: 15e9,
+            gold: 150e3,
+            workshopPoints: 75e3
         }
     }];
     class module {
@@ -3623,7 +3728,7 @@
         moduleSlots: 5
     }, "shape", "Pumpkin", "./images/special_addtiction/pumpkin_orange_circle.png");
     makeNewSpecialAddiction("Green Circle", {
-        health: 2.5,
+        health: 2,
         topDesc: `
         ULTIMATE SHAPE VERSION<br>
         The rarest modification of the Green Circle.
@@ -3645,12 +3750,12 @@
             name: "Ultimate Mending",
             desc: `
             <strong>Ultimate Mending</strong> speeds up the shape.
-            Heals 50% of health each second.
+            Heals 15% of health each second.
             While healing, it also repairs gray damage.
             During the ability, it improves the healing aura's healing power and allows it to heal gray damage.
             `,
             iconSource: "./images/abilities/self_heal.png",
-            lastingTime: 12e3,
+            lastingTime: 8e3,
             reload: 8e3
         },
         healingAuraData: {
@@ -6328,8 +6433,8 @@
     var blueBell = [{
         "name": "Gold Circle",
         "weapons": {
-            "heavy": "Trickster",
-            "light": "Deceiver"
+            "heavy": "Cestus",
+            "light": "Labrys"
         },
         "modules": [
             "Repair Amplifier",
@@ -11936,6 +12041,35 @@
                         level: weapon.level
                     }
                 });
+            } else if (weapon.name == "Labrys" || weapon.name == "Cestus") {
+                projectiles.push({
+                    projType: weapon.projType,
+                    x: x,
+                    y: y,
+                    oldX: x,
+                    oldY: y,
+                    velx: 0,
+                    vely: 0,
+                    scale: scale,
+                    avoidBuildings: shape.abilitySpeedMulti == 3 ? true : false,
+                    speed: 0.3,
+                    dmg: weapon.dmg,
+                    range: weapon.range,
+                    aoeRange: weapon.aoeRange,
+                    dir: dir,
+                    isAlly: isAlly,
+                    color: `#ffff00`,
+                    owner: shape,
+                    blastEffect: {
+                        name: "blast",
+                        last: 10e3,
+                        power: weapon.effectIncrease
+                    },
+                    weaponOwner: {
+                        name: weapon.name,
+                        level: weapon.level
+                    }
+                });
             } else if (weapon.name == "Slumber" || weapon.name == "Delay") {
                 projectiles.push({
                     projType: weapon.projType,
@@ -12078,7 +12212,7 @@
                         level: weapon.level
                     }
                 });
-            } else if (weapon.name == "Taran") {
+            } else if (weapon.name == "Taran" || weapon.name == "Redeemer") {
                 projectiles.push({
                     projType: weapon.projType,
                     x: x,
@@ -13438,7 +13572,7 @@
                         if (effect.dmgOverTime == null) effect.dmgOverTime = 0;
                         effect.dmgOverTime -= delta;
                         if (effect.dmgOverTime <= 0) {
-                            effect.dmgOverTime = 150;
+                            effect.dmgOverTime = effect.lastTime > 4e3 ? 150 : 300;
                             let abilityRange = 400;
                             bombeffect.push({
                                 location: robot,
@@ -14506,7 +14640,8 @@
                 } else if (robot.ability.name == "Phase Shift") {
                     robot.effects.push({
                         name: "phase shift",
-                        lastTime: 2e3
+                        abilityEffect: "Phase Shift",
+                        lastTime: robot.ability.lastingTime
                     });
                 } else if (robot.ability.name == "Dash") {
                     robot.effects.push({
@@ -14608,7 +14743,6 @@
                     speed: 0.3,
                     projType: "energy",
                     antiTier4_5: true,
-                    bypassShields: true,
                     dmg: robot.ability.dmg,
                     range: 2000,
                     dir: robot.dir,
@@ -14986,7 +15120,7 @@
         }
         if (robot.ability) {
             let abilityName = robot.ability.name;
-            if (["Stampede", "Clear Sky", "Reinforce Hull", "Cold Pulse", "Divine Judgement", "Full Action", "Stealth", "Domain Expansion: Infinite Void", "Paladin", "Dragon Flight", "Phase Shift", "Ultimate Mending", "Self Heal", "Retribution"].includes(abilityName) && Date.now() - robot.damagedTime <= 50) {
+            if (["Reflector", "Stampede", "Clear Sky", "Reinforce Hull", "Cold Pulse", "Divine Judgement", "Full Action", "Stealth", "Domain Expansion: Infinite Void", "Paladin", "Dragon Flight", "Phase Shift", "Ultimate Mending", "Self Heal", "Retribution"].includes(abilityName) && Date.now() - robot.damagedTime <= 50) {
                 robot.useAbility = true;
             } else if (["Overload", "Dash", "Fortify"].includes(abilityName)) {
                 robot.useAbility = true;
@@ -15487,30 +15621,30 @@
                             if (object.thingToKill) {
                                 if (doer.battleStats.kills == null) doer.battleStats.kills = 0;
                                 doer.battleStats.kills++;
-                            }
-                            if (doer.name == "Gray Pentagon") {
-                                doer.grayDamage = Math.max(doer.grayDamage - (doer.grayDamage * .15), 0);
-                            }
-                            if (doer.onKillDefense) {
-                                doer.effects.push({
-                                    name: "defense points",
-                                    amount: doer.onKillDefense,
-                                    lastTime: 5e3
-                                });
-                            }
-                            if (doer.onKillHeal) {
-                                let value = doer.maxhealth * doer.onKillHeal;
-                                doer.grayDamage = Math.max(0, doer.grayDamage - value);
-                                changeHealth(doer, {
-                                    amount: value
-                                }, false, doer);
-                            }
-                            if (doer.onKillSpeed) {
-                                doer.effects.unshift({
-                                    name: "speed",
-                                    power: doer.onKillSpeed,
-                                    lastTime: 5e3
-                                });
+                                if (doer.name == "Gray Pentagon") {
+                                    doer.grayDamage = Math.max(doer.grayDamage - (doer.grayDamage * .15), 0);
+                                }
+                                if (doer.onKillDefense) {
+                                    doer.effects.push({
+                                        name: "defense points",
+                                        amount: doer.onKillDefense,
+                                        lastTime: 5e3
+                                    });
+                                }
+                                if (doer.onKillHeal) {
+                                    let value = doer.maxhealth * doer.onKillHeal;
+                                    doer.grayDamage = Math.max(0, doer.grayDamage - value);
+                                    changeHealth(doer, {
+                                        amount: value
+                                    }, false, doer);
+                                }
+                                if (doer.onKillSpeed) {
+                                    doer.effects.unshift({
+                                        name: "speed",
+                                        power: doer.onKillSpeed,
+                                        lastTime: 5e3
+                                    });
+                                }
                             }
                         }
                     } else {
@@ -15589,7 +15723,7 @@
                 }
                 doOnDamageEffects(object, amount);
                 if (object.turnDmgIntoDOT && amount < 0 && doer && !noDefense) {
-                    let duration = object.name == "Orange Circle" ? 15 : object.name == "Pink Circle" ? 7 : 20;
+                    let duration = object.name == "Orange Circle" ? 15 : object.name == "Pink Circle" ? 7 : object.name == "Tan Circle" ? 17 : 20;
                     if (object.dotConverter == null) object.dotConverter = [];
                     object.dotConverter.push({
                         amount: amount,
