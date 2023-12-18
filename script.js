@@ -1,5 +1,5 @@
 (function () {
-   // window.isDev = true;
+    //window.isDev = true;
     var slotData = [{
         unlocked: true,
         used: true,
@@ -177,6 +177,24 @@
             `)}
         `)}
     `);
+    updateLogger.newLog("V47 UPDATE NOTES", `
+        ${updateLogger.marginBlock(10, `
+            ${updateLogger.lineBlock(["New Feature: Drones", "Visual Improvements", "Added Player Profiles", "Balance Changes", "Bug Fixes"])}
+            ${updateLogger.title("h2", `DRONES`)}
+            ${updateLogger.marginBlock(10, `
+                Discover a groundbreaking approach to personalize your shapes like never before! Harness the versatility of drones to not only customize but also infuse a new level of excitement and innovation into your designs. Elevate your creations with the added dimension and dynamic flair that drones bring to the table, making your shapes truly one-of-a-kind. Shape your imagination into reality, now with the thrilling bonus of drone-powered enhancements!
+            `)}
+            ${updateLogger.title("h2", `VISUAL IMPROVEMENTS/CHANGES`)}
+            ${updateLogger.marginBlock(10, `
+                ${updateLogger.lineBlock(["In Game UI Changes/Improvements", "Hanger UI Improvements", "Kill Logger Changes", "Beacon Progress UI Changes", "Reworked End Game Battle Stats UI", "Shape Customization UI Fixes + Changes"])}
+                Note: some changes may not be 100% finished.
+            `)}
+            ${updateLogger.title("h2", `BALANCE CHANGES`)}
+            ${updateLogger.marginBlock(10, `
+                ${updateLogger.lineBlock(["Increased the defense mitigation of all tier 5 weapons.", "Damage Controller: Gray Damage Decrease: 15% -> 21%", "Tan Circle: Immune to gray damage from all dot", "Delay and Slumber: Effect Duration: 2 -> 5 seconds", "Pinkish Red Circle: Ability Cooldown: 8 -> 3 seconds", "Gray Pentagon: +25% Shield Durability", "Gray Pentagon: Max Health Restored by Popping Shields: 40% -> 20%", "Orange Circle: -20% Health", "Gray Pentagon: changes on [onDamageFix]", "Ultimate Green Circle: changes on [onDamageP-Shield]", "Shatter and Brisant: Ammo: 8 -> 6, Fire Rate: 450 -> 550", "Evora and Veyron: Ammo: 130 -> 125, Fire Rate: 40 -> 50 (ms)"])}
+            `)}
+        `)}
+    `);
     var mainDisplayText = updateLogger.grabHTML();
     document.getElementById("sideDisplay").innerHTML = "";
     function getValue(id) {
@@ -198,10 +216,19 @@
         shapes: [],
         weapons: [],
         modules: [],
+        drones: [],
         gameMode: -1,
         ULIMATEXP: 0,
         workshopPoints: 0,
         league: 0,
+        league2: 0,
+        profile: {
+            level: 1,
+            xp: {
+                current: 0,
+                max: 300
+            }
+        },
         tokens: {
             mk1: 0,
             mk2: 0,
@@ -217,6 +244,8 @@
         x: 1980,
         y: 1080
     };
+    var auSource = "./images/icons/au_icon.png";
+    var agSource = "./images/icons/ag_icon.png";
     var sliverUpgradesByTier = [{//tier 1
         shapes: [0, 10e3, 20e3, 40e3, 80e3, 100e3, 200e3, 400e3, 800e3, 1e6, 2e6, 5e6],
         weapons: [0, 7.5e3, 15e3, 30e3, 60e3, 90e3, 150e3, 300e3, 700e3, 1e6, 1.5e6, 3e6],
@@ -237,7 +266,8 @@
         modules: [0, 1e9, 1e9, 2e9, 2e9, 2e9],
         shapes: [0, 5.625e6, 28.125e6, 56.25e6, 112.5e6, 225e6, 450e6, 675e6, 675e6, 843.75e6, 1012.5e6, 1406.25e6],
         weapons: [0, 3375e3, 16875e3, 3375e4, 675e5, 135e6, 27e6, 405e6, 405e6, 50625e4, 6075e5, 84375e4]
-    }];
+    }];//                T1 T2  T3  T4  T5
+    var unlockedAtTier = [1, 6, 16, 21, 30];
     var shapeSids = 0;
     class shape {
         constructor(data, slot, dontSID) {
@@ -520,8 +550,12 @@
         ability: {
             name: "Self Heal",
             desc: `
-            <strong>Self Heal</strong> allows the robot to heal 25% of its health in 5 seconds. 
-            After it heals 25%, it begins ability cooldown of 12 sec.
+            <span style="font-width: bolder; color: #fff;">Self Heal</span>
+            Repairs a part of the shape's max durability over time.<br><br>
+            Healing Rate: .5 second<br>
+            Healing Power: 2.5%<br>
+            Duration: 5 seconds<br>
+            Cooldown: 12 seconds
             `,
             iconSource: "./images/abilities/self_heal.png",
             lastingTime: 5e3,
@@ -583,11 +617,15 @@
         ability: {
             name: "Full Action",
             desc: `
-            <strong>Full Action</strong> gains 60 DP (37.5% resistance) for 5 seconds, after that it cooldown for 18 seconds.
+            <span style="font-width: bolder; color: #fff;">Full Action</span>
+            The shape activates a defense system, lowering all incoming damage.<br><br>
+            Duration: 5 seconds<br>
+            Damage Reduction: 60 Defense Points (37.5% resistance)<br>
+            Cooldown: 16 seconds
             `,
             iconSource: "./images/abilities/full_action.png",
             lastingTime: 5e3,
-            reload: 18e3
+            reload: 16e3
         },
         hardpoints: {
             light: 4,
@@ -618,11 +656,15 @@
         ability: {
             name: "Full Action",
             desc: `
-            <strong>Full Action</strong> gains 200 DP (66.7% resistance) for 12 seconds, after that it cooldown for 18 seconds.
+            <span style="font-width: bolder; color: #fff;">Full Action</span>
+            The shape activates a defense system, lowering all incoming damage.<br><br>
+            Duration: 12 seconds<br>
+            Damage Reduction: 200 Defense Points (66.7% resistance)<br>
+            Cooldown: 16 seconds
             `,
             iconSource: "./images/abilities/full_action.png",
             lastingTime: 12e3,
-            reload: 18e3
+            reload: 16e3
         },
         hardpoints: {
             light: 1,
@@ -652,11 +694,13 @@
         ability: {
             name: "Cold Pulse",
             desc: `
-            <strong>Cold Pulse</strong> emits an pulse of cold energy, this pulse will freeze and damage any enemies in 1200 PX.
-            When frozen enemies won't be able to move nor shoot.
-            Effect lasts for 3 seconds.
-            For every enemy you freeze, heals 5.0K HP per enemy.<br><br>
-            Ability Cooldown Time: 14 seconds
+            <span style="font-width: bolder; color: #fff;">Cold Pulse</span>
+            The shape emits a pulse of cold energy. The pulse will freeze enemies in place,
+            not allowing the usage of: abilities or active movement. For every enemy in the radius, the shape heals back some health.<br><br>
+            Ability Range: 1200 PX<br>
+            Effect Duration: 3 Seconds<br>
+            Cooldown: 14 seconds<br>
+            Heal back (per enemy): 5K HP
             `,
             damageData: {
                 base: 500,
@@ -783,8 +827,12 @@
         ability: {
             name: "Self Heal",
             desc: `
-            <strong>Self Heal</strong> allows the robot to heal itself for 8 sec. 
-            After it heals, it begins ability cooldown of 8 sec.
+            <span style="font-width: bolder; color: #fff;">Self Heal</span>
+            Repairs a part of the shape's max durability over time.<br><br>
+            Healing Rate: .5 second<br>
+            Healing Power: 10%<br>
+            Duration: 8 seconds<br>
+            Cooldown: 7 seconds
             `,
             iconSource: "./images/abilities/self_heal.png",
             lastingTime: 8e3,
@@ -823,8 +871,11 @@
         ability: {
             name: "Shield Regeneration",
             desc: `
-            <strong>Shield Regeneration</strong> allows the shape to regen its shields 10 times quicker for 6 seconds. 
-            After 6 seconds, it begins ability cooldown of 14 sec.
+            <span style="font-width: bolder; color: #fff;">Shield Regeneration</span>
+            The shape activates a powerful matrix that increases the regeneration rate of its shields.<br><br>
+            Duration: 6 seconds<br>
+            Rate Multiplier: 10<br>
+            Cooldown: 14 seconds
             `,
             iconSource: "./images/abilities/shield_regen.png",
             lastingTime: 6e3,
@@ -859,10 +910,12 @@
         ability: {
             name: "Dragon Flight",
             desc: `
-            <strong>Dragon Flight</strong> the shape flies up.
-            When it reaches max height, the shape can shoot and move through walls, also an built-in weapon is actived that deals damage.
-            While flying the robot gets an defense system.
-            After 6 seconds, the ability cools down for 14 seconds.
+            <span style="font-width: bolder; color: #fff;">Dragon Flight</span>
+            The shape flies up, ignoring all buildings while moving and activates a power built-in weapon.<br><br>
+            Duration: 6 seconds<br>
+            Damage Reduction: 9000 Defense Points (99% resistance)<br>
+            Speed Increase: 200%<br>
+            Cooldown: 14 seconds
             `,
             damageData: {
                 base: 62,
@@ -901,8 +954,8 @@
         Recommended Equipment: x1 Storm + x2 Thunder
         `,
         healthData: {
-            base: 256240,
-            level: [0, 27104, 27104, 27104, 29568, 29568, 29568, 32032, 32032, 32032, 34496, 36960]
+            base: 207e3,
+            level: [0, 21600, 21600, 21600, 23650, 23650, 23650, 25600, 25625, 25625, 27600, 29575]
         },
         hardpoints: {
             light: 1,
@@ -911,9 +964,13 @@
         ability: {
             name: "Ultimate Defense",
             desc: `
-            <strong>Ultimate Defense</strong> turns all damage into DOT for 12 seconds.
-            While ability is active, the robot heals.
-            After 12 seconds, it begins ability cooldown of 12 sec.
+            <span style="font-width: bolder; color: #fff;">Ultimate Defense</span>
+            The shape activates its built-in matrix. This allows the shape to convert all damage to DoT,
+            and allows for a quick built-in healing.<br><br>
+            Healing Power: 2.5%<br>
+            Healing Rate: .5 seconds<br>
+            Duration: 12 seconds<br>
+            Cooldown: 12 seconds
             `,
             iconSource: "./images/abilities/shield_regen.png",
             lastingTime: 12e3,
@@ -953,13 +1010,15 @@
         ability: {
             name: "Stealth",
             desc: `
-            <strong>Stealth</strong> removes the robot from all enemy radars.
-            While ability is active, moves 2 times faster.
-            After 8 seconds of stealth, cools down for 16 seconds.
+            <span style="font-width: bolder; color: #fff;">Stealth</span>
+            Removes the shape from all enemy radars.<br><br>
+            Duration: 8 seconds<br>
+            Speed Increase: 100%<br>
+            Cooldown: 14 seconds
             `,
             iconSource: "./images/abilities/stealth.png",
             lastingTime: 8e3,
-            reload: 16e3
+            reload: 14e3
         },
         hardpoints: {
             light: 2,
@@ -990,14 +1049,13 @@
         ability: {
             name: "Retribution",
             desc: `
-            <strong>Retribution</strong> deploys a resilient purple shield
-            that can tirelessly absorb an unlimited amount of damage,
-            turning the aggression of foes into an opportunity for counterattack.
-            As enemies assail the shield, it progressively amplifies the power of
-            the shape's built-in weapons,
-            reaching a staggering maximum increase of 100%.<br><br>
-            This formidable ability remains in effect for 12 seconds,
-            after which it goes into an 12-second cooldown phase.
+            <span style="font-width: bolder; color: #fff;">Retribution</span>
+            The shape activates a purple shield and its built-in weapons. Damage aborbed by the shield will increase the effectiveness of the built-in weapons.<br><br>
+            Duration: 12 seconds<br>
+            Max Increase: 100%<br>
+            Ability Range: 800PX<br>
+            Ability Fire Rate: .1 seconds<br>
+            Cooldown 10 seconds
             `,
             iconSource: "./images/abilities/retribution.png",
             damageData: {
@@ -1036,9 +1094,11 @@
         ability: {
             name: "Stealth Dash",
             desc: `
-            <strong>Stealth Dash</strong> leaps the shape into a fixed direction.
-            While leaping the shape gets, stealth. The Stealth ends 2 seconds after the dash.
-            4 Ability Charges, 5 second charge cooldown, .75 second usage interval.
+            <span style="font-width: bolder; color: #fff;">Stealth Dash</span>
+            The shape leaps forward in a chosen direction. During that, the shape activates stealth that lasts during and after the dash.<br><br>
+            Max Charges: 4<br>
+            Usage Interval: .75 seconds<br>
+            Cooldown (per charge): 5 seconds
             `,
             iconSource: "./images/abilities/stealth_dash.png",
             charges: 4,
@@ -1075,16 +1135,12 @@
         ability: {
             name: "Phase Shift",
             desc: `
-            <strong>Phase Shift</strong> empowers the shape with a two-second shield of invulnerability,
-            rendering it impervious to all forms of damage.
-            Additionally, while this ability is active,
-            any negative effects currently affecting the shape
-            will be instantly nullified.<br><br>
-            Remarkably, <strong>Phase Shift</strong> is the sole ability available for use during the
-            chilling grip of a cold pulse freeze,
-            making it a critical tool for survival.<br><br>
-            The shape possesses three Ability Charges,
-            with an eight-second cooldown for each charge.
+            <span style="font-width: bolder; color: #fff;">Phase Shift</span>
+            The shape activates a powerful matrix that allows it not to take any damage. Negative Effects are all nullfied during the ability.<br><br>
+            Duration: 1.5 seconds<br>
+            Max Charges: 3<br>
+            Speed Increase: 150%<br>
+            Cooldown (per charge): 8 seconds
             `,
             iconSource: "./images/abilities/phase_shift.png",
             charges: 3,
@@ -1117,8 +1173,11 @@
         ability: {
             name: "Dash",
             desc: `
-            <strong>Dash</strong> leaps the shape into a fixed direction.<br>
-            5 Ability Charges, 2 second charge cooldown
+            <span style="font-width: bolder; color: #fff;">Dash</span>
+            The shape leaps into a chosen direction.<br><br>
+            Max Charges: 5<br>
+            Usage Interval: .3 seconds<br>
+            Cooldown (per charge): 2 seconds
             `,
             iconSource: "./images/abilities/dash.png",
             charges: 5,
@@ -1154,11 +1213,13 @@
         ability: {
             name: "Fortify",
             desc: `
-            <strong>Fortify</strong> for each ability, activates a energy shield.
-            Energy shields obtained cannot regenerate health, so once destroyed it bye-bye.
-            When the shape reaches MK2+, the blue shield becomes yellow.
-            ABILITY IS ALSO AFFECTED BY THE FORIFIER MODULE.
-            3 charges, .5 second interval, 10 second charge cooldown
+            <span style="font-width: bolder; color: #fff;">Fortify</span>
+            The shape activates its generator and generates a energy shield. Energy shields obtained cannot regenerate health.<br><br>
+            Duration of Shields: Until Destruction<br>
+            Usage Interval: 1 second<br>
+            Max Charges: 4<br>
+            Shield Type: Blue (when MK2 or MK3, yellow)<br>
+            Cooldown (per charge): 10 seconds
             `,
             iconSource: "./images/modules/fortifier.png",
             shieldHpData: {
@@ -1198,13 +1259,13 @@
         ability: {
             name: "Stampede",
             desc: `
-            <strong>Stampede</strong> unleashes the shape's turbocharged capabilities,
-            transforming incoming damage into debilitating damage-over-time effects (DoT).
-            However, controlling the shape becomes more challenging
-            during the activation of this ability.<br><br>
-            As <strong>Stampede</strong> accumulates DoT stacks,
-            the robot temporarily fortifies its structural integrity,
-            granting increased resistance for 20 seconds with each stack.
+            <span style="font-width: bolder; color: #fff;">Stampede</span>
+            The shape speeds up and activates its defense system that turns all damage to DoT. During the ability, the shape becomes harder to control, activates a magnetic field, and gains defense points for every DoT effect it gets.<br><br>
+            DoT Duration (per stack): 20 seconds<br>
+            Defense Duration (per stack): 20 seconds<br>
+            Magnetic Field Range: 400PX<br>
+            Duration: 14 seconds<br>
+            Cooldown: 6 seconds
             `,
             iconSource: "./images/abilities/stampede.png",
             damageData: {
@@ -1249,9 +1310,12 @@
         ability: {
             name: "Overload",
             desc: `
-            <strong>Overload</strong>, speeds the shape up and starts a 2 second countdown.
-            After the countdown reaches 0, the robot goes boom boom and deals aoe damage, pushing back all enemies away from it.
-            Cools down for 5 seconds.
+            <span style="font-width: bolder; color: #fff;">Overload</span>
+            The shape speeds up and activates a ticking bomb, after the timer reaches 0: the shape expodes, dealing AoE damage.<br><br>
+            Duration: 3 seconds<br>
+            Ability Range: 500<br>
+            Speed Increase: 100%<br>
+            Cooldown: 4 seconds
             `,
             iconSource: "./images/weapons/cinder.png",
             damageData: {
@@ -1284,10 +1348,6 @@
         <br><br>
         Recommended Equipment: x3 Devastator
         `,
-        buyDesc: `
-        <br><br>
-        Cost: 5.0M Silver + 7.5K Gold + 1.0K Workshop Points
-        `,
         healthData: {
             base: 64e3,
             level: [0, 3e3, 3e3, 3e3, 3e3, 5e3, 5e3, 5e3, 5e3, 5e3, 8e3, 12e3],
@@ -1295,11 +1355,10 @@
         ability: {
             name: "Paladin",
             desc: `
-            <strong>Paladin</strong> gives the shape a shield for 10 seconds.
-            If the shield is destroyed, it EMP's all enemies around it.
-            If the shield isn't destroyed in 10 seconds:
-            the shield gets removed, restored health, and extended max durability.
-            Ability cools down for 12 seconds.
+            <span style="font-width: bolder; color: #fff;">Paladin</span>
+            Activates a shield, that when destroyed: it emits a pulse that EMP's all enemies, disabling them of their abilties, and when not destroyed: restores durability and increase max durability.<br><br>
+            Shield Duration: 10 seconds<br>
+            Cooldown: 8 seconds
             `,
             iconSource: "./images/modules/fortifier.png",
             shieldHpData: {
@@ -1345,8 +1404,12 @@
         ability: {
             name: "Self Heal",
             desc: `
-            <strong>Self Heal</strong> allows the robot to heal 25% of its health in 5 seconds. 
-            After it heals 25%, it begins ability cooldown of 12 sec.
+            <span style="font-width: bolder; color: #fff;">Self Heal</span>
+            The shape repairs a part of its max durability over time.<br><br>
+            Healing Power: 2.5%<br>
+            Duration: 5 seconds<br>
+            Healing Rate: .5 seconds<br>
+            Cooldown: 6 seconds
             `,
             iconSource: "./images/abilities/self_heal.png",
             lastingTime: 5e3,
@@ -1382,18 +1445,22 @@
         ability: {
             name: "Grand Fortitude",
             desc: `
-            <strong>Grand Fortitude</strong>, the shape leaps forward ignoring all buildings.
-            Once it "stops leaping", the robot emits a wave that deals damage and emits DOT DAMAGE.
-            The shape also gets extra defense points and gains a reflector during and after the ability (temp effect).
+            <span style="font-width: bolder; color: #fff;">Grand Fortitude</span>
+            The shape leaps forward in a chosen direction and activates its defense system. After the shape stops, it emits a powerful blast that deals damage and emits DoT.<br><br>
+            Duration of Defense: 16 seconds<br>
+            Defense Points: 50<br>
+            Reflector Power (not stackable): 15%<br>
+            Instant Heal on Ability: 10%<br>
+            Cooldown: 6 seconds
             `,
             iconSource: "./images/abilities/grand_fortitude.png",
             damageData: {
-                base: 5e3,
-                level: [0, 1e3, 2e3, 2e3, 2e3, 2e3, 2e3, 2e3, 2e3, 2e3, 2e3, 2e3]
+                base: 7250,
+                level: [0, 1450, 2900, 2900, 2900, 2900, 2900, 2900, 2900, 2900, 2900, 2900]
             },
             dotData: {
-                base: 300,
-                level: [0, 75, 75, 75, 75, 75, 75, 150, 150, 150, 150, 150],
+                base: 870,
+                level: [0, 216, 216, 216, 216, 216, 216, 455, 455, 455, 455, 455]
             },
             lastingTime: 0,
             reload: 6e3
@@ -1417,10 +1484,6 @@
         <br><br>
         Recommended Equipment: x3 Punisher
         `,
-        buyDesc: `
-        <br><br>
-        Cost: 500 Gold
-        `,
         healthData: {
             base: 32e3,
             level: [0, 1e3, 1e3, 2e3, 2e3, 2e3, 2e3, 3e3, 3e3, 3e3, 4e3, 5e3]
@@ -1428,8 +1491,10 @@
         ability: {
             name: "Dash",
             desc: `
-            <strong>Dash</strong> leaps the shape into a fixed direction.<br>
-            2 Ability Charges, 5 second charge cooldown
+            <span style="font-width: bolder; color: #fff;">Dash</span>
+            The shape leaps into a chosen direction.<br><br>
+            Max Charges: 2<br>
+            Cooldown (per charge): 5 seconds
             `,
             iconSource: "./images/abilities/dash.png",
             charges: 2,
@@ -1464,18 +1529,12 @@
         ability: {
             name: "Divine Judgement",
             desc: `
-            <strong>Divine Judgement</strong>: When activated,
-            the shape moves at a reduced speed and initiates fire from its built-in weapon.
-            This weapon's damage output is dynamically enhanced by the target's tier
-            and maximum health. Notably, the projectiles launched by this built-in
-            weapon possess the remarkable ability to bypass all types of
-            shields and defense systems, excluding reflectors.
-            While this ability is active,
-            the shape is fortified with additional defense points,
-            increasing its resilience. Furthermore,
-            each successful hit with the projectiles contributes
-            to the shape's maximum health and actively heals it.
-            The ability has a cooldown time of 12 seconds.
+            <span style="font-width: bolder; color: #fff;">Divine Judgement</span>
+            The shape slows down, activates a defense system, and a built-in weapon. The damage of its built-in weapon is enchance by the enemy's shape information.<br><br>
+            Duration: 5 seconds<br>
+            Damage Reduction: 9000 Defense Points (99% resistance)<br>
+            Speed Decrease: 80%<br>
+            Cooldown: 12 seconds
             `,
             damageData: {
                 base: 360,
@@ -1513,23 +1572,11 @@
         ability: {
             name: "Domain Expansion: Infinite Void",
             desc: `
-            <strong>Domain Expansion: Infinite Void</strong>:<br><br>
-            <strong>Domain Expansion</strong> represents an advanced shield technology that harnesses
-            the intrinsic essence of shapes,
-            encapsulating them within protective barriers.
-            Regardless of whether an entity is friend or foe,
-            once they step into a domain aligned with their own shape,
-            they gain augmented defense and swiftness,
-            thanks to this synergy.<br><br>
-            <strong>Infinite Void</strong> is a formidable ability that leaves all foes trapped within its dominion entirely
-            immobilized, rendering them incapable of counterattacks or utilizing their unique abilities,
-            including any projectiles they may possess.
-            Furthermore, while ensnared within this void,
-            they become more susceptible to damage,
-            increasing their vulnerability.<br><br>
-            The domain's effect persists for a duration of 4 seconds,
-            providing its protective influence and advantages.
-            Ability cools down for 14 seconds.
+            <span style="font-width: bolder; color: #fff;">Domain Expansion: Infinite Void</span><br><br>
+            <span style="font-width: bolder; color: #fff;">Domain Expansion</span> represents an advanced shield technology that harnesses the intrinsic essence of shapes, encapsulating them within protective barriers. Regardless of whether an entity is friend or foe, once they step into a domain aligned with their own shape, they gain increased defense and speed, thanks to this synergy.<br><br>
+            <span style="font-width: bolder; color: #fff;">Infinite Void</span> is a formidable ability that leaves all foes trapped within its dominion entirely immobilized, rendering them incapable of counterattacks or utilizing their unique abilities, including any projectiles they may possess. Furthermore, while ensnared within this void, they become more susceptible to damage, increasing their vulnerability.<br><br>
+            Duration: 4 seconds<br>
+            Cooldown: 14 seconds
             `,
             lastingTime: 4e3,
             iconSource: "./images/abilities/infinite_void.png",
@@ -1569,11 +1616,16 @@
         ability: {
             name: "Shield Regeneration",
             desc: `
-            <strong>Shield Regeneration</strong> The shape's movement speed and energy shield regeneration rate are significantly increased.
+            <span style="font-width: bolder; color: #fff;">Shield Regeneration</span>
+            The shape increases the regeneration rate of its shield and its movement speed.<br><br>
+            Speed Increase: 150%<br>
+            Regeneration Increase: x10<br>
+            Duration: 12 seconds<br>
+            Cooldown: 6 seconds
             `,
             iconSource: "./images/abilities/shield_regen.png",
             lastingTime: 12e3,
-            reload: 4e3
+            reload: 6e3
         },
         hardpoints: {
             light: 6,
@@ -1606,11 +1658,10 @@
         ability: {
             name: "Reinforce Hull",
             desc: `
-            <strong>Reinforce Hull</strong> temporarily boosts the shape's
-            health and resistance, providing increased durability.
-            When the ability expires, the accumulated gray damage
-            is divided by 4.<br>
-            Cooldown time: 8 seconds.
+            <span style="font-width: bolder; color: #fff;">Reinforce Hull</span>
+            The shape teleports in extra armor, increasing its health for a period of time. After the ability ends, the shape's total gray damage is reduced by 75%.<br><br>
+            Duration: Based on shape level<br>
+            Cooldown: 8 seconds
             `,
             abilityHealthMultiData: {
                 base: 1.5,
@@ -1661,17 +1712,13 @@
         ability: {
             name: "Roulette Strike",
             desc: `
-            <strong>Roulette Strike</strong> is a formidable ability that
-            unleashes a projectile with a unique twist.
-            Upon destruction, the projectile releases a
-            potent field enveloped in rust and dot effects.
-            The longer adversaries linger within this field,
-            the more pronounced the corrosive and damaging
-            effects become.
-            When using each usage of the ability,
-            the robot gains temporary defense points,
-            heals a part of its durability, and
-            reduces the duration of rust effects applied to the shape.
+            <span style="font-width: bolder; color: #fff;">Roulette Strike</span>
+            The shape fires a projectile that emits a field upon destruction. The field emits rust and DoT effects to any enemy near its radius. Also upon activation, the shape reduces the duration of all rust effects applied to the shape.<br><br>
+            Proj. Range: 1400PX<br>
+            Max Charges: 5<br>
+            Effect Durations: 15 seconds<br>
+            Effect Emit Speed: .25 seconds<br>
+            Cooldown (per charge): 3 seconds
             `,
             iconSource: "./images/abilities/roulette_strike.png",
             damageData: {
@@ -1684,7 +1731,7 @@
             },
             charges: 5,
             lastingTime: 750,
-            reload: 8e3
+            reload: 3e3
         },
         hardpoints: {
             light: 2,
@@ -1713,10 +1760,10 @@
         ability: {
             name: "Clear Sky",
             desc: `
-            <strong>Clear Sky</strong> makes the shape fly up and move faster.
-            Activates a [PURPLE] shield and 4 built-in weapons that give enemies [BLAST EFFECT].
-            As the purple shield absorbs damage, the built-in weapons give
-            [BLAST EFFECT] faster.
+            <span style="font-width: bolder; color: #fff;">Clear Sky</span>
+            The shape flies up, ignore all buildings when moving. The shape, upon activation of the ability, also activates built-in weapons that emit blast effect and a purple shield. Damage done to the purple shield will enchance the built-in weapons.<br><br>
+            Duration: 10 seconds<br>
+            Cooldown: 6 seconds
             `,
             iconSource: "./images/abilities/clear_sky.png",
             damageData: {
@@ -1728,7 +1775,7 @@
             effectIncreaseData: {
                 base: 1,
                 effect: "blast",
-                level: [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+                level: [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 5]
             },
             lastingTime: 10e3,
             reload: 6e3
@@ -1772,32 +1819,28 @@
         },
         shieldData: {
             type: "normal",
-            base: 12e5,
+            base: 1377e3,
             amountOfShields: 8,
-            level: [0, 60000, 60000, 60000, 60000, 80000, 80000, 80000, 80000, 160000, 160000, 160000],
+            level: [0, 68925, 68925, 68925, 68925, 91800, 91800, 91800, 91800, 183600, 183600, 183600],
             regen: 0
         },
         ability: {
             name: "Castling",
             desc: `
-            <strong>Castling</strong> is a muilt-functioning ability:<br>
-            - During the start of the ability, all active shields are popped
-            out and the shape becomes unable to move, and gains increased defense points throughout the ability.
-            For each shield, the shape heals a portion of its max durability (5% each).<br>
-            - After one second, all shields are restored and another 2 second timer starts.<br>
-            - After the timer ends, the shape leaps forward in a direction: avoiding all buildings, for 6 seconds.<br>
-            - During the timer, you can press the ability again to force end the timer.<br>
-            - During the movement, you can press the ability again to force end the movement.<br>
-            - After the movement, the shape emits a powerful field that knocks enemies back and deals aoe damage.<br>
-            In total you get: 12 seconds of ability, with a 8 second cooldown.
+            <span style="font-width: bolder; color: #fff;">Castling</span>
+            The ability starts by popping of all active shields and stopping the shape from moving. The shape will regenerate health for each popped shield. The shape soon takes off into the sky and regains all its physcial shields in 1 second before waiting another 2 seconds. After 2 seconds the shape starts moving in a selected direction. The 2 second timer and the movement can be skipped at will by another activation of the shape's ability. The shape lastly starts emiting waves that deal AoE damage.<br><br>
+            Duration: 12 seconds<br>
+            Healing (per shield): 2.5%<br>
+            Ability Range: 800PX<br>
+            Cooldown: 8 seconds
             `,
             damageData: {
-                base: 1e3,
+                base: 900,
                 level: [0, 125, 125, 125, 125, 125, 250, 250, 250, 250, 250, 500]
             },
             abilityDefensePointsData: {
                 base: 25,
-                level: [0, 0, 25, 25, 25, 25, 25, 25, 25, 25, 25, 50]
+                level: [0, 6.25, 6.25, 6.25, 6.25, 12.5, 12.5, 12.5, 12.5, 12.5, 12.5, 25]
             },
             iconSource: "./images/abilities/castling.png",
             lastingTime: 12e3,
@@ -1836,8 +1879,12 @@
         ability: {
             name: "Reflector",
             desc: `
-            <strong>Reflector</strong> activates a reflector shield (50% reflection) and
-            increases the shape's defense systems for a period of time.
+            <span style="font-width: bolder; color: #fff;">Reflector</span>
+            The shape activates its powerful defense system.<br><br>
+            Duration: Based on shape level<br>
+            Damage Reduction: based on shape level<br>
+            Reflector Power: 50%<br>
+            Cooldown: 8 seconds
             `,
             abilityDefensePointsData: {
                 base: 100,
@@ -1875,13 +1922,11 @@
         ability: {
             name: "Shapeshift",
             desc: `
-            <strong>Shapeshift</strong>:<br>
-            Default Mode (Starting Mode): Travel Mode<br><br>
-            Upon using the ability, the shape switches between "Tank Mode" and "Travel Mode".<br><br>
-            <strong>Travel Mode</strong>: Robot activates its energy shield, drops its 2 heavy weapons, and moves faster.<br><br>
-            <strong>Tank Mode</strong>: Robot disables its energy shield,
-            activates its 2 heavy weapons, moves slower, and activates a defense system. During Tank Mode,
-            the energy shield regens faster (1000%).
+            <span style="font-width: bolder; color: #fff;">Shapeshift</span> The shape, upon activating the ability, switches between modes.<br><br>
+            <span style="font-width: bolder; color: #fff;">Travel Mode</span>: Robot activates its energy shield, drops its 2 heavy weapons, and moves faster.<br><br>
+            <span style="font-width: bolder; color: #fff;">Tank Mode</span>: Robot disables its energy shield, activates its 2 heavy weapons, moves slower, and activates a defense system. During Tank Mode, the energy shield regens faster (1000%).<br><br>
+            Default Mode: Travel Mode<br>
+            Cooldown: 1 second
             `,
             iconSource: "./images/abilities/shapeshift.png",
             abilityDefensePointsData: {
@@ -1923,13 +1968,11 @@
         ability: {
             name: "Shapeshift",
             desc: `
-            <strong>Shapeshift</strong>:<br>
-            Default Mode (Starting Mode): Ground Mode<br><br>
-            Upon using the ability, the shape switches between "Ground Mode" and "Flight Mode".<br><br>
-            <strong>Ground Mode</strong>: During this mode, the shape has increased defense system and able to shoot all its weapons.<br><br>
-            <strong>Flight Mode</strong>: During this mode, the shape takes off and flies upwards, ignoring all buildings when flying.
-            2 of its heavy weapons are disabled, a built-in weapon and a purple shield is activated.
-            The purple shield lasts for 5 seconds and enchances the built in weapon's damage.
+            <span style="font-width: bolder; color: #fff;">Shapeshift</span> The shape, upon activating its ability, switches between modes.<br><br>
+            <span style="font-width: bolder; color: #fff;">Ground Mode</span>: During this mode, the shape has increased defense system and able to shoot all its weapons.<br><br>
+            <span style="font-width: bolder; color: #fff;">Flight Mode</span>: During this mode, the shape takes off and flies upwards, ignoring all buildings when flying. 2 of its heavy weapons are disabled, a built-in weapon and a purple shield is activated. As the purple shield takes damage, it enchances the built-in weapon of the shape.<br><br>
+            Purple Shield Duration: 5 seconds<br>
+            Cooldown: 5 seconds
             `,
             iconSource: "./images/abilities/shapeshift.png",
             damageData: {
@@ -1992,13 +2035,13 @@
         ability: {
             name: "Blink Support",
             desc: `
-            <strong>Blink Support</strong>:<br>
-            For each activation, the shape teleports armor plates onto its body,
-            which temporarily increases its Durability. In addtion,
-            the shape accelerates and two autonomous weapons teleport in front of it.
-            <br><br>
-            One turret shoots very quickly and deals most of the damage, the other
-            shoots slower but its bullets emit [SLOWDOWN], [DOT] and [BLAST] effect.
+            <span style="font-width: bolder; color: #fff;">Blink Support</span>
+            Upon activation, the shape teleports in extra armor, and 2 autonomous turrets for support.<br>
+            One of the turrets deal most of the damage, while the other emits negative effects at enemies.<br><br>
+            Duration of Turrets: x2 the duration of the ability<br>
+            Duration: Based on shape level<br>
+            Max Charges: 4<br>
+            Cooldown (per charge): 12 seconds
             `,
             abilityHealthMultiData: {
                 base: 1.2,
@@ -2018,7 +2061,7 @@
             },
             charges: 4,
             iconSource: "./images/abilities/shield_t.png",
-            reload: 14e3
+            reload: 12e3
         },
         hardpoints: {
             light: 0,
@@ -2238,10 +2281,6 @@
         Special targeting allows the weapon to target 3 enemies at once.
         Ignores mouse cursor and targets nearest 3 enemies.
         Weapon ignores walls and all shields.
-        `,
-        buyDesc: `
-        <br><br>
-        Cost: 2.0K Gold
         `,
         damageData: {
             base: 218,
@@ -2663,11 +2702,11 @@
         },
         defenseBypassData: {
             base: .05,
-            level: [0, 0, 0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05],
+            level: [0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.1, 0.15],
         },
         imageSource: "./images/weapons/evora.png",
-        fireRate: 40,
-        ammo: 130,
+        fireRate: 50,
+        ammo: 125,
         reload: 4e3,
         range: 1200,
         cost: {
@@ -2693,11 +2732,11 @@
         },
         defenseBypassData: {
             base: .05,
-            level: [0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.1, 0.15],
+            level: [0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.15, 0.15, 0.15, 0.15],
         },
         imageSource: "./images/weapons/veyron.png",
-        fireRate: 40,
-        ammo: 130,
+        fireRate: 50,
+        ammo: 125,
         reload: 4e3,
         range: 1200,
         cost: {
@@ -2868,7 +2907,7 @@
         `,
         damageData: {
             base: 162,
-            level: [0,18,27,27,36,45,45,54,63,63,81,81]
+            level: [0, 18, 27, 27, 36, 45, 45, 54, 63, 63, 81, 81]
         },
         dotData: {
             base: 46,
@@ -2989,7 +3028,7 @@
         },
         defenseBypassData: {
             base: .05,
-            level: [0, 0, 0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05],
+            level: [0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.1, 0.15],
         },
         imageSource: "./images/rust.png",
         fireRate: 24,
@@ -3019,7 +3058,7 @@
         },
         defenseBypassData: {
             base: .05,
-            level: [0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.1, 0.15],
+            level: [0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.15, 0.15, 0.15, 0.15],
         },
         imageSource: "./images/weapons/trickster.png",
         fireRate: 24,
@@ -3121,7 +3160,7 @@
         },
         defenseBypassData: {
             base: .05,
-            level: [0, 0, 0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05],
+            level: [0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.1, 0.15],
         },
         imageSource: "./images/weapons/deceiver.png",
         fireRate: 24,
@@ -3155,7 +3194,7 @@
         },
         defenseBypassData: {
             base: .05,
-            level: [0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.1, 0.15],
+            level: [0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.15, 0.15, 0.15, 0.15],
         },
         imageSource: "./images/weapons/damper.png",
         fireRate: 24,
@@ -3193,8 +3232,8 @@
             level: [0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.15, 0.15, 0.15, 0.15],
         },
         imageSource: "./images/weapons/brisant.png",
-        fireRate: 450,
-        ammo: 8,
+        fireRate: 550,
+        ammo: 6,
         reload: 3700,
         range: 2e3,
         cost: {
@@ -3228,8 +3267,8 @@
             level: [0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.1, 0.15],
         },
         imageSource: "./images/weapons/shatter.png",
-        fireRate: 450,
-        ammo: 8,
+        fireRate: 550,
+        ammo: 6,
         reload: 3700,
         range: 2e3,
         cost: {
@@ -3362,7 +3401,7 @@
         },
         defenseBypassData: {
             base: .05,
-            level: [0, 0, 0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05],
+            level: [0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.1, 0.15],
         },
         imageSource: "./images/weapons/labrys.png",
         fireRate: [600, 100, 100, 100, 100],
@@ -3396,7 +3435,7 @@
         },
         defenseBypassData: {
             base: .05,
-            level: [0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.1, 0.15],
+            level: [0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.15, 0.15, 0.15, 0.15],
         },
         imageSource: "./images/weapons/cestus.png",
         fireRate: [250, 50, 50, 50, 50],
@@ -3670,7 +3709,7 @@
         },
         grayDamageDecreaseData: {
             base: 0.05,
-            level: [0, 0.02, 0.02, 0.02, 0.02, 0.02]
+            level: [0, 0.02, 0.02, 0.03, 0.04, 0.05]
         },
         imageSource: "./images/modules/damage_controller.png",
         cost: {
@@ -3843,10 +3882,16 @@
         ability: {
             name: "Ultimate Mending",
             desc: `
-            <strong>Ultimate Mending</strong> speeds up the shape.
-            Heals 15% of health each second.
-            While healing, it also repairs gray damage.
-            During the ability, it improves the healing aura's healing power and allows it to heal gray damage.
+            <span style="font-width: bolder; color: #fff;">Ultimate Mending</span>
+            The shape increases its healing power and moves faster.<br><br>
+            Duration: 6 seconds<br>
+            Speed Increase: 150%<br>
+            Healing Power: 15%<br>
+            Healing Rate: .5 seconds<br>
+            Healing Aura Power Increase: x5<br>
+            Healing Aura Rate Increase: x4<br>
+            Gray Damage Repair: 15%<br>
+            Cooldown: 12 seconds
             `,
             iconSource: "./images/abilities/self_heal.png",
             lastingTime: 6e3,
@@ -3883,13 +3928,13 @@
         ability: {
             name: "Retribution",
             desc: `
-            <strong>Retribution</strong> deploys a resilient purple shield
-            that can tirelessly absorb an unlimited amount of damage,
-            turning the aggression of foes into an opportunity for counterattack.
-            As enemies assail the shield, it progressively amplifies the power of
-            the shape's built-in weapons, reaching a staggering maximum increase of 2000%.<br><br>
-            This formidable ability remains in effect for 12 seconds,
-            after which it goes into an 4-second cooldown phase.
+            <span style="font-width: bolder; color: #fff;">Retribution</span>
+            The shape activates a purple shield and its built-in weapons. Damage aborbed by the shield will increase the effectiveness of the built-in weapons.<br><br>
+            Duration: 12 seconds<br>
+            Max Increase: 100%<br>
+            Ability Range: 1600PX<br>
+            Ability Fire Rate: .025 seconds<br>
+            Cooldown: 5 seconds
             `,
             iconSource: "./images/abilities/retribution.png",
             damageData: {
@@ -3983,6 +4028,392 @@
         }
         return value;
     }
+    var gameModeData = [{
+        name: "Quick Match",
+        desc: `
+        You will be randomly matched in one of the following modes:<br>
+        Classic<br>
+        One vs. All<br>
+        FFA
+        `,
+        level: 15,
+        backgroundImage: "",
+        ids: [2, 3, 4]
+    }, {
+        name: "Classic",
+        id: 2,
+        level: 1,
+        backgroundImage: "",
+        desc: `
+        Beacon Capture. Each captured beacon gives points to your team.
+        The team that fills their half of the bar wins. The destruction of all enemy
+        shapes will also count as a win.
+        `
+    }, {
+        name: "One vs. All",
+        id: 3,
+        level: 25,
+        backgroundImage: "",
+        desc: `
+        No beacons. You are put into a arena with 8 other enemy shapes.
+        Fight the other 8 enemies while they team up aganist you.
+        Let the champion rise to the top!
+        `
+    }, {
+        name: "One vs. One",
+        id: 5,
+        level: 30,
+        backgroundImage: "",
+        desc: `
+        Engage in a relentless one-on-one duel against an bot
+        enemy armed to the teeth with the best
+        equipment the game has to offer.
+        Are you ready to prove your mettle and rise to the challenge?
+        `
+    }, {
+        name: "FFA",
+        id: 4,
+        level: 15,
+        backgroundImage: "",
+        desc: `
+        In FFA mode, 20 players, including you,
+        fight in an arena. The goal is to be the
+        last one standing by defeating everyone else!
+        `
+    }, {
+        name: "Extermination",
+        id: 0,
+        level: 10,
+        backgroundImage: "",
+        desc: `
+        Fight endless hordes of unregistered shapes.
+        The longer to survive, the more rewards you receive!
+        `
+    }, {
+        name: "Arena",
+        id: 1,
+        level: 15,
+        backgroundImage: "",
+        desc: `
+        While numerous shapes originate from the 4 giants (Pentagon, Hexagon, Circle, Heptagon),
+        several other competitors have emerged. These rivals have
+        joined forces to construct 10 mega shapes, expressing
+        confidence in their superiority over the 4 giants' designs.
+        The companies challenges you to prove them wrong!
+        `
+    }, {
+        name: "Test / Playground",
+        id: 6,
+        level: 5,
+        backgroundImage: "",
+        desc: `
+        Pentagon, the one of the biggest shape production companies, bought many acres of
+        land to test run their lastest weapons and shapes.
+        They also allow other loyal customers to use the
+        land for the same purpose.
+        `
+    }];
+    function drawGameModesDisplay() {
+        document.getElementById("gameModesDisplay").innerHTML = `
+        <div id="mainsDisplay" style="position: absolute; left: 0px; top: ${window.innerHeight / 2 - 175}px; width: 100%; height: 350px; background-color: rgb(0, 0, 0, 0.15); overflow-x: scroll; box-shadow: 0 0 10px 5px rgba(0, 0, 0, 0.5);">
+        </div>
+        `;
+        let width = 250;
+        for (let i = 0; i < gameModeData.length; i++) {
+            let data = gameModeData[i]
+            document.getElementById("mainsDisplay").innerHTML += `
+            <div style="position: absolute; height: 100%; width: ${width}px; top: 0px; left: ${(width + 20) * i}px; background-color: ${i % 2 == 1 ? "rgb(255, 255, 255, 0.4)" : "rgb(0, 0, 0, 0.2)"};">
+            <div style="font-size: 24px; margin-left: 10px; margin-top: 5px;">${data.name}</div>
+            <hr>
+            <div style="margin-left: 10px; font-size: 12px;">
+            ${data.desc}
+            </div>
+            <div id="goFightId${data.id}" style="position: absolute; color: #fff; bottom: 10px; cursor: pointer; left: 10px; font-size: 24px; text-align: center; width: ${width - 20}px; height: 30px; background-color: ${data.level > player.profile.level ? "#909090" : "#fc9003"}; border-radius: 4px;">
+            ${data.level > player.profile.level ? "LOCKED" : "FIGHT"}
+            </div>
+            </div>
+            `;
+        }
+        for (let i = 0; i < gameModeData.length; i++) {
+            let data = gameModeData[i];
+            if (data.id + 1 >= 1 && document.getElementById(`goFightId${data.id}`)) {
+                document.getElementById(`goFightId${data.id}`).onclick = function () {
+                    if (data.level > player.profile.level) return;
+                    document.getElementById("chooseSlot").style.bottom = "0px";
+                    document.getElementById("goBackToHanger").style.display = "none";
+                    document.getElementById("gameModesDisplay").style.display = "none";
+                    setUpGame(data.id);
+                    resize();
+                }
+            } else if (data.ids) {
+                let randomId = data.ids[Math.floor(Math.random() * data.ids.length)];
+                document.getElementById(`goFightId${data.id}`).onclick = function () {
+                    if (data.level > player.profile.level) return;
+                    document.getElementById("chooseSlot").style.bottom = "0px";
+                    document.getElementById("goBackToHanger").style.display = "none";
+                    document.getElementById("gameModesDisplay").style.display = "none";
+                    setUpGame(randomId);
+                    resize();
+                }
+            }
+        }
+    }
+    function setUpUIStuffThing() {
+        let accountLevel = player.profile.level;
+        if (accountLevel < 21) {
+            document.getElementById("workshopToggle").style.pointerEvents = "none";
+            document.getElementById("workshopToggle").style.opacity = .2;
+        } else {
+            document.getElementById("workshopToggle").style.opacity = 1;
+            document.getElementById("workshopToggle").style.pointerEvents = "auto";
+        }
+        if (accountLevel < 11) {
+            document.getElementById("operationToggle").style.pointerEvents = "none";
+            document.getElementById("operationToggle").style.opacity = .2;
+        } else {
+            document.getElementById("operationToggle").style.opacity = 1;
+            document.getElementById("operationToggle").style.pointerEvents = "auto";
+        }
+        if (accountLevel < 2) {
+            document.getElementById("offersToggles").style.pointerEvents = "none";
+            document.getElementById("offersToggles").style.opacity = .2;
+        } else {
+            document.getElementById("offersToggles").style.opacity = 1;
+            document.getElementById("offersToggles").style.pointerEvents = "auto";
+        }
+        if (accountLevel < 6) {
+            document.getElementById("lootBoxToggle").style.pointerEvents = "none";
+            document.getElementById("lootBoxToggle").style.opacity = .2;
+        } else {
+            document.getElementById("lootBoxToggle").style.opacity = 1;
+            document.getElementById("lootBoxToggle").style.pointerEvents = "auto";
+        }
+    }
+    function injectRewards(level, rewards, unlocked) {
+        let element = document.createElement("div");
+        element.style = `
+        position: absolute;
+        width: 600px;
+        height: 400px;
+        top: ${window.innerHeight / 2 - 200}px;
+        left: ${window.innerWidth / 2 - 300}px;
+        background-color: rgb(0, 0, 0, .25);
+        border-radius: 6px;
+        color: #fff;
+        z-index: 90000;
+        overflow-y: scroll;
+        `;
+        element.innerHTML = `
+        <h1 style="width: 100%; text-align: center; color: #fff;">Leveled Up to ${level}</h1>
+        <hr>
+        <div style="position: absolute; top: 100px; left: 25px; width: 550px; height: 50px; background-color: rgb(0, 0, 0, .4); border-radius: 6px;">
+        <div style="position: absolute; left: 0px; top: 0px; width: 50px; height: 50px; background-image: url('${agSource}'); background-size: 50px 50px;">
+        </div>
+        <div style="position: absolute; left: 55px; top: 0px; font-size: 35px;">
+        ${abbreviateNumber(rewards.silver)}
+        </div>
+        </div>
+        <div style="position: absolute; top: 160px; left: 25px; width: 550px; height: 50px; background-color: rgb(0, 0, 0, .4); border-radius: 6px;">
+        <div style="position: absolute; left: 0px; top: 0px; width: 50px; height: 50px; background-image: url('${auSource}'); background-size: 50px 50px;">
+        </div>
+        <div style="position: absolute; left: 55px; top: 0px; font-size: 35px;">
+        ${abbreviateNumber(rewards.gold)}
+        </div>
+        </div>
+        `;
+        let sad = 0;
+        unlocked.forEach((e, index) => {
+            sad++;
+            element.innerHTML += `
+            <div style="position: absolute; top: ${220 + (index * 60)}px; left: 25px; width: 550px; height: 50px; background-color: rgb(0, 0, 0, .4); border-radius: 6px;">
+            <div style="position: absolute; left: 10px; top: 10px; font-size: 20px;">
+            ${typeof e == "string" ? e : `You unlocked Tier ${e + 1} equipment!`}
+            </div>
+            </div>
+            `;
+        });
+        element.innerHTML += `
+        <div style="position: absolute; opactiy: 0; top: ${220 + (sad * 60)}px; left: 25px; width: 550px; height: 10px;">
+        </div>
+        `;
+        document.getElementById("hangerUI").appendChild(element);
+        element.onclick = function () { this.remove(); }
+        updateMoneyDisplay("gold", rewards.gold);
+        updateMoneyDisplay("sliver", rewards.silver);
+    }
+    function doLeagueThingyMath(league) {
+        if (league >= 4701) {
+            return 1;
+        } else if (league >= 3801 && league <= 4700) {
+            let min = league - 3801;
+            let max = 4700 - league;
+            return min / max;
+        } else if (league >= 2901 && league <= 3800) {
+            let min = league - 2901;
+            let max = 3800 - league;
+            return min / max;
+        } else if (league >= 2101 && league <= 2900) {
+            let min = league - 2101;
+            let max = 2900 - league;
+            return min / max;
+        } else if (league >= 1501 && league <= 2100) {
+            let min = league - 1501;
+            let max = 2100 - league;
+            return min / max;
+        } else if (league >= 1001 && league <= 1500) {
+            let min = league - 1001;
+            let max = 1500 - league;
+            return min / max;
+        } else if (league >= 701 && league <= 1000) {
+            let min = league - 701;
+            let max = 1000 - league;
+            return min / max;
+        } else if (league >= 451 && league <= 700) {
+            let min = league - 451;
+            let max = 700 - league;
+            return min / max;
+        } else {
+            return league / 450;
+        }
+    }
+    function getLeagueBadge(league) {
+        let name = getLeagueName(league);
+        return `./images/badges/${name[0].toLowerCase() + name.slice(1)}_badge.png`;
+    }
+    function doProfileClickStuff() {
+        let robots = player.shapes.filter(e => e.slot != null || e.slot != undefined);
+        document.getElementById("hangerUI").style.display = "none";
+        let width = window.innerWidth - 120;
+        let box = width / 3;
+        let top = ((window.innerHeight - 220) / 2) - ((box - 40) / 2);
+        let size = box - 40;
+        document.getElementById("sideDisplay").innerHTML = `
+        <h1 style="width: 100%; text-align: center;">Profile</h1><hr>
+        <div id="stats" style="position: absolute; top: ${top}px; left: ${window.innerWidth / 2 - ((box - 40) / 2)}px; width: ${box - 40}px; height: ${box - 40}px; border-radius: 6px; background-color: rgb(0, 0, 0, .25); overflow-x: scroll;">
+        </div>
+
+        <div id="player-level-holder" style="position: absolute; top: ${top}px; left: 60px; width: ${box - 40}px; height: ${box - 40}px;">
+        <div style="position: absolute; top: 0px; left: 0px; width: 100%; height: 100%; border-radius: 50%; background-color: #e4e4e4;">
+        <div style="width: ${size}px; height: ${size}px; border-radius: 50%; background: conic-gradient(#50e0fa ${player.profile.level == 30 ? 360 : (360 * (player.profile.xp.current / player.profile.xp.max))}deg, #fff 0deg);">
+        </div>
+        <div style="position: absolute; display: flex; align: center; justify-content: center; top: 25px; left: 25px; width: ${size - 50}px; height: ${size - 50}px; border-radius: 50%; background-color: rgb(183, 183, 183);">
+        <div style="position: absolute; display: flex; align: center; justify-content: center; left: 25%; top: 25%; width: 50%; height: 50%; transform: rotate(45deg); background-color: #808080;">
+        <div style="transform: rotate(-45deg); font-size: ${(size - 40) * .35}px;">${player.profile.level}</div>
+        </div>
+        </div>
+        </div>
+        </div>
+
+        <div id="league-holder" style="position: absolute; top: ${top}px; right: 60px; width: ${box - 40}px; height: ${box - 40}px;">
+        <div style="position: absolute; top: 0px; left: 0px; width: 100%; height: 100%; border-radius: 50%; background-color: #e4e4e4;">
+        <div style="width: ${size}px; height: ${size}px; border-radius: 50%; background: conic-gradient(#50e0fa ${360 * (doLeagueThingyMath(player.league))}deg, #fff 0deg);">
+        </div>
+        <div style="position: absolute; top: 25px; left: 25px; width: ${size - 50}px; height: ${size - 50}px; border-radius: 50%; background-color: rgb(183, 183, 183);">
+        </div>
+        <div style="position: absolute; top: 25px; left: 25px; width: ${size - 50}px; height: ${size - 50}px; border-radius: 50%; background-color: rgb(183, 183, 183);">
+        <img src="${getLeagueBadge(player.league)}" style="width: 100%; height: 100%"> 
+        </div>
+        </div>
+        </div>
+
+        <div id="robotsDisplays" style="position: absolute; bottom: 0px; width: 100%; height: 300px; background-color: rgb(0, 0, 0, .25); overflow-x: scroll;">
+        </div>
+        `;
+        robots = robots.sort((a, b) => a.slot - b.slot);
+        let rating = 0;
+        for (let i = 0; i < 8; i++) {
+            let robot = robots.find(e => e.slot == i);
+            if (robot) {
+                document.getElementById("robotsDisplays").innerHTML += `
+                <div id="thingy${i}" style="position: absolute; top: 0px; left: ${225 * i}px; height: 100%; width: 225px; background-color: ${i % 2 == 0 ? "rgb(0, 0, 0, .25)" : "rgb(255, 255, 255, .45)"};">
+                <div id="modules${i}" style="position: absolute; bottom: 0px; height: ${225 / 4}px;left: 0px; width: 225px; overflow-x: scroll;">
+                </div>
+                </div>
+                `;
+            }
+        }
+        for (let i = 0; i < 8; i++) {
+            let robot = robots.find(e => e.slot == i);
+            if (robot) {
+                let modules = player.modules.filter(e => e.owner == robot.sid);
+                modules.forEach((e, index) => {
+                    rating += (e.tier + 1) * e.level;
+                    document.getElementById(`modules${i}`).innerHTML += `
+                    <div id="modules${i}${index}" style="position: absolute; left: ${index * (225 / 4)}px; bottom: 0px; width: ${225 / 4}px; height: ${225 / 4}px;">
+                    </div>
+                    `;
+                });
+                modules.forEach((e, index) => {
+                    rating += (e.tier + 1) * e.level;
+                    let image = getModuleIcon(e, true);
+                    image.style = `width: ${225 / 4}px; height: ${225 / 4}px;`;
+                    document.getElementById(`modules${i}${index}`).append(image);
+                });
+                let weapons = player.weapons.filter(e => e.owner == robot.sid);
+                weapons.forEach((e, index) => {
+                    document.getElementById(`thingy${i}`).innerHTML += `
+                    <div id="weapons${i}${index}" style="position: absolute; top: ${index >= 4 ? (225 / 4) * (index - 4) : (225 / 4) * index}px; background-size: ${225 / 4}px ${225 / 4}px; height: ${225 / 4}px; width: ${225 / 4}px; ${index >= 4 ? "right" : "left"}: 0px; background-image: url('${e.imageSource || e.iconSource}');">
+                    </div>
+                    `;
+                });
+                microchips.forEach(e => {
+                    if (e.owner == robot.sid) {
+                        rating += (e.level + 1) * (robot.tier + 1) * (e.legendChip ? 4 : 1);
+                    }
+                });
+                rating += (robot.tier + 1) * robot.level;
+                let image = getShapeSprite(robot, true);
+                image.style = "width: 225px; height: 225px;";
+                document.getElementById(`thingy${i}`).append(image);
+            }
+        }
+        let index = 0;
+        if (player.profile.dmg) {
+            let sum = player.profile.dmg.filter(e => !isNaN(e)).reduce((acc, currentValue) => acc + currentValue, 0);
+            if (sum > 0) {
+                let avg = sum / player.profile.dmg.length;
+                document.getElementById("stats").innerHTML += `
+                <div style="position: absolute; top: ${index * 32}px; width: 100%; height: 30px;">
+                <div style="position: absolute; top: 0px; left: 5px; color: #fff; font-size: 25px;">AVG DMG:</div>
+                <div style="position: absolute; top: 0px; right: 5px; color: #fff; font-size: 25px;">${avg >= 10e6 ? abbreviateNumber(avg) : Math.round(avg)}</div>
+                </div>
+                `;
+                index++;
+            }
+        }
+        if (player.profile.wins) {
+            let sum = player.profile.wins.reduce((acc, currentValue) => acc + currentValue, 0);
+            let avg = sum / player.profile.wins.length;
+            document.getElementById("stats").innerHTML += `
+            <div style="position: absolute; top: ${index * 32}px; width: 100%; height: 30px">
+            <div style="position: absolute; top: 0px; left: 5px; color: #fff; font-size: 25px;">AVG WIN RATE:</div>
+            <div style="position: absolute; top: 0px; right: 5px; color: #fff; font-size: 25px;">${Math.round(avg * 100)}%</div>
+            </div>
+            `;
+            index++;
+        }
+        document.getElementById("stats").innerHTML += `
+        <div style="position: absolute; top: ${index * 32}px; width: 100%; height: 30px">
+        <div style="position: absolute; top: 0px; left: 5px; color: #fff; font-size: 25px;">Hanger Rating:</div>
+        <div style="position: absolute; top: 0px; right: 5px; color: #fff; font-size: 25px;">${rating}</div>
+        </div>
+        `;
+        index++;
+        document.getElementById("stats").innerHTML += `
+        <div style="position: absolute; top: ${index * 32}px; width: 100%; height: 30px">
+        <div style="position: absolute; top: 0px; left: 5px; color: #fff; font-size: 25px;">Rating:</div>
+        <div style="position: absolute; top: 0px; right: 5px; color: #fff; font-size: 25px;">${player.league}</div>
+        </div>
+        `;
+        index++;
+        document.getElementById("stats").innerHTML += `
+        <div style="position: absolute; top: ${index * 32}px; width: 100%; height: 30px">
+        <div style="position: absolute; top: 0px; left: 5px; color: #fff; font-size: 25px;">League:</div>
+        <div style="position: absolute; top: 0px; right: 5px; color: #fff; font-size: 25px;">${getLeagueName(player.league)}</div>
+        </div>
+        `;
+        index++;
+    }
     function updateMoneyDisplay(index, value) {
         if (index && index.includes("token")) {
             if (index == "token 1") {
@@ -3991,6 +4422,63 @@
                 player.tokens.mk2 += value;
             } else {
                 player.tokens.mk3 += value;
+            }
+        } else if (index && index == "player_xp") {
+            if (player.profile) {
+                player.profile.xp.current += value;
+                if (player.profile.xp.current >= player.profile.xp.max) {
+                    let unlockedSomething = [];
+                    let rewards = {
+                        gold: 0,
+                        silver: 0
+                    };
+                    while (player.profile.xp.current >= player.profile.xp.max) {
+                        let last = player.profile.level;
+                        rewards.gold += player.profile.level >= 25 ? 1e3 : 500;
+                        rewards.silver += player.profile.level >= 25 ? 20e6 : player.profile.level >= 15 ? 1e6 : 500e3;
+                        player.profile.xp.current -= player.profile.xp.max;
+                        if (player.profile.xp.current < 0) {
+                            player.profile.xp.current = 0;
+                        }
+                        player.profile.xp.max += player.profile.level >= 25 ? 300 : 150;
+                        player.profile.level++;
+                        if (player.profile.level >= 30) {
+                            player.profile.level = 30;
+                            player.profile.xp.current = 0;
+                            player.profile.xp.max = 1e9;
+                        }
+                        unlockedAtTier.forEach(e => {
+                            if (last < e && player.profile.level >= e) {
+                                unlockedSomething.push(unlockedAtTier.findIndex(t => t == e));
+                            }
+                        });
+                        if (last < 2 && player.profile.level >= 2) {
+                            unlockedSomething.push("Unlocked Tasks");
+                        }
+                        if (last < 11 && player.profile.level >= 11) {
+                            unlockedSomething.push("Unlocked Operation");
+                        }
+                        if (last < 6 && player.profile.level >= 6) {
+                            unlockedSomething.push("Unlocked Lootboxes");
+                        }
+                        if (last < 30 && player.profile.level >= 30) {
+                            unlockedSomething.push("Unlocked Mark Chests");
+                        }
+                        if (last < 21 && player.profile.level >= 21) {
+                            unlockedSomething.push("Unlocked Workshop");
+                        }
+                        if (last < 16 && player.profile.level >= 16) {
+                            unlockedSomething.push("Unlocked Microchips");
+                        }
+                    }
+                    setUpUIStuffThing();
+                    injectRewards(player.profile.level, rewards, unlockedSomething);
+                }
+                if (player.profile.level > 30) {
+                    player.profile.level = 30;
+                    player.profile.xp.current = 0;
+                    player.profile.xp.max = 1e9;
+                }
             }
         } else if (player[index] != null) player[index] += value;
         document.getElementById("moneyDisplay").innerHTML = `
@@ -4063,6 +4551,30 @@
         </div>
         </div>
         `;
+        if (player.profile) {
+            if (player.profile.level == null) player.profile.level = 1;
+            document.getElementById("pfp").innerHTML = `
+            <span id="profileClick" class="material-symbols-outlined" style="cursor: pointer; font-size: 50px; color: #fff;">
+            account_circle
+            </span>
+            <div style="position: absolute; height: 25px; left: 55px; top: 2px; width: 195px;">
+            (${player.profile.level}) Player
+            </div>
+            <div style="position: absolute; height: 25px; left: 55px; bottom: 0px; width: 190px;">
+            <div style="position: absolute; color: #fff; font-size: 12px; bottom: 10px;">
+            ${player.profile.xp.current}/${abbreviateNumber(player.profile.xp.max)}
+            </div>
+            <div style="position: absolute; bottom: 5px; left: 0px; width: 190px; height: 5px; background-color: rgb(0, 0, 0, .25); border-radius: 12px; overflow: hidden;">
+            <div style="position: absolute; top: 0px; left: 0px; width: ${100 * (player.profile.xp.current / player.profile.xp.max)}%; height: 100%; background-color: #fff;">
+            </div>
+            </div>
+            </div>
+            `;
+            document.getElementById("profileClick").onclick = function () {
+                doProfileClickStuff();
+            };
+            drawGameModesDisplay();
+        }
         if (index) saveGameData();
     }
     const effectThresholds = {
@@ -4071,126 +4583,6 @@
     };
     updateMoneyDisplay();
     var pixelDensity = 1;
-    var gameModeData = [{
-        name: "Quick Match",
-        desc: `
-        You will be randomly matched in one of the following modes:<br>
-        Classic<br>
-        One vs. All<br>
-        FFA
-        `,
-        backgroundImage: "",
-        ids: [2, 3, 4]
-    }, {
-        name: "Classic",
-        id: 2,
-        backgroundImage: "",
-        desc: `
-        Beacon Capture. Each captured beacon gives points to your team.
-        The team that fills their half of the bar wins. The destruction of all enemy
-        shapes will also count as a win.
-        `
-    }, {
-        name: "One vs. All",
-        id: 3,
-        backgroundImage: "",
-        desc: `
-        No beacons. You are put into a arena with 8 other enemy shapes.
-        Fight the other 8 enemies while they team up aganist you.
-        Let the champion rise to the top!
-        `
-    }, {
-        name: "One vs. One",
-        id: 5,
-        backgroundImage: "",
-        desc: `
-        Engage in a relentless one-on-one duel against an bot
-        enemy armed to the teeth with the best
-        equipment the game has to offer.
-        Are you ready to prove your mettle and rise to the challenge?
-        `
-    }, {
-        name: "FFA",
-        id: 4,
-        backgroundImage: "",
-        desc: `
-        In FFA mode, 20 players, including you,
-        fight in an arena. The goal is to be the
-        last one standing by defeating everyone else!
-        `
-    }, {
-        name: "Extermination",
-        id: 0,
-        backgroundImage: "",
-        desc: `
-        Fight endless hordes of unregistered shapes.
-        The longer to survive, the more rewards you receive!
-        `
-    }, {
-        name: "Arena",
-        id: 1,
-        backgroundImage: "",
-        desc: `
-        While numerous shapes originate from the 4 giants (Pentagon, Hexagon, Circle, Heptagon),
-        several other competitors have emerged. These rivals have
-        joined forces to construct 10 mega shapes, expressing
-        confidence in their superiority over the 4 giants' designs.
-        The companies challenges you to prove them wrong!
-        `
-    }, {
-        name: "Test / Playground",
-        id: 6,
-        backgroundImage: "",
-        desc: `
-        Pentagon, the one of the biggest shape production companies, bought many acres of
-        land to test run their lastest weapons and shapes.
-        They also allow other loyal customers to use the
-        land for the same purpose.
-        `
-    }];
-    function drawGameModesDisplay() {
-        document.getElementById("gameModesDisplay").innerHTML = `
-        <div id="mainsDisplay" style="position: absolute; left: 0px; top: ${window.innerHeight / 2 - 175}px; width: 100%; height: 350px; background-color: rgb(0, 0, 0, 0.15); overflow-x: scroll; box-shadow: 0 0 10px 5px rgba(0, 0, 0, 0.5);">
-        </div>
-        `;
-        let width = 250;
-        for (let i = 0; i < gameModeData.length; i++) {
-            let data = gameModeData[i]
-            document.getElementById("mainsDisplay").innerHTML += `
-            <div style="position: absolute; height: 100%; width: ${width}px; top: 0px; left: ${(width + 20) * i}px; background-color: ${i % 2 == 1 ? "rgb(255, 255, 255, 0.4)" : "rgb(0, 0, 0, 0.2)"};">
-            <div style="font-size: 24px; margin-left: 10px; margin-top: 5px;">${data.name}</div>
-            <hr>
-            <div style="margin-left: 10px; font-size: 12px;">
-            ${data.desc}
-            </div>
-            <div id="goFightId${data.id}" style="position: absolute; color: #fff; bottom: 10px; cursor: pointer; left: 10px; font-size: 24px; text-align: center; width: ${width - 20}px; height: 30px; background-color: #fc9003; border-radius: 4px;">
-            FIGHT
-            </div>
-            </div>
-            `;
-        }
-        for (let i = 0; i < gameModeData.length; i++) {
-            let data = gameModeData[i];
-            if (data.id + 1 >= 1 && document.getElementById(`goFightId${data.id}`)) {
-                document.getElementById(`goFightId${data.id}`).onclick = function () {
-                    document.getElementById("chooseSlot").style.bottom = "0px";
-                    document.getElementById("goBackToHanger").style.display = "none";
-                    document.getElementById("gameModesDisplay").style.display = "none";
-                    setUpGame(data.id);
-                    resize();
-                }
-            } else if (data.ids) {
-                let randomId = data.ids[Math.floor(Math.random() * data.ids.length)];
-                document.getElementById(`goFightId${data.id}`).onclick = function () {
-                    document.getElementById("chooseSlot").style.bottom = "0px";
-                    document.getElementById("goBackToHanger").style.display = "none";
-                    document.getElementById("gameModesDisplay").style.display = "none";
-                    setUpGame(randomId);
-                    resize();
-                }
-            }
-        }
-    }
     drawGameModesDisplay();
     function resize() {
         if (player.gameMode >= 0) {
@@ -4259,7 +4651,6 @@
     var shapeSprites = {};
     function exportProgress() {
         let content = {};
-        content.shapeSids = shapeSids;
         content.shapes = [];
         for (let i = 0; i < player.shapes.length; i++) {
             let shape = player.shapes[i];
@@ -4306,6 +4697,7 @@
         content.ULIMATEXP = player.ULIMATEXP;
         content.slotData = JSON.stringify(slotData);
         content.league = player.league;
+        content.league2 = player.league2;
         content.keys = player.keys;
         content.sliver = player.sliver;
         content.gold = player.gold;
@@ -4315,6 +4707,7 @@
         content.tasks = JSON.stringify(tasks);
         content.parts = JSON.stringify(player.parts);
         content = JSON.stringify(content);
+        content.profile = player.profile;
         let blob = new Blob([content], { type: "text/plain" });
         let url = window.URL.createObjectURL(blob);
         let link = document.createElement("a");
@@ -4332,7 +4725,6 @@
             let data = content.shapes[i];
             if (data) {
                 try {
-                    let sid = shapeSids;
                     let Shape = shapeData.find(e => data.name == e.name);
                     let newShape = new shape(Shape, data.slot);
                     newShape.slot = data.slot;
@@ -4343,7 +4735,7 @@
                     newShape.activeModuleIndex = data.activeModuleIndex || 0;
                     newShape.sid = data.sid;
                     if (newShape.sid == undefined || newShape.sid == null) {
-                        newShape.sid = sid;
+                        newShape.sid = "get anew";
                     }
                     for (let t = 0; t < data.level - 1; t++) {
                         upgradeShape(newShape, true);
@@ -4353,6 +4745,18 @@
                 }
             }
         }
+        let largestSid = player.shapes.filter(e => e.sid >= 0).sort((a, b) => b.sid - a.sid)[0].sid + 1;
+        player.shapes.filter(e => e.sid == "get anew").forEach(e => {
+            e.sid = largestSid;
+            largestSid++;
+        });
+        player.shapes.forEach(item => {
+            if (player.shapes.find(e => e.sid == item.sid && e != item)) {
+                item.sid = largestSid;
+                largestSid++;
+            }
+        });
+        shapeSids = largestSid;
         for (let i = 0; i < content.weapons.length; i++) {
             let data = content.weapons[i];
             if (data) {
@@ -4394,14 +4798,10 @@
                     let Micro = microshipData.find(e => data.name == e.name);
                     let newModule = new microchip(Micro, data.owner, data.slot);
                     let shapeSid = player.shapes.find(e => e.sid == data.owner);
-                    if (!shapeSid) {
-                        newModule.owner = null;
-                        newModule.slot = null;
-                    }
                     for (let t = 0; t < data.level; t++) {
                         upgradeMicrochip(newModule);
                     }
-                    if (newModule.slot >= 8) {
+                    if (newModule.slot >= 8 || !shapeSid || !canHaveMicro(newModule, shapeSid)) {
                     } else {
                         microchips.push(newModule);
                     }
@@ -4409,6 +4809,27 @@
                     microchips = [];
                 }
             }
+        }
+        player.shapes.forEach(item => {
+            let weapons = player.weapons.filter(e => item.sid == e.owner);
+            let heavy = weapons.filter(e => e.type == "Heavy");
+            let light = weapons.filter(e => e.type == "Light");
+            if (heavy.length > item.hardpoints.heavy || light.length > item.hardpoints.light) {
+                weapons.forEach(e => {
+                    e.owner = null;
+                    e.slot = null;
+                });
+            }
+            let modules = player.modules.filter(e => item.sid == e.owner);
+            if (modules.length > item.moduleHardpoints) {
+                modules.forEach(e => {
+                    e.slot = null;
+                    e.owner = null;
+                });
+            }
+        });
+        if (content.profile) {
+            player.profile = content.profile;
         }
         if (content.workshopPoints != null) {
             player.workshopPoints = content.workshopPoints;
@@ -4426,6 +4847,11 @@
         if (content.parts) {
             player.parts = JSON.parse(content.parts);
         }
+        if (content.league2) {
+            player.league2 = content.league2;
+        } else {
+            player.league2 = 0;
+        }
         if (content.league) {
             player.league = content.league;
         } else {
@@ -4436,11 +4862,6 @@
         }
         if (content.operationData) {
             operationData = JSON.parse(content.operationData);
-            let hasKeys = operationData.data.find(e => e.type == "token 1");
-            if (!hasKeys) {
-                generateOperation();
-                addOperationXP(10e3);
-            }
         }
         if (!content.ULIMATEXP && content.ULIMATEXP != null && !isNaN(content.ULIMATEXP)) {
             player.ULIMATEXP = content.ULIMATEXP;
@@ -4449,9 +4870,7 @@
         player.sliver = content.sliver;
         player.gold = content.gold;
         updateMoneyDisplay();
-        if (content.shapeSids && content.shapeSids != "NaN") {
-            shapeSids = content.shapeSids;
-        }
+        setUpUIStuffThing();
         updateSlots();
         saveGameData();
     }
@@ -4474,6 +4893,7 @@
         - WASD to move<br>
         - R to quick reload, but you move 2 times slower<br>
         - E to use shape's special ability<br>
+        - Q to use shape's active module ability<br>
         - SPACE to shoot weapons<br>
         - On hanger, 1-8 quick select slot<br>
         - Enter to quick upgrade<br>
@@ -4512,14 +4932,23 @@
                     shapes: [],
                     weapons: [],
                     modules: [],
+                    drones: [],
                     gameMode: -1,
                     ULIMATEXP: 0,
                     workshopPoints: 0,
                     league: 0,
+                    league2: 0,
                     tokens: {
                         mk1: 0,
                         mk2: 0,
                         mk3: 0
+                    },
+                    profile: {
+                        level: 1,
+                        xp: {
+                            current: 0,
+                            max: 300
+                        }
                     },
                     parts: {
                         shapes: {},
@@ -4632,6 +5061,7 @@
         }
     }
     function addTaskXP(type, amount) {
+        if (player.profile.level < 2) return;
         for (let i = 0; i < tasks.length; i++) {
             let task = tasks[i];
             if (task.howGain == type) {
@@ -4640,6 +5070,7 @@
         }
     }
     function generateTasks() {
+        if (player.profile.level < 2) return;
         if (tasks.length >= 10) return;
         for (let i = 0; i < 2; i++) {
             if (tasks.length >= 10) break;
@@ -4735,7 +5166,7 @@
                 tier: e.tier,
                 type: "shape",
                 amount: window.isDev ? 10e3 : e.tier == 4 ? 120 : e.tier == 3 ? 180 : 210,
-                time: window.isDev ? 1e3 : (3.6e6/2) * (e.tier + 1),
+                time: window.isDev ? 1e3 : (3.6e6 / 2) * (e.tier + 1),
                 cost: (e.tier + 1) * 100e3
             });
         });
@@ -4756,7 +5187,7 @@
         for (let i = 0; i < Item.length; i++) {
             let item = Item[i];
             element.innerHTML += `
-            <div style="position: absolute; top: 0px; left: ${250*i}px; height: 100%; width: 250px; background-color: ${i % 2 == 0 ? "rgb(255, 255, 255, .4)" : "rgb(0, 0, 0, .2)"};">
+            <div style="position: absolute; top: 0px; left: ${250 * i}px; height: 100%; width: 250px; background-color: ${i % 2 == 0 ? "rgb(255, 255, 255, .4)" : "rgb(0, 0, 0, .2)"};">
             <div style="width: 100%; font-size: 24px; background-color: #101010; color: ${tierColor(item)}">${item.name}</div>
             <div id="image${i}" style="position: absolute; top: 32.5px; width: 250px; height: 250px;">
             </div>
@@ -4769,7 +5200,7 @@
             </div>
             </div>
             <div style="position: absolute; bottom: 50px; left: 10px; width: 230px; height: 3px; background-color: #575757;">
-            <div style="height: 100%; width: ${Math.min(1, (thingy[item.name] || 0)/10e3) * 100}%; background-color: ${tierColor(item)};">
+            <div style="height: 100%; width: ${Math.min(1, (thingy[item.name] || 0) / 10e3) * 100}%; background-color: ${tierColor(item)};">
             </div>
             </div>
             <div id="sadijasidojasoidhasidasudgyasdkdalsisd${i}" style="position: absolute; ${thingy[item.name] >= 10e3 ? "cursor: pointer;" : ""}; text-align: center; color: #fff; font-size: 24px; width: 230px; bottom: 10px; height: 35px; background-color: ${thingy[item.name] >= 10e3 ? "#02a302" : "#808080"}; right: 10px;">
@@ -4781,7 +5212,7 @@
         for (let i = 0; i < Item.length; i++) {
             let item = Item[i];
             if (type == 0) {
-                document.getElementById(`sadijasidojasoidhasidasudgyasdkdalsisd${i}`).onclick = function() {
+                document.getElementById(`sadijasidojasoidhasidasudgyasdkdalsisd${i}`).onclick = function () {
                     if (thingy[item.name] - 10e3 >= 0) {
                         player.parts.shapes[item.name] -= 10e3;
                         let theThing = shapeData.find(e => e.name == item.name);
@@ -4830,7 +5261,7 @@
         document.body.append(document.getElementById("moneyDisplay"));
         for (let i = 0; i < defaultData.length; i++) {
             document.getElementById("thingy2Display").innerHTML += `
-            <div id="thingyDisplayContent${i}" style="position: absolute; top: 0px; left: ${200*i}px; height: 300px; width: 200px; background-color: ${i % 2 == 0 ? "rgb(0, 0, 0, .2)" : "rgb(255, 255, 255, 0.4)"};">
+            <div id="thingyDisplayContent${i}" style="position: absolute; top: 0px; left: ${200 * i}px; height: 300px; width: 200px; background-color: ${i % 2 == 0 ? "rgb(0, 0, 0, .2)" : "rgb(255, 255, 255, 0.4)"};">
             </div>
             `;
         }
@@ -4853,9 +5284,12 @@
             </div>
             <div style="position: absolute; width: 180px; top: 0px; left: 0px; text-align: center;">${abbreviateNumber(item.cost)}</div>
             </div>
-            <div id="buythinglol${i}" style="cursor: pointer; position: absolute; text-align: center; bottom: 10px; left: 10px; width: 180px; height: 45px; background-color: #0f0; border-radius: 4px;">
+            <div id="buythinglol${i}" style="display: ${unlockedAtTier[item.tier] > player.profile.level ? "none" : "block"}; cursor: pointer; position: absolute; text-align: center; bottom: 10px; left: 10px; width: 180px; height: 45px; background-color: #0f0; border-radius: 4px;">
             <span style="font-size: 20px;">PRODUCE</span><br>
             <span style="font-size: 10px;">${formatMilliseconds(item.time)}</span>
+            </div>
+            <div style="display: ${unlockedAtTier[item.tier] > player.profile.level ? "block" : "none"}; cursor: pointer; position: absolute; text-align: center; bottom: 10px; left: 10px; width: 180px; height: 45px; background-color: #808080; border-radius: 4px;">
+            <span style="font-size: 30px;">LOCKED</span>
             </div>
             `;
             if (item.name == "Workshop Points" || item.name == "Gold") {
@@ -4873,12 +5307,12 @@
                     element.appendChild(image);
                 }
             }
-            document.getElementById(`buythinglol${i}`).onclick = function() {
+            document.getElementById(`buythinglol${i}`).onclick = function () {
                 if (player.sliver - item.cost >= 0) {
                     document.getElementById("hangerUI").append(document.getElementById("moneyDisplay"));
                     updateMoneyDisplay("sliver", -item.cost);
                     let length = workshopQueue.length;
-                    workshopQueue.push({...item});
+                    workshopQueue.push({ ...item });
                     workshopQueue[length].slot = slot;
                     workshopQueue[length].date = Date.now();
                     updateWorkshopDisplay();
@@ -4983,21 +5417,21 @@
     document.getElementById("workshopToggle").onclick = function () {
         document.getElementById("sideDisplay").innerHTML = `
         <div id="invetory" style="position: absolute; top: 0px; left: 0px; width: 100%; height: 100%;">
-        <div id="inventoryDisplay" style="position: absolute; right: 0px; top: ${window.innerHeight/2-175}px; width: ${window.innerWidth - 400}px; height: 350px; background-color: rgb(0, 0, 0, 0.3); overflow-x: scroll;">
+        <div id="inventoryDisplay" style="position: absolute; right: 0px; top: ${window.innerHeight / 2 - 175}px; width: ${window.innerWidth - 400}px; height: 350px; background-color: rgb(0, 0, 0, 0.3); overflow-x: scroll;">
         </div>
-        <div id="shapeTab" style="position: absolute; left: 235px; font-size: 25px; top: ${window.innerHeight/2 - (35/2)}px; background-color: rgb(255, 255, 255, 0.4); text-align: center; width: 150px; height: 35px; border-radius: 4px;">
+        <div id="shapeTab" style="position: absolute; left: 235px; font-size: 25px; top: ${window.innerHeight / 2 - (35 / 2)}px; background-color: rgb(255, 255, 255, 0.4); text-align: center; width: 150px; height: 35px; border-radius: 4px;">
         SHAPES
         </div>
-        <div id="gotoworkshop" style="position: absolute; color: #fff; cursor: pointer; right: 10px; top: ${window.innerHeight/2+185}px; width: 50px; height: 50px; border-radius: 4px; background-color: rgb(0, 0, 0, 0.3);">
+        <div id="gotoworkshop" style="position: absolute; color: #fff; cursor: pointer; right: 10px; top: ${window.innerHeight / 2 + 185}px; width: 50px; height: 50px; border-radius: 4px; background-color: rgb(0, 0, 0, 0.3);">
         <span class="material-symbols-outlined" style="font-size: 50px;">
         extension
         </span>
         </div>
         </div>
         <div id="production" style="display: none; position: absolute; top: 0px; left: 0px; width: 100%; height: 100%;">
-        <div id="thingyDisplay" style="position: absolute; left: 0px; top: ${window.innerHeight/2 - 187.5}px; height: 375px; width: 100%; overflow-x: scroll; background-color: rgb(0, 0, 0, 0.2);">
+        <div id="thingyDisplay" style="position: absolute; left: 0px; top: ${window.innerHeight / 2 - 187.5}px; height: 375px; width: 100%; overflow-x: scroll; background-color: rgb(0, 0, 0, 0.2);">
         </div>
-        <div id="thingy2Display" style="display: none; position: absolute; left: 0px; top: ${window.innerHeight/2 - 150}px; height: 300px; width: 100%; overflow-x: scroll; background-color: rgb(0, 0, 0, 0.2);">
+        <div id="thingy2Display" style="display: none; position: absolute; left: 0px; top: ${window.innerHeight / 2 - 150}px; height: 300px; width: 100%; overflow-x: scroll; background-color: rgb(0, 0, 0, 0.2);">
         </div>
         </div>
         <div id="backButton" style="position: fixed; cursor: pointer; text-align: center; font-size: 40px; color: #fff; left: 20px; bottom: 20px; width: 150px; height: 60px; background-color: rgb(124, 124, 124, 1); border: solid; border-color: #fff; border-radius: 6px;">
@@ -5005,7 +5439,7 @@
         </div>
         `;
         displayPartsInventory(0);
-        document.getElementById("gotoworkshop").onclick = function() {
+        document.getElementById("gotoworkshop").onclick = function () {
             this.style.display = "none";
             document.getElementById("invetory").style.display = "none";
             document.getElementById("production").style.display = "block";
@@ -5053,11 +5487,11 @@
             tmpCtx.globalAlpha = 1;
             tmpCtx.translate((tmpCanvas.width / 2), (tmpCanvas.height / 2));
             if (obj.name.includes("Circle")) {
-                renderCircle(0, 0, obj.scale, tmpCtx, false, false, obj.color, obj.borderColor || "#000");
+                renderCircle(0, 0, obj.scale, tmpCtx, false, false, obj.color, obj.borderColor || "#000", 5.5 * (obj.increaseLine ? obj.increaseLine : 1));
             } else if (obj.name.includes("Pentagon")) {
                 tmpCtx.rotate(Math.PI / 2);
                 tmpCtx.strokeStyle = obj.borderColor || "#000";
-                tmpCtx.lineWidth = 12;
+                tmpCtx.lineWidth = 12 * (obj.increaseLine ? obj.increaseLine : 1);
                 tmpCtx.fillStyle = obj.color;
                 renderStar(tmpCtx, 2.5, obj.scale, obj.scale);
                 tmpCtx.stroke();
@@ -5065,7 +5499,7 @@
             } else if (obj.name.includes("Hexagon")) {
                 tmpCtx.rotate(Math.PI / 2);
                 tmpCtx.strokeStyle = "#000";
-                tmpCtx.lineWidth = 12;
+                tmpCtx.lineWidth = 12 * (obj.increaseLine ? obj.increaseLine : 1);
                 tmpCtx.fillStyle = obj.color;
                 renderStar(tmpCtx, 3, obj.scale, obj.scale);
                 tmpCtx.stroke();
@@ -5073,7 +5507,7 @@
             } else if (obj.name.includes("Heptagon")) {
                 tmpCtx.rotate(Math.PI / 2);
                 tmpCtx.strokeStyle = "#000";
-                tmpCtx.lineWidth = 12;
+                tmpCtx.lineWidth = 12 * (obj.increaseLine ? obj.increaseLine : 1);
                 tmpCtx.fillStyle = obj.color;
                 renderStar(tmpCtx, 3.5, obj.scale, obj.scale);
                 tmpCtx.stroke();
@@ -5171,7 +5605,7 @@
         UPGRADE
         </div>
         <div id="buyWeapon" style="position: absolute; display: ${!inInventory ? "block" : "none"}; color: #fff; text-align: center; font-size: 35px; left: ${window.innerWidth / 2 + 187.5}px; top: ${window.innerHeight / 2 - 25}px; cursor: pointer; width: 325px; height: 50px; border-radius: 6px; background-color: #0f0;">
-        BUY
+        ${unlockedAtTier[weapon.tier] > player.profile.level ? "LOCKED" : "BUY"}
         </div>
         <div id="upgradeMenu" style="position: absolute; color: #fff; display: none; top: 12.5%; left: 12.5%; width: 75%; height: 75%; background-color: rgb(0, 0, 0, .7);">
         </div>
@@ -5184,7 +5618,7 @@
         </div>
         <div id="buyMenu" style="position: absolute; display: none; color: #fff; top: ${(window.innerHeight / 2) - (225 / 2)}px; left: ${(window.innerWidth / 2) - (425 / 2)}px; width: 425px; height: 225px; background-color: rgb(0, 0, 0, .7);">
         </div>
-        <div id="sellItem" style="position: absolute; display: ${!inInventory ? "none" : Weapon.amount == "main" ? "none" : "block"}; cursor: pointer; top: ${window.innerHeight / 2 + 95}px; left: ${window.innerWidth/2+187.5}px; width: 50px; height: 50px; background-color: rgb(0, 0, 0, .4);">
+        <div id="sellItem" style="position: absolute; display: ${!inInventory ? "none" : Weapon.amount == "main" ? "none" : "block"}; cursor: pointer; top: ${window.innerHeight / 2 + 95}px; left: ${window.innerWidth / 2 + 187.5}px; width: 50px; height: 50px; background-color: rgb(0, 0, 0, .4);">
         <span class="material-symbols-outlined" style="font-size: 50px; color: #fff;">
         delete
         </span>
@@ -5301,6 +5735,7 @@
             }
         }
         document.getElementById("buyWeapon").onclick = function () {
+            if (unlockedAtTier[weapon.tier] > player.profile.level) return;
             document.body.appendChild(document.getElementById("moneyDisplay"));
             document.getElementById("buyMenu").style.display = "block";
             document.getElementById("storeButton").style.display = "none";
@@ -5744,19 +6179,19 @@
                     document.getElementById("goToPre").style.display = "block";
                 }
             }
-            document.getElementById("goToNext").onmouseover = function() {
+            document.getElementById("goToNext").onmouseover = function () {
                 this.style.backgroundColor = "rgb(255, 255, 255, .45)";
                 document.getElementById("goToNextCon").style.color = "#000";
             }
-            document.getElementById("goToNext").onmouseout = function() {
+            document.getElementById("goToNext").onmouseout = function () {
                 this.style.backgroundColor = "rgb(0, 0, 0, 0.3)";
                 document.getElementById("goToNextCon").style.color = "#fff";
             }
-            document.getElementById("goToPre").onmouseover = function() {
+            document.getElementById("goToPre").onmouseover = function () {
                 this.style.backgroundColor = "rgb(255, 255, 255, .45)";
                 document.getElementById("goToPreCon").style.color = "#000";
             }
-            document.getElementById("goToPre").onmouseout = function() {
+            document.getElementById("goToPre").onmouseout = function () {
                 this.style.backgroundColor = "rgb(0, 0, 0, 0.3)";
                 document.getElementById("goToPreCon").style.color = "#fff";
             }
@@ -6121,7 +6556,7 @@
         BACK
         </div>
         <div id="buyModule" style="position: absolute; display: ${!inInventory ? "block" : "none"}; color: #fff; text-align: center; font-size: 35px; left: ${window.innerWidth / 2 + 187.5}px; top: ${window.innerHeight / 2 - 25}px; cursor: pointer; width: 325px; height: 50px; border-radius: 6px; background-color: #0f0;">
-        BUY
+        ${unlockedAtTier[weapon.tier] > player.profile.level ? "LOCKED" : "BUY"}
         </div>
         <div id="buyMenu" style="position: absolute; display: none; color: #fff; top: ${(window.innerHeight / 2) - (225 / 2)}px; left: ${(window.innerWidth / 2) - (425 / 2)}px; width: 425px; height: 225px; background-color: rgb(0, 0, 0, .7);">
         </div>
@@ -6223,6 +6658,7 @@
             }
         }
         document.getElementById("buyModule").onclick = function () {
+            if (unlockedAtTier[weapon.tier] > player.profile.level) return;
             document.body.appendChild(document.getElementById("moneyDisplay"));
             document.getElementById("buyMenu").style.display = "block";
             document.getElementById("storeButton").style.display = "none";
@@ -6495,19 +6931,19 @@
                     document.getElementById("goToPre").style.display = "block";
                 }
             }
-            document.getElementById("goToNext").onmouseover = function() {
+            document.getElementById("goToNext").onmouseover = function () {
                 this.style.backgroundColor = "rgb(255, 255, 255, .45)";
                 document.getElementById("goToNextCon").style.color = "#000";
             }
-            document.getElementById("goToNext").onmouseout = function() {
+            document.getElementById("goToNext").onmouseout = function () {
                 this.style.backgroundColor = "rgb(0, 0, 0, 0.3)";
                 document.getElementById("goToNextCon").style.color = "#fff";
             }
-            document.getElementById("goToPre").onmouseover = function() {
+            document.getElementById("goToPre").onmouseover = function () {
                 this.style.backgroundColor = "rgb(255, 255, 255, .45)";
                 document.getElementById("goToPreCon").style.color = "#000";
             }
-            document.getElementById("goToPre").onmouseout = function() {
+            document.getElementById("goToPre").onmouseout = function () {
                 this.style.backgroundColor = "rgb(0, 0, 0, 0.3)";
                 document.getElementById("goToPreCon").style.color = "#fff";
             }
@@ -6543,8 +6979,8 @@
         Repair Power: ${module.repairUnitPower.type == "percent" ? module.repairUnitPower.power * 100 + "%" : abbreviateNumber(module.repairUnitPower.power)}<br>
         Rate of Repair: ${module.repairUnitPower.rate / 1000} second(s)<br>
         ` : ""}
-        ${module.instantFixPercent ? `Instant Repair: ${module.instantFixPercent*100}%<br>` : ""}
-        ${module.healthMulti ? `Health Boost: ${module.healthMulti*100}%<br>` : ""}
+        ${module.instantFixPercent ? `Instant Repair: ${module.instantFixPercent * 100}%<br>` : ""}
+        ${module.healthMulti ? `Health Boost: ${module.healthMulti * 100}%<br>` : ""}
         Duration: ${module.lastTime / 1000} second(s)<br>
         Reload: ${module.reload / 1000} second(s)<br>
         <p></p>
@@ -6775,10 +7211,11 @@
                 updateMoneyDisplay("sliver", 1e12);
                 updateMoneyDisplay("gold", 10e6);
                 updateMoneyDisplay("keys", 100e3);
-                updateMoneyDisplay("workshopPoints", 200e6);
+                updateMoneyDisplay("workshopPoints", 200e3);
                 updateMoneyDisplay("token 1", 50e3);
                 updateMoneyDisplay("token 2", 50e3);
                 updateMoneyDisplay("token 3", 50e3);
+                updateMoneyDisplay("player_xp", 10000);
             }
             if (document.getElementById("slot" + (parseInt(e.key) - 1))) {
                 document.getElementById("slot" + (parseInt(e.key) - 1)).click();
@@ -6824,14 +7261,7 @@
                 }
             }
         }
-        if (e.key == "=" && player.gameMode >= 0 && players[0] && players[0].oldIndex) {
-            resetDataStuff();
-            document.getElementById("hangerUI").style.display = "none";
-            document.getElementById("sideDisplay").style.display = "block";
-            document.getElementById("goToBattle").style.display = "block";
-            document.getElementById("gameModesDisplay").style.display = "none";
-            document.getElementById("sideDisplay").innerHTML = "";
-            document.getElementById("hangerUI").style.display = "block";
+        if (e.key == "=" && player.gameMode >= 0) {
             document.getElementById("chooseSlot").style.bottom = "-200px";
             document.getElementById("shields").innerHTML = "";
             document.getElementById("abilityCharges").innerHTML = "";
@@ -6840,6 +7270,8 @@
             document.getElementById("weaponThing").style.display = "none";
             document.getElementById("healthBar").style.display = "none";
             document.getElementById("mapName").style.display = "none";
+            endGame([...players], false, true);
+            resetDataStuff();
         }
     });
     document.addEventListener("keyup", (e) => {
@@ -7022,9 +7454,9 @@
         name: "Pink Circle",
         weapons: {
             heavy: "Shocker",
-            light: "Pantagruel"
+            light: "Shatter"
         },
-        modules: ["Last Stand", "Anti Control", "Repair Amplifier", "Repair Amplifier"]
+        modules: ["Last Stand", "Immune Amplifier", "Repair Amplifier", "Repair Amplifier"]
     }, {
         name: "Pink Circle",
         weapons: {
@@ -7032,12 +7464,6 @@
             light: "Slumber"
         },
         modules: ["Last Stand", "Balance Unit", "Repair Amplifier", "Repair Amplifier"]
-    }, {
-        name: "White Hexagon",
-        weapons: {
-            heavy: "Flux",
-        },
-        modules: ["Last Stand", "Arc Reactor", "Balance Unit"]
     }, {
         name: "Yellow Hexagon",
         weapons: {
@@ -7148,7 +7574,7 @@
     var KILLLOGS = [];
     function addLogger(name1, weapon, name2) {
         KILLLOGS.push({ attacker: name1, weapon: weapon, victim: name2 });
-        if (KILLLOGS.length > 7) {
+        if (KILLLOGS.length > 5) {
             KILLLOGS.shift();
         }
     }
@@ -7203,7 +7629,7 @@
         for (let t = 0; t < modules.length; t++) {
             let newModule = new module(modules[t]);
             newModule.level = modules[t].level;
-            robot.baseDP += newModule.baseDefensePoints;
+            if (newModule.baseDefensePoints) robot.baseDP += newModule.baseDefensePoints;
             robot.modules.push(newModule);
         }
         let repairAmps = robot.modules.filter(e => e.name == "Repair Amplifier");
@@ -7231,7 +7657,7 @@
         if (immuneamps.length) {
             robot.immuneAmp = {
                 name: "Immune Amplifier",
-                healthIncrease: (3 * (robot.maxhealth * (immuneamps.sort((a, b) => b.healthIncrease - a.healthIncrease)[0].healthIncrease)))/60,
+                healthIncrease: (3 * (robot.maxhealth * (immuneamps.sort((a, b) => b.healthIncrease - a.healthIncrease)[0].healthIncrease))) / 60,
                 amount: immuneamps.length
             };
         }
@@ -7293,15 +7719,23 @@
             }
         }
     }
-    function setStatAdjustments(statAdjustments, robot, microchips) {
+    function setStatAdjustments(statAdjustments, robot, microchips, drone) {
+        if (drone) {
+            drone.abilities.forEach(e => {
+                if (e.healthIncrease && e.unlockAtLevel <= drone.level) {
+                    statAdjustments.health += e.healthIncrease;
+                }
+            });
+            robot.drone = { ...drone };
+        }
         microchips.forEach(item => {
             if (item.dmgIncrease) {
                 statAdjustments.dmg += item.dmgIncrease;
             }
             if (item.healthIncrease) {
                 if (item.name == "Shape's Stamina") {
-                    robot.healingMulti = 1.5;
-                    robot.increasedAbilityDefenseLaLaLaLa__1 = 2.5;
+                    robot.healingMulti = 1.25;
+                    robot.increasedAbilityDefenseLaLaLaLa__1 = 1.5;
                 }
                 statAdjustments.health += item.healthIncrease;
             }
@@ -7447,7 +7881,7 @@
                     speed: 1,
                     health: 1
                 };
-                setStatAdjustments(statAdjustments, robot, microchips.filter(e => e.owner == orginalRobot.sid));
+                setStatAdjustments(statAdjustments, robot, microchips.filter(e => e.owner == orginalRobot.sid), player.drones.find(e => e.owner == orginalRobot.sid));
                 setShieldsData(robot);
                 adjustStats(robot, statAdjustments);
                 players[0].robots.push(robot);
@@ -7520,7 +7954,7 @@
                             modules.push(Module);
                         }
                         let microchips = [];
-                        for(let i = 0; i < 8; i++) {
+                        for (let i = 0; i < 8; i++) {
                             if (data.microchips[i]) {
                                 let Chip = new microchip(microshipData.find(e => e.name == data.microchips[i]), null, null);
                                 for (let t = 0; t < 3; t++) {
@@ -8068,10 +8502,10 @@
                 knockback: 15
             },
             onKill: {
-                silver: 225e3,
-                gold: 35,
+                silver: 125e3,
+                gold: 15,
                 keys: 50,
-                OXP: 75
+                OXP: 50
             }
         }, {
             name: "Level 3 Boss",
@@ -8085,9 +8519,9 @@
                 fireRate: 100
             },
             onKill: {
-                silver: 850e3,
-                gold: 150,
-                keys: 75,
+                silver: 350e3,
+                gold: 50,
+                keys: 50,
                 OXP: 200
             }
         }, {
@@ -8102,10 +8536,10 @@
                 fireRate: 150
             },
             onKill: {
-                silver: 8e6,
-                gold: 200,
-                keys: 200,
-                OXP: 500
+                silver: 500e3,
+                gold: 75,
+                keys: 100,
+                OXP: 350
             }
         }, {
             name: "Level 5 Boss",
@@ -8114,10 +8548,10 @@
             speed: 0.0018,
             scale: 155,
             onKill: {
-                silver: 15e6,
-                gold: 300,
-                keys: 500,
-                OXP: 750
+                silver: 750e3,
+                gold: 200,
+                keys: 100,
+                OXP: 350
             }
         }, {
             name: "Level 6 Boss",
@@ -8126,10 +8560,10 @@
             speed: 0.004,
             scale: 155,
             onKill: {
-                silver: 30e6,
-                gold: 600,
-                keys: 700,
-                OXP: 1e3
+                silver: 800e3,
+                gold: 350,
+                keys: 100,
+                OXP: 500
             }
         }, {
             name: "Level 7 Boss",
@@ -8138,10 +8572,10 @@
             speed: 0.0014,
             scale: 155,
             onKill: {
-                silver: 40e6,
-                gold: 900,
-                keys: 700,
-                OXP: 1e3
+                silver: 1e6,
+                gold: 450,
+                keys: 500,
+                OXP: 500
             }
         }, {
             name: "Level 8 Boss",
@@ -8150,36 +8584,36 @@
             speed: 0.0014,
             scale: 155,
             onKill: {
-                silver: 30e6,
-                gold: 400,
-                keys: 300,
+                silver: 5e6,
+                gold: 500,
+                keys: 500,
                 OXP: 750,
                 WSP: 500
             }
         }, {
             name: "Level 9 Boss",
             displayName: "Trickister",
-            health: 5e6,
+            health: 3e6,
             speed: 0.002,
             scale: 105,
             onKill: {
-                silver: 100e6,
+                silver: 10e6,
                 gold: 500,
-                keys: 400,
-                OXP: 750,
+                keys: 500,
+                OXP: 500,
                 WSP: 500
             }
         }, {
             name: "Level 10 Boss",
             displayName: "Bastion",
-            health: 25e6,
+            health: 15e6,
             speed: 0.002,
             scale: 405,
             onKill: {
-                silver: 5e9,
-                gold: 5e3,
-                keys: 20e3,
-                OXP: 1e3,
+                silver: 20e6,
+                gold: 1e3,
+                keys: 500,
+                OXP: 500,
                 WSP: 500
             }
         }]
@@ -8578,8 +9012,8 @@
             this.extraShieldHealth = data.extraShieldHealthData ? data.extraShieldHealthData[0] : data.extraShieldHealth;
             this.onAbilityUseFix = data.onAbilityUseFixData ? data.onAbilityUseFixData[0] : data.onAbilityUseFix;
             this.extraAbilityDamage = data.extraAbilityDamageData ? data.extraAbilityDamageData[0] : data.extraAbilityDamage;
-            this.increaseSpeedOfPinkishRedAbility = data.increaseSpeedOfPinkishRedAbilityData  ? data.increaseSpeedOfPinkishRedAbilityData[0] : data.increaseSpeedOfPinkishRedAbility;
-            this.increaseEffectivenessOfRedOrangeCircle = data.increaseEffectivenessOfRedOrangeCircleData  ? data.increaseEffectivenessOfRedOrangeCircleData[0] : data.increaseEffectivenessOfRedOrangeCircle;
+            this.increaseSpeedOfPinkishRedAbility = data.increaseSpeedOfPinkishRedAbilityData ? data.increaseSpeedOfPinkishRedAbilityData[0] : data.increaseSpeedOfPinkishRedAbility;
+            this.increaseEffectivenessOfRedOrangeCircle = data.increaseEffectivenessOfRedOrangeCircleData ? data.increaseEffectivenessOfRedOrangeCircleData[0] : data.increaseEffectivenessOfRedOrangeCircle;
             this.onAbilityUseDefense = data.onAbilityUseDefenseData ? data.onAbilityUseDefenseData[0] : data.onAbilityUseDefense;
             this.onAbilityUseAttack = data.onAbilityUseAttackData ? data.onAbilityUseAttackData[0] : data.onAbilityUseAttack;
             this.onKillHeal = data.onKillHealData ? data.onKillHealData[0] : data.onKillHeal;
@@ -9043,7 +9477,6 @@
         }
         document.getElementById("close").onclick = function () {
             element.style.display = "none";
-            button.style.display = "block";
         }
         document.getElementById("change").onclick = function () {
             document.getElementById("microPage1").style.display = "none";
@@ -9255,36 +9688,738 @@
         };
         updateMicroDis();
     }
+    function returnStyledName(data, text) {
+        if (data.name && (data.name.includes("ULTIMATE") || data.name.includes("Ultimate"))) {
+            text = text.replaceAll("Ultimate", "<span style='color: #ffff00;'>ULTIMATE</span>");
+            text = text.replaceAll("ULTIMATE", "<span style='color: #ffff00;'>ULTIMATE</span>");
+        }
+        return text;
+    }
+    class drone {
+        constructor(data, ownerSID = null) {
+            this.name = data.name;
+            this.owner = ownerSID;
+            this.level = 1;
+            this.desc = data.desc;
+            this.tier = data.tier;
+            this.effects = [];
+            this.visualData = { ...data.visualData };
+            this.abilities = [];
+            for (let i = 0; i < data.abilities.length; i++) {
+                let _ = data.abilities[i];
+                if (_) {
+                    let obj = {
+                        name: _.name,
+                        reload: _.reload,
+                        desc: _.desc,
+                        icon: _.icon,
+                        main: _.main
+                    };
+                    obj.unlockAtLevel = _.unlockAtLevel;
+                    if (_.name == "On Mild Damage: Fix") {
+                        obj.required = _.required;
+                        obj.in = _.in;
+                        obj.healing = _.healingData ? _.healingData.base : _.healing;
+                    } else if (["On High Damage: [P_Shield]", "On Low Durability: [Y_Shield]", "On Mild Damage: [B_Shield]"].includes(_.name)) {
+                        obj.required = _.required;
+                        obj.in = _.in;
+                        obj.duration = _.duration;
+                        obj.oneTimeUse = _.oneTimeUse;
+                        obj.type = _.type;
+                        obj.shielding = _.shieldingData ? _.shieldingData.base : _.shielding;
+                    } else if (obj.name == "On Deployment: Durability") {
+                        obj.healthIncrease = _.healthIncreaseData ? _.healthIncreaseData.base : _.healthIncrease;
+                    } else if (["On Kill: Defense", "On Beacon Capture: Defense"].includes(obj.name)) {
+                        obj.defenseIncrease = _.defenseIncrease;
+                    }
+                    this.abilities.push(obj);
+                }
+            }
+            if (this.tier == 0) {
+                this.cost = 1e3;
+                this.maxLevel = 3;
+            } else if (this.tier == 1) {
+                this.cost = 5e3;
+                this.maxLevel = 6;
+            } else if (this.tier == 2) {
+                this.cost = 25e3;
+                this.maxLevel = 9;
+            } else if (this.tier == 3) {
+                this.cost = 75e3;
+                this.maxLevel = 12;
+            } else {
+                this.cost = 125e3;
+                this.maxLevel = 15;
+            }
+        }
+    }
+    var dronesData = [{
+        tier: 0,
+        name: "Starter",
+        desc: "The first drone ever made. It may be small, but it still has potential.",
+        visualData: {
+            scale: 25,
+            color: "#808080",
+            name: "Circle"
+        },
+        abilities: [{
+            name: "On Mild Damage: Fix",
+            desc: "After the shape takes X amount of damage, instantly repairs X durability.",
+            required: 70e3,
+            in: 5e3,
+            icon: "./images/modules/self_fix_unit.png",
+            reload: 5e3,
+            main: "healing",
+            healingData: {
+                base: 12e3,
+                level: [0, 1e3, 2e3]
+            }
+        }]
+    }, {
+        tier: 0,
+        name: "Defender",
+        desc: "You like your gadgets big and powerful? Then it's Defender you want. It's huge (well, for a drone) and a trusted ally that always has your back.",
+        visualData: {
+            scale: 35,
+            color: "#00f",
+            name: "Circle"
+        },
+        abilities: [{
+            name: "On Mild Damage: [B_Shield]",
+            desc: "After the shape takes X amount of damage, activates a blue shield.",
+            required: 70e3,
+            in: 5e3,
+            icon: "./images/modules/fortifier.png",
+            reload: 5e3,
+            main: "shielding",
+            type: "energy",
+            shieldingData: {
+                base: 20e3,
+                level: [0, 5e3, 5e3]
+            }
+        }]
+    }, {
+        tier: 1,
+        name: "Good Guy",
+        desc: "All you need to stop a bad guy with a gun is a Good Guy with an yellow shield.",
+        visualData: {
+            scale: 25,
+            color: "#00ffff",
+            name: "Pentagon"
+        },
+        abilities: [{
+            name: "On Low Durability: [Y_Shield]",
+            desc: "After the shape drops to or below 30%, activates a yellow shield.",
+            icon: "./images/modules/fortifier.png",
+            oneTimeUse: true,
+            main: "shielding",
+            type: "yellow",
+            shieldingData: {
+                base: 12e3,
+                level: [0, 1600, 1600, 1600, 1600, 1600]
+            }
+        }, {
+            name: "On Deployment: Durability",
+            desc: "Increases the shape's max durability by X%.",
+            unlockAtLevel: 4,
+            icon: "./images/modules/armor_plating.png",
+            main: "healthIncrease",
+            healthIncrease: .03
+        }]
+    }, {
+        tier: 2,
+        name: "Nebula",
+        desc: "When the engineers of the Circle Industry took a long time to perfect Nebula and they did it, let's not say what it cost. And now this drone will help you defeat the Ego of your enemies!",
+        visualData: {
+            scale: 25,
+            color: "#800080",
+            name: "Circle"
+        },
+        abilities: [{
+            name: "On Mild Damage: Fix",
+            desc: "After the shape takes X amount of damage, instantly repairs X durability.",
+            icon: "./images/modules/self_fix_unit.png",
+            main: "healing",
+            required: 70e3,
+            in: 5e3,
+            reload: 5e3,
+            healingData: {
+                base: 30e3,
+                level: [0, 3750, 3750, 3750, 3750, 3750, 3750, 3750, 3750]
+            }
+        }, {
+            name: "On Deployment: Durability",
+            desc: "Increases the shape's max durability by X%.",
+            unlockAtLevel: 4,
+            icon: "./images/modules/armor_plating.png",
+            main: "healthIncrease",
+            healthIncrease: .05
+        }, {
+            name: "On High Damage: [P_Shield]",
+            unlockAtLevel: 9,
+            desc: "After the shape takes X amount of damage, activates a purple shield.",
+            required: 150e3,
+            in: 5e3,
+            duration: 1e3,
+            icon: "./images/modules/fortifier.png",
+            reload: 20e3,
+            main: "shielding",
+            type: "purple",
+            shielding: 1
+        }]
+    }, {
+        tier: 3,
+        name: "Armadillo",
+        desc: "Do you need more protection? Then you've come to the right place! Our Armadillo can easily help you survive the next machine gun fire or a missile blast to your shape. It doesn't matter what style of play you choose. He likes capturing beacons and destroying enemies in all of them.",
+        visualData: {
+            scale: 25,
+            color: "#ffff00",
+            name: "Circle"
+        },
+        abilities: [{
+            name: "On Mild Damage: Fix",
+            desc: "After the shape takes X amount of damage, instantly repairs X durability.",
+            icon: "./images/modules/self_fix_unit.png",
+            main: "healing",
+            required: 70e3,
+            in: 5e3,
+            reload: 10e3,
+            healingData: {
+                base: 30e3,
+                level: [0, 3750, 3750, 3750, 3750, 3750, 13750, 13750, 13750, 13750, 13800, 32450]
+            }
+        }, {
+            name: "On Deployment: Durability",
+            desc: "Increases the shape's max durability by X%.",
+            unlockAtLevel: 4,
+            icon: "./images/modules/armor_plating.png",
+            main: "healthIncrease",
+            healthIncrease: .1
+        }, {
+            name: "On Beacon Capture: Defense",
+            unlockAtLevel: 9,
+            desc: "The shape gains extra defense points per beacon capture.",
+            icon: "./images/modules/fortifier.png",
+            main: "defenseIncrease",
+            reload: 10e3,
+            defenseIncrease: 5
+        }, {
+            name: "On Kill: Defense",
+            desc: "The shape gains extra defense points per kill.",
+            unlockAtLevel: 12,
+            icon: "./images/modules/fortifier.png",
+            main: "defenseIncrease",
+            reload: 10e3,
+            defenseIncrease: 5
+        }]
+    }];
+    var DRONEAJDOIASJDISAOJDAOSDJ = drone;
+    function upgradeDrone(drone, currentIndex, drones, noEz, isBOT, shape, inInventory) {
+        let Drone = dronesData.find(item => item.name == drone.name);
+        if (Drone) {
+            let ab1 = Drone.abilities[0];
+            let dataLocation = ab1.main + "Data";
+            let numbers = ab1[dataLocation];
+            if (numbers && numbers.level[drone.level]) {
+                drone.abilities[0][ab1.main] += numbers.level[drone.level];
+            }
+        }
+        drone.level++;
+        if (!noEz) {
+            drones[currentIndex].level++;
+            drawDroneDisplay(drones, currentIndex, true, shape, inInventory);
+        }
+        if (!noEz) updateSlots();
+        if (!noEz) saveGameData();
+    }
+    function getStylesForBarD(value, name) {
+        if (name == "On Mild Damage: Fix") {
+            return abbreviateNumber(value);
+        } else if (name == "On Deployment: Durability") {
+            return (value * 100) + "%";
+        } else if (name.includes("On High Damage: [") || name.includes("On Low Durability: [") || name.includes("On Mild Damage: [")) {
+            return abbreviateNumber(value);
+        } else {
+            return value;
+        }
+    }
+    function enterBarForDrone(name, index, data, level) {
+        let text = "";
+        let Drone = dronesData.find(item => item.name == name);
+        let Data = Drone.abilities[index];
+        let dataLocation = Data.main + "Data";
+        let numbers = Data[dataLocation];
+        let currentNumber = data[Data.main];
+        let maxwidth = window.innerWidth >= 1442 ? 500 : window.innerWidth >= 1374 ? 450 : window.innerWidth >= 1311 ? 400 : window.innerWidth >= 1245 ? 350 : window.innerWidth >= 1182 ? 300 : 250;
+        let maxdmg = numbers.base;
+        for (let i = 0; i < numbers.level.length; i++) {
+            maxdmg += numbers.level[i];
+        }
+        let indexAdjust = ((Math.abs(currentNumber) / maxdmg) * maxwidth) / maxwidth;
+        let indexAdjusted = (((Math.abs(currentNumber) + Math.abs(numbers.level[level])) / maxdmg) * maxwidth) / maxwidth;
+        text = `
+        <div style="position: relative; width: ${maxwidth}px;">
+        ${data.name}: ${getStylesForBarD(data[Data.main], data.name)}
+        <div style="display: ${numbers.level[level] ? "block" : "none"}; position: absolute; top: 0px; right: 0px; color: #00ff00;">
+        +${getStylesForBarD(numbers.level[level], data.name)}
+        </div>
+        </div>
+        <div style="position: relative; width: ${maxwidth}px; height: 3px; background-color: #fff;">
+        <div style="position: absolute; top: 0px; left: 0px; height: 3px; width: ${indexAdjusted * 100}%; background-color: #02de02;">
+        </div>
+        <div style="position: absolute; top: 0px; left: 0px; height: 3px; width: ${indexAdjust * 100}%; background-color: #00fcec;">
+        </div>
+        </div>
+        `;
+        return text;
+    }
+    var droneCost = [0, 2000, 4000, 6000, 8000, 10000, 12000, 14000, 16000, 20000, 24000, 28000, 32000, 36000];
+    function drawDroneDisplay(modules, index, HA, shape, inInventory) {
+        let Weapon = modules[index];
+        if (!Weapon) return;
+        let newWeapon = dronesData.find(e => Weapon.name == e.name);
+        let weapon = new DRONEAJDOIASJDISAOJDAOSDJ(newWeapon);
+        for (let i = 0; i < Weapon.level - 1; i++) {
+            upgradeDrone(weapon, false, false, true);
+        }
+        let currentIndex = index;
+        document.getElementById("WEAPONdisplay").innerHTML = `
+        <div style="position: absolute; top: 0px; left: 0px; width: 100%; height: 100%; background-image: linear-gradient(rgb(0, 0, 0, 0), ${tierColor(weapon)});">
+        </div>
+        <div id="weaponImage" style="position: absolute; top: ${window.innerHeight / 2 - 187.5}px; left: ${window.innerWidth / 2 - 187.5}px; height: 375px; width: 375px;">
+        </div>
+        <div style="display: ${Weapon.amount == "main" ? "none" : "block"};position: absolute; text-align: center; top: ${window.innerHeight / 2 + 187.5}px; left: ${window.innerWidth / 2 - 187.5}px; height: 50px; width: 375px;">
+        In Stock: ${!inInventory ? player.drones.filter(e => e.name == Weapon.name).length : Weapon.amount}
+        </div>
+        <div style="position: absolute; display: flex; align-items: center; font-size: 30px; top: ${window.innerHeight / 2 - 237.5}px; border-radius: 25px; left: ${window.innerWidth / 2 - 187.5}px; height: 50px; width: 375px; background-color: rgb(0, 0, 0, .25);">
+        <div style="position: absolute; display: flex; align-items: center; top: 0px; left: 0px; width: 50px; height: 50px; border-radius: 100%; background-color: ${tierColor(weapon)};">
+        <div style="width: 100%; color: #fff; font-size: 30px; text-align: center;">${weapon.level}</div>
+        </div>
+        <div style="width: 100%; text-align: center;">
+        <span style="color: #fff">${weapon.name}</span>
+        </div>
+        </div>
+        <div id="Unequip" style="display: ${Weapon.amount == "main" ? "block" : "none"}; position: absolute; color: #fff; text-align: center; font-size: 35px; left: ${window.innerWidth / 2 + 5}px; bottom: 20px; cursor: pointer; width: 325px; height: 50px; border-radius: 6px; background-color: #f00;">
+        UNEQUIP
+        </div>
+        <div id="Equip" style="display: ${Weapon.amount == "main" ? "none" : inInventory ? "block" : "none"}; position: absolute; color: #fff; text-align: center; font-size: 35px; left: ${window.innerWidth / 2 + 5}px; bottom: 20px; cursor: pointer; width: 325px; height: 50px; border-radius: 6px; background-color: #0f0;">
+        EQUIP
+        </div>
+        <div id="Upgrade" style="position: absolute; display: ${!inInventory ? "none" : "block"}; color: #fff; text-align: center; font-size: 35px; left: ${window.innerWidth / 2 - 325}px; bottom: 20px; cursor: pointer; width: 325px; height: 50px; border-radius: 6px; background-color: #0f0;">
+        UPGRADE
+        </div>
+        <div id="upgradeMenu" style="z-index: 2; position: absolute; color: #fff; display: none; top: 12.5%; left: 12.5%; width: 75%; height: 75%; background-color: rgb(0, 0, 0, .7);">
+        </div>
+        <div style="position: absolute; bottom: 100px; left: 12.5%; width: 75%; height: 6px; background-color: #fff; border-radius: 4px; overflow: hidden;">
+        <div style="position: absolute; top: 0px; left: ${(1 / modules.length) * 100 * currentIndex}%; width: ${(1 / modules.length) * 100}%; height: 100%; background-color: #00dbcd;">
+        </div>
+        </div>
+        <div id="backButton" style="position: absolute; cursor: pointer; text-align: center; font-size: 40px; color: #fff; left: 20px; bottom: 20px; width: 150px; height: 60px; background-color: rgb(124, 124, 124, 1); border: solid; border-color: #fff; border-radius: 6px;">
+        BACK
+        </div>
+        <div id="buyDrone" style="position: absolute; display: ${!inInventory ? "block" : "none"}; color: #fff; text-align: center; font-size: 35px; left: ${window.innerWidth / 2 - 125}px; bottom: 20px; cursor: pointer; width: 250px; height: 50px; border-radius: 6px; background-color: ${unlockedAtTier[weapon.tier] > player.profile.level ? "#808080" : "#0f0"};">
+        ${unlockedAtTier[weapon.tier] > player.profile.level ? "LOCKED" : "BUY"}
+        </div>
+        <div id="buyMenu" style="position: absolute; display: none; color: #fff; top: ${(window.innerHeight / 2) - (225 / 2)}px; left: ${(window.innerWidth / 2) - (425 / 2)}px; width: 425px; height: 225px; background-color: rgb(0, 0, 0, .7);">
+        </div>
+        `;
+        let newThing = new DRONEAJDOIASJDISAOJDAOSDJ(weapon);
+        newThing.visualData.scale = weapon.visualData.scale * 10;
+        newThing.visualData.increaseLine = 10;
+        let image = getShapeSprite(newThing.visualData, true);
+        image.style = "width: 100%; height: 100%;";
+        document.getElementById("weaponImage").appendChild(image);
+        for (let i = 0; i < weapon.abilities.length; i++) {
+            let data = weapon.abilities[i];
+            if (data) {
+                let element = document.createElement("div");
+                element.style = `
+                position: absolute;
+                top: ${(window.innerHeight / 2 - (325 / 2)) + (i * 85)}px;
+                left: ${window.innerWidth / 2 - 487.5}px;
+                width: 325px;
+                height: 80px;
+                background-color: rgb(0, 0, 0, .25);
+                border-radius: 6px;
+                `;
+                let text = "", tex2 = "";
+                text = abbreviateNumber(data[data.main]);
+                if (data.main == "healing") {
+                    tex2 = `
+                    <div style="position: absolute; bottom: 0px;">
+                    <span class="material-symbols-outlined" style="font-size: 20px;">
+                    healing
+                    </span>
+                    </div>
+                    <div style="position: absolute; left: 20px; bottom: -2.5px;">
+                    ${text}
+                    </div>
+                    `;
+                } else if (data.main == "shielding" || data.main == "defenseIncrease") {
+                    tex2 = `
+                    <div style="position: absolute; bottom: 0px;">
+                    <span class="material-symbols-outlined" style="font-size: 20px;">
+                    shield
+                    </span>
+                    </div>
+                    <div style="position: absolute; left: 20px; bottom: -2.5px;">
+                    ${text}
+                    </div>
+                    `;
+                } else if (data.main == "healthIncrease") {
+                    tex2 = `
+                    <div style="position: absolute; bottom: 0px;">
+                    <span class="material-symbols-outlined" style="font-size: 20px;">
+                    health_and_safety
+                    </span>
+                    </div>
+                    <div style="position: absolute; left: 20px; bottom: -2.5px;">
+                    ${text * 100}%
+                    </div>
+                    `;
+                }
+                element.innerHTML = `
+                <div style="position: absolute; left: 0px; top: 0px; width: 80px; height: 80px; background-size: 80px 80px; background-image: url('${data.icon}');">
+                ${data.unlockAtLevel > weapon.level ? `
+                <div style="position: absolute; top: 5px; left: 5px; width: 30px; height: 30px; background-color: rgb(255, 255, 255, .6); border-radius: 100%;">
+                <span class="material-symbols-outlined" style="font-size: 30px;">
+                lock
+                </span>
+                </div>
+                ` : ""}
+                </div>
+                <div style="position: absolute; left: 85px; top: 10px; white-space: nowrap; font-size: 20px; width: 230px; max-height: 27.5px; height: 27.5px; overflow-x: scroll;">
+                ${data.name}
+                </div>
+                <div style="position: absolute; left: 85px; bottom: 15px; font-size: 20px;">
+                ${tex2}
+                </div>
+                `;
+                document.getElementById("WEAPONdisplay").appendChild(element);
+            }
+        }
+        document.getElementById("Upgrade").onclick = function () {
+            document.body.appendChild(document.getElementById("moneyDisplay"));
+            document.getElementById("upgradeMenu").style.display = "block";
+            document.getElementById("storeButton").style.display = "none";
+            document.getElementById("inventoryButton").style.display = "none";
+            let width = window.innerWidth * .75;
+            let height = window.innerHeight * .75;
+            let box = (width / 2) - 80;
+            document.getElementById("upgradeMenu").innerHTML = `
+            <div id="lo____l" style="position: absolute; cursor: pointer; top: 5px; right: 10px;">
+            x
+            </div>
+            <div style="position: absolute; top: 7px; left: 10px; width: ${width - 10}px;">
+            <div style="position: absolute; top: 0px; left: 0px; text-align: center; color: #fff; font-size: 25px; border-radius: 100%; width: 40px; height: 40px; background-color: ${tierColor(weapon)};">
+            ${weapon.level}
+            </div>
+            <div style="position: absolute; top: 2px; left: 45px; color: #fff; font-size: 24px;">
+            <strong>
+            ${weapon.name}
+            </strong>
+            </div>
+            </div>
+
+            <div id="UPGRADE" style="z-index: 5; position: absolute; width: 200px; height: 80px; cursor: pointer; left: ${width / 2 - 100}px; bottom: 10px; background-color: ${weapon.maxLevel > weapon.level ? "#00ff00" : "#808080"};">
+            <div style="width: 100%; text-align: center; color: #fff; font-size: ${weapon.maxLevel > weapon.level ? 24 : 40}px; margin-top: ${weapon.maxLevel > weapon.level ? 5 : 10}px;">${weapon.maxLevel > weapon.level ? "UPGRADE" : "MAXED"}</div>
+            <div style="display: ${weapon.maxLevel > weapon.level ? "block" : "none"}; width: 100%; text-align: center; font-size: 12px;">${abbreviateNumber(droneCost[weapon.level])} WKSP</div>
+            </div>
+
+            <div id="image" style="position: absolute; left: 40px; height: ${box}px; width: ${box}px; top: ${height / 2 - (box / 2)}px;">
+            </div>
+            <div id="skillText" style="position: absolute; right: 0px; height: ${height - 80}px; width: ${width / 2}px; top: 40px;">
+            </div>
+            `;
+            let e = document.getElementById("skillText");
+            let maxwidth = window.innerWidth >= 1442 ? 500 : window.innerWidth >= 1374 ? 450 : window.innerWidth >= 1311 ? 400 : window.innerWidth >= 1245 ? 350 : window.innerWidth >= 1182 ? 300 : 250;
+            for (let i = 0; i < weapon.abilities.length; i++) {
+                let data = weapon.abilities[i];
+                if (data) {
+                    if (i == 0) {
+                        e.innerHTML += `
+                        ${enterBarForDrone(weapon.name, i, data, weapon.level)}
+                        `;
+                    } else {
+                        e.innerHTML += `
+                        <div style="position: absolute; width: ${maxwidth}px; top: ${29.5 + ((i - 1) * 55)}; height: 50px; background-color: rgb(255, 255, 255, .4); border-radius: 6px;">
+                        <div style="position: absolute; left: 0px; top: 0px; width: 50px; height: 50px; background-size: 50px 50px; background-image: url('${data.icon}');">
+                        </div>
+
+                        <div style="position: absolute; left: 55px; top: 2.5px;">
+                        ${data.name}<br>
+                        ${data.unlockAtLevel > weapon.level ? `Unlock at level: ${data.unlockAtLevel}` : "Unlocked"}
+                        </div>
+                        <div style="position: absolute; font-size: 35px; right: 5px; top: 0px;">
+                        ${getStylesForBarD(data[data.main], data.name)}
+                        </div>
+                        </div>
+                        `;
+                    }
+                }
+            }
+            let image = getShapeSprite(newThing.visualData, true);
+            image.style = "width: 100%; height: 100%;";
+            document.getElementById("image").appendChild(image);
+            document.getElementById("UPGRADE").onclick = function () {
+                let weapon = player.drones.find(e => e.name == Weapon.name && (Weapon.amount == "main" ? shape.sid == e.owner : true) && e.level == Weapon.level);
+                if (weapon.maxLevel > weapon.level && droneCost[weapon.level]) {
+                    if (player.workshopPoints - droneCost[weapon.level] >= 0) {
+                        updateMoneyDisplay("workshopPoints", -droneCost[weapon.level]);
+                        upgradeDrone(weapon, currentIndex, modules, false, false, shape, inInventory);
+                    }
+                }
+            }
+            document.getElementById("lo____l").onclick = function () {
+                document.getElementById("hangerUI").appendChild(document.getElementById("moneyDisplay"));
+                document.getElementById("upgradeMenu").style.display = "none";
+                document.getElementById("storeButton").style.display = "block";
+                document.getElementById("inventoryButton").style.display = "block";
+            }
+        }
+        document.getElementById("Equip").onclick = function () {
+            let old = player.drones.find(e => e.owner == shape.sid);
+            if (old) {
+                old.owner = null;
+            }
+            let neww = player.drones.find(e => e.owner == null && e.level == weapon.level);
+            if (neww) {
+                neww.owner = shape.sid;
+                if (shape.slot >= 0 && shape.slot !== null && shape.slot !== undefined) {
+                    document.getElementById("slot" + shape.slot).click();
+                    document.getElementById("hangerUI").appendChild(document.getElementById("moneyDisplay"));
+                } else {
+                    document.getElementById("hangerUI").style.display = "block";
+                    document.getElementById("sideDisplay").innerHTML = "";
+                    document.getElementById("hangerUI").appendChild(document.getElementById("moneyDisplay"));
+                }
+            }
+        }
+        document.getElementById("Unequip").onclick = function () {
+            if (Weapon.amount == "main") {
+                let thing = player.drones.find(e => e.owner == shape.sid);
+                if (thing) {
+                    thing.owner = null;
+                    if (shape.slot >= 0 && shape.slot !== null && shape.slot !== undefined) {
+                        document.getElementById("slot" + shape.slot).click();
+                        document.getElementById("hangerUI").appendChild(document.getElementById("moneyDisplay"));
+                    } else {
+                        document.getElementById("hangerUI").style.display = "block";
+                        document.getElementById("sideDisplay").innerHTML = "";
+                        document.getElementById("hangerUI").appendChild(document.getElementById("moneyDisplay"));
+                    }
+                }
+            }
+        }
+        document.getElementById("buyDrone").onclick = function () {
+            if (unlockedAtTier[weapon.tier] > player.profile.level) return;
+            document.body.appendChild(document.getElementById("moneyDisplay"));
+            document.getElementById("buyMenu").style.display = "block";
+            document.getElementById("storeButton").style.display = "none";
+            document.getElementById("inventoryButton").style.display = "none";
+            let num = 60;
+            document.getElementById("buyMenu").innerHTML = `
+            <div style="width: 100%; text-align: center; font-size: 30px;">
+            Confirm Purchase
+            </div>
+            <hr>
+            <div id="lo____l" style="position: absolute; cursor: pointer; top: 5px; right: 10px;">
+            x
+            </div>
+
+            <div style="position: absolute; top: ${num}px; left: ${425 / 2 - 62.5}px; border: solid; border-color: #fff; border-radius: 6px; width: 125px; height: 35px; background-color: rgb(0, 0, 0, 0.2);">
+            <div style="position: absolute; top: 0px; left: 0px; width: 35px; height: 35px; background-size: 35px 35px; background-image: url('./images/icons/workshop.png');">
+            </div>
+            <div style="position: absolute; top: 6.75px; left: 40px; color: #fff;">
+            ${abbreviateNumber(newThing.cost)}
+            </div>
+            </div>
+
+            <div id="confirm" style="position: absolute; cursor: pointer; font-size: 24px; text-align: center; bottom: 10px; left: ${425 / 2 - 75}px; width: 150px; border-radius: 6px; height: 40px; background-color: #0f0;">
+            Confirm
+            </div>
+            `;
+            document.getElementById("confirm").onclick = function () {
+                if (player.workshopPoints - weapon.cost >= 0) {
+                    updateMoneyDisplay("workshopPoints", -weapon.cost);
+                    let oldWeapon = player.drones.find(e => e.owner == shape.sid);
+                    if (oldWeapon) {
+                        oldWeapon.owner = null;
+                    }
+                    player.drones.push(new DRONEAJDOIASJDISAOJDAOSDJ(weapon, shape.sid));
+                    console.log(player.drones.filter(e => e.owner == shape.sid));
+                    if (shape.slot >= 0 && shape.slot !== null && shape.slot !== undefined) {
+                        document.getElementById("slot" + shape.slot).click();
+                        document.getElementById("dronesButton").click();
+                        document.getElementById("hangerUI").appendChild(document.getElementById("moneyDisplay"));
+                    } else {
+                        document.getElementById("hangerUI").style.display = "block";
+                        document.getElementById("sideDisplay").innerHTML = "";
+                        document.getElementById("hangerUI").appendChild(document.getElementById("moneyDisplay"));
+                    }
+                    saveGameData();
+                }
+            }
+            document.getElementById("lo____l").onclick = function () {
+                document.getElementById("hangerUI").appendChild(document.getElementById("moneyDisplay"));
+                document.getElementById("buyMenu").style.display = "none";
+                document.getElementById("storeButton").style.display = "block";
+                document.getElementById("inventoryButton").style.display = "block";
+            }
+        }
+        document.getElementById("backButton").onclick = function () {
+            if (shape.slot >= 0 && shape.slot !== null && shape.slot !== undefined) {
+                document.getElementById("slot" + shape.slot).click();
+                document.getElementById("hangerUI").appendChild(document.getElementById("moneyDisplay"));
+            } else {
+                document.getElementById("hangerUI").style.display = "block";
+                document.getElementById("sideDisplay").innerHTML = "";
+                document.getElementById("hangerUI").appendChild(document.getElementById("moneyDisplay"));
+            }
+        }
+        if (HA) {
+            document.getElementById("Upgrade").click();
+        }
+    }
+    function customizeDrones(drone, shape) {
+        let filteredWeapons = [];
+        let f = player.drones.filter(e => e.owner == null).sort((a, b) => b.level - a.level).sort((a, b) => b.tier - a.tier);
+        for (let i = 0; i < f.length; i++) {
+            let item = f[i];
+            if (filteredWeapons.find(e => e.name == item.name && e.level == item.level)) {
+                let index = filteredWeapons.findIndex(e => e.name == item.name && e.level == item.level);
+                filteredWeapons[index].amount++;
+            } else {
+                filteredWeapons.push({
+                    name: item.name,
+                    level: item.level,
+                    amount: 1
+                });
+            }
+        }
+        if (drone) {
+            filteredWeapons.unshift({
+                name: drone.name,
+                level: drone.level,
+                amount: "main"
+            });
+        }
+        let currentIndex = 0;
+        document.getElementById("sideDisplay").innerHTML = `
+        <div id="WEAPONdisplay" style="position: absolute; left: 0px; top: 0px; width: 100%; height: 100%;">
+        </div>
+        <div id="goToPre" style="display: none; position: absolute; cursor: pointer; left: 10px; top: ${window.innerHeight / 2 - 200}px; width: 40px; height: 400px; background-color: rgb(0, 0, 0, 0.3); border-radius: 8px;">
+        <div id="goToPreCon" style="color: #fff; position: absolute; width: 40px; text-align: center; left: 0px; top: ${200 - 20}px;">
+        <span class="material-symbols-outlined" style="font-size: 40px;">
+        navigate_before
+        </span>
+        </div>
+        </div>
+        <div id="goToNext" style="position: absolute; transition: .25s; cursor: pointer; right: 10px; top: ${window.innerHeight / 2 - 200}px; width: 40px; height: 400px; background-color: rgb(0, 0, 0, 0.3); border-radius: 8px;">
+        <div id="goToNextCon" style="color: #fff; position: absolute; width: 40px; text-align: center; left: 0px; top: ${200 - 20}px;">
+        <span class="material-symbols-outlined" style="font-size: 40px;">
+        navigate_next
+        </span>
+        </div>
+        </div>
+        <div id="inventoryButton" style="position: absolute; text-align: center; font-size: 25px; color: #000; left: ${window.innerWidth / 2 - 165}px; top: 30px; border-radius: 6px; height: 42.5px; padding-top: 7.5px; width: 150px; background-color: rgb(255, 255, 255, .6);">
+        INVENTORY
+        </div>
+        <div id="storeButton" style="position: absolute; text-align: center; font-size: 35px; cursor: pointer; color: #fff; left: ${window.innerWidth / 2 + 20}px; top: 30px; border-radius: 6px; height: 50px; width: 150px; background-color: rgb(0, 0, 0, .4);">
+        STORE
+        </div>
+        `;
+        let inInventory = true;
+        let diiiisbled = false;
+        document.getElementById("inventoryButton").onclick = function () {
+            if (!diiiisbled) {
+                this.style.cursor = null;
+                this.style.color = "#000";
+                this.style.backgroundColor = "rgb(255, 255, 255, .6)";
+                document.getElementById("goToPre").style.display = "none";
+                document.getElementById("goToNext").style.display = "block";
+                document.getElementById("storeButton").style.cursor = "pointer";
+                document.getElementById("storeButton").style.color = "#fff";
+                document.getElementById("storeButton").style.backgroundColor = "rgb(0, 0, 0, .4)";
+                currentIndex = 0;
+                inInventory = true;
+                drawDroneDisplay(inInventory ? filteredWeapons : dronesData.sort((a, b) => a.tier - b.tier), currentIndex, false, shape, inInventory);
+            }
+        };
+        document.getElementById("storeButton").onclick = function () {
+            this.style.cursor = null;
+            this.style.color = "#000";
+            this.style.backgroundColor = "rgb(255, 255, 255, .6)";
+            document.getElementById("goToPre").style.display = "none";
+            document.getElementById("goToNext").style.display = "block";
+            document.getElementById("inventoryButton").style.cursor = "pointer";
+            document.getElementById("inventoryButton").style.color = "#fff";
+            document.getElementById("inventoryButton").style.backgroundColor = "rgb(0, 0, 0, .4)";
+            currentIndex = 0;
+            inInventory = false;
+            drawDroneDisplay(inInventory ? filteredWeapons : dronesData.sort((a, b) => a.tier - b.tier), currentIndex, false, shape, inInventory);
+        };
+        if (filteredWeapons.length == 0) {
+            document.getElementById("storeButton").click();
+            document.getElementById("inventoryButton").style.cursor = null;
+            diiiisbled = true;
+        }
+        drawDroneDisplay(filteredWeapons, 0, false, shape, inInventory);
+        if (!(inInventory ? filteredWeapons[currentIndex - 1] : dronesData[currentIndex - 1])) {
+            document.getElementById("goToPre").style.display = "none";
+        }
+        document.getElementById("goToPre").onclick = function () {
+            currentIndex--;
+            drawDroneDisplay(inInventory ? filteredWeapons : dronesData.sort((a, b) => a.tier - b.tier), currentIndex, false, shape, inInventory);
+            if (!(inInventory ? filteredWeapons[currentIndex - 1] : dronesData[currentIndex - 1])) {
+                document.getElementById("goToPre").style.display = "none";
+            } else {
+                document.getElementById("goToPre").style.display = "block";
+            }
+            if (!(inInventory ? filteredWeapons[currentIndex + 1] : dronesData[currentIndex + 1])) {
+                document.getElementById("goToNext").style.display = "none";
+            } else {
+                document.getElementById("goToNext").style.display = "block";
+            }
+        }
+        if (!(inInventory ? filteredWeapons[currentIndex + 1] : dronesData[currentIndex + 1])) {
+            document.getElementById("goToNext").style.display = "none";
+        }
+        document.getElementById("goToNext").onclick = function () {
+            currentIndex++;
+            drawDroneDisplay(inInventory ? filteredWeapons : dronesData.sort((a, b) => a.tier - b.tier), currentIndex, false, shape, inInventory);
+            if (!(inInventory ? filteredWeapons[currentIndex + 1] : dronesData[currentIndex + 1])) {
+                document.getElementById("goToNext").style.display = "none";
+            } else {
+                document.getElementById("goToNext").style.display = "block";
+            }
+            if (!(inInventory ? filteredWeapons[currentIndex - 1] : dronesData[currentIndex - 1])) {
+                document.getElementById("goToPre").style.display = "none";
+            } else {
+                document.getElementById("goToPre").style.display = "block";
+            }
+        }
+        document.getElementById("goToNext").onmouseover = function () {
+            this.style.backgroundColor = "rgb(255, 255, 255, .45)";
+            document.getElementById("goToNextCon").style.color = "#000";
+        }
+        document.getElementById("goToNext").onmouseout = function () {
+            this.style.backgroundColor = "rgb(0, 0, 0, 0.3)";
+            document.getElementById("goToNextCon").style.color = "#fff";
+        }
+        document.getElementById("goToPre").onmouseover = function () {
+            this.style.backgroundColor = "rgb(255, 255, 255, .45)";
+            document.getElementById("goToPreCon").style.color = "#000";
+        }
+        document.getElementById("goToPre").onmouseout = function () {
+            this.style.backgroundColor = "rgb(0, 0, 0, 0.3)";
+            document.getElementById("goToPreCon").style.color = "#fff";
+        }
+    }
     function customizeShape(shape) {
         let customizedShape = shape;
         document.getElementById("hangerUI").style.display = "none";
-        document.getElementById("sideDisplay").innerHTML = `
-        <div style="position: absolute; top: 0px; left: 0px; width: 100%; height: 100%; background-image: linear-gradient(rgb(0, 0, 0, 0), ${tierColor(shape)});">
-        </div>
-        <div id="otherSlots" style="position: absolute; left: ${window.innerWidth / 2 - 200}px; top: 20px; width: 400px; height: 50px; background-color: rgb(0, 0, 0, 0.3); border-radius: 6px; overflow: hidden;">
-        </div>
-        <div style="position: absolute; overflow-y: scroll; left: 20px; top: ${(window.innerHeight / 2) - 250}px; width: 325px; height: 500px; border: solid; border-radius: 6px; border-color: #fff; background-color: rgb(0, 0, 0, 0.4);">
-        <div style="position: absolute; top: 7px; left: 5px;">
-        <div style="position: absolute; top: 0px; left: 0px; text-align: center; color: #fff; font-size: 25px; border-radius: 100%; width: 40px; height: 40px; background-color: ${tierColor(shape)};">
-        ${shape.level >= 13 ? 1 : shape.level}
-        </div>
-        <div style="position: absolute; height: 32.5px; max-height: 32.5px; overflow: scroll; top: 2px; width: 260px; left: 45px; color: #fff; font-size: 24px;">
-        <strong>
-        ${shape.name}
-        ${shape.level >= 13 ? `<span style="color: #${levelToMKColor(shape.level)};">${levelToMKText(shape.level)}</span>` : ""}
-        </strong>
-        </div>
-        </div>
-        <div style="position: absolute; top: 45px; left: 0px;">
-        <hr style="position: absolute; top: 0px; left: 0px; color: #fff; width: 325px;">
-        <div style="position: absolute; top: 15px; left: 5px; width: 320px;">
-        <strong>Industry: ${shape.name.split(" ")[shape.name.split(" ").length - 1]}</strong><br><br>
-        ${shape.desc}<br>
-        <hr style="position: absolute; left: -5px; color: #fff; width: 325px;">
-        <br>
-        ${shape.ability ? shape.ability.desc + "<br>" : ""}
-        <hr style="position: absolute; left: -5px; color: #fff; width: 325px;">
-        <br>
+        let infoDisplayTextThing = `
         Health: ${abbreviateNumber(shape.health)}<br>
         ${shape.builtInDefensePoints ? `Defense Points: ${shape.builtInDefensePoints} (${((1 - defensePointsToResistance(shape.builtInDefensePoints)) * 100).toFixed(1)}% Resistance)<br>` : ""}
         Speed: ${shape.speed * 1000} PX/SEC<br>
@@ -9302,11 +10437,51 @@
         ${shape.ability && shape.ability.abilityDefensePoints ? `Ability Defense Points: ${shape.ability.abilityDefensePoints}<br>` : ""}
         ${shape.ability && shape.ability.abilityHealthMulti ? `Ability Health Multiplier: ${(shape.ability.abilityHealthMulti * 100).toFixed(4)}%<br>` : ""}
         ${shape.ability && shape.ability.effectIncrease ? `Effect Accumulation: ${shape.ability.effectIncrease} (${removeDecimals((shape.ability.effectIncrease / effectThresholds[shape.ability.effectIncreaseName]) * (shape.ability.projPerShot * (shape.ability.lastingTime / shape.ability.fireRate)) * 100)}% Max Acc.)<br>` : ""}
+        `;
+        document.getElementById("sideDisplay").innerHTML = `
+        <div style="position: absolute; top: 0px; left: 0px; width: 100%; height: 100%; background-image: linear-gradient(rgb(0, 0, 0, 0), ${tierColor(shape)});">
+        </div>
+        <div id="otherSlots" style="position: absolute; left: ${window.innerWidth / 2 - 200}px; top: 20px; width: 400px; height: 50px; background-color: rgb(0, 0, 0, 0.3); border-radius: 6px; overflow: hidden;">
+        </div>
+        <div style="position: absolute; display: ${shape.ability ? "block" : "none"}; left: 20px; top: ${(window.innerHeight / 2) + 50}px; width: 325px; height: 100px; border: solid; border-radius: 6px; border-color: #fff; background-color: rgb(0, 0, 0, 0.4);">
+        <div id="seeAbilityInfo" style="cursor: pointer; position: absolute; left: 6px; top: 6px; width: 80px; height: 80px; background-size: 80px 80px; border: solid; border-color: #000; border-width: 4px; background-image: url('${shape.ability?.iconSource}'); border-radius: 100%; background-color: rgb(255, 255, 255, .5);">
+        </div>
+        <div style="position: absolute; color: #fff; font-size: 26px; left: 100px; top: 0px; width: 225px; height: 100%; display: flex; align-items: center;">
+        ${shape.ability?.name}
+        </div>
+        </div>
+        <div id="abilityDescription" style="position: absolute; display: none; z-index: 100; left: 355px; top: ${(window.innerHeight / 2) - 100}px; width: 325px; height: 250px; border: solid; border-radius: 6px; border-color: #fff; background-color: rgb(179, 179, 179, 0.3); overflow-y: scroll;">
+        <div style="margin-top: 5px; margin-left: 10px; width: 310px;">
+        ${shape.ability?.desc}
+        <p></p>
+        </div>
+        </div>
+        <div style="position: absolute; overflow-y: scroll; left: 20px; top: ${(window.innerHeight / 2) - 250}px; width: 325px; height: 290px; border: solid; border-radius: 6px; border-color: #fff; background-color: rgb(0, 0, 0, 0.4);">
+        <div style="position: absolute; top: 7px; left: 5px;">
+        <div style="position: absolute; top: 0px; left: 0px; text-align: center; color: #fff; font-size: 25px; border-radius: 100%; width: 40px; height: 40px; background-color: ${tierColor(shape)};">
+        ${shape.level >= 13 ? 1 : shape.level}
+        </div>
+        <div style="position: absolute; height: 32.5px; max-height: 32.5px; overflow-y: scroll; top: 2px; width: 260px; left: 45px; color: #fff; font-size: 24px;">
+        <strong>
+        ${returnStyledName(shape, shape.name)}
+        ${shape.level >= 13 ? `<span style="color: #${levelToMKColor(shape.level)};">${levelToMKText(shape.level)}</span>` : ""}
+        </strong>
+        </div>
+        </div>
+        <div style="position: absolute; top: 45px; left: 0px;">
+        <hr style="position: absolute; top: 0px; left: 0px; color: #fff; width: 325px;">
+        <div style="position: absolute; top: 15px; left: 5px; width: 320px;">
+        ${infoDisplayTextThing}
         <p></p>
         </div>
         </div>
         </div>
         <div id="shapeImage" style="position: absolute; left: ${window.innerWidth / 2 - 187.5}px; top: ${window.innerHeight / 2 - 187.5}px; width: 375px; height: 375px;">
+        <div id="showDescription" style="position: absolute; cursor: pointer; display: flex; align-items: center; right: 0px; top: 0px; width: 35px; height: 35px; background-color: rgb(255, 255, 255, .4); border-radius: 100%;">
+        <div style="width: 100%; color: #fff; text-align: center; font-size: 30px;">
+        i
+        </div>
+        </div>
         </div>
         <div style="position: absolute; overflow-y: scroll; right: 20px; top: ${(window.innerHeight / 2) - 267.5}px; width: 325px; height: 535px; border: solid; border-radius: 6px; border-color: #fff; background-color: rgb(0, 0, 0, 0.2);">
         <div style="position: absolute; width: 100%; height: 35px;">
@@ -9329,19 +10504,92 @@
         <div id="backButton" style="position: absolute; cursor: pointer; text-align: center; font-size: 40px; color: #fff; left: 20px; bottom: 20px; width: 150px; height: 60px; background-color: rgb(124, 124, 124, 1); border: solid; border-color: #fff; border-radius: 6px;">
         BACK
         </div>
-        <div id="microchipList" style="position: absolute; cursor: pointer; text-align: center; font-size: 40px; color: #fff; left: 355px; top: ${window.innerHeight / 2 + (250 - 50)}px; width: 50px; height: 50px; background-color: rgb(0, 0, 0, .4); border-radius: 4px;">
-        <span class="material-symbols-outlined" style="font-size: 50px; color: #fff;">
-        dns
+        <div id="microchipList" style="display: ${player.profile.level < 16 ? "none" : "block"}; position: absolute; cursor: pointer; font-size: 40px; text-align: center; color: #fff; left: 20px; top: ${window.innerHeight / 2 + (210 - 50)}px; width: 105px; height: 105px; background-color: rgb(0, 0, 0, .4); border: solid; border-color: #fff; border-radius: 6px;">
+        <span class="material-symbols-outlined" style="font-size: 100px; color: #fff;">
+        developer_board
         </span>
         </div>
         <div id="microchipDisplay" style="display: none; position: absolute; top: 12.5%; left: 12.5%; width: 75%; height: 75%; border-radius: 6px; background-color: rgb(0, 0, 0, 0.3);">
         </div>
+        <div id="dronesButton" style="display: ${player.profile.level < 10 ? "none" : "block"}; position: absolute; cursor: pointer; font-size: 40px; text-align: center; color: #fff; left: 133px; top: ${window.innerHeight / 2 + (210 - 50)}px; width: 105px; height: 105px; background-color: rgb(0, 0, 0, .4); border: solid; border-color: #fff; border-radius: 6px;">
+        <span class="material-symbols-outlined" style="font-size: 100px; color: #fff;">
+        smart_toy
+        </span>
+        </div>
         <div id="upgradeMenu" style="position: absolute; color: #fff; display: none; top: 12.5%; left: 12.5%; width: 75%; height: 75%; background-color: rgb(0, 0, 0, .7);">
         </div>
         `;
+        document.getElementById("seeAbilityInfo").onclick = function () {
+            let e = document.getElementById("abilityDescription");
+            if (e.style.display == "block") {
+                e.style.display = "none";
+            } else {
+                e.style.display = "block";
+            }
+        }
+        document.getElementById("showDescription").onclick = function () {
+            let element = document.createElement("div");
+            element.style = `
+            position: absolute;
+            top: 12.5%;
+            left: 12.5%;
+            width: 75%;
+            height: 75%;
+            background-color: rgb(0, 0, 0, 0.75);
+            z-index: 99;
+            border-radius: 6px;
+            `;
+            let width = window.innerWidth * .75;
+            let height = window.innerHeight * .75;
+            let box = width / 2 - 80;
+            element.innerHTML = `
+            <div style="position: absolute; top: 7px; left: 10px; width: ${width - 10}px;">
+            <div style="position: absolute; top: 0px; left: 0px; text-align: center; color: #fff; font-size: 25px; border-radius: 100%; width: 40px; height: 40px; background-color: ${tierColor(shape)};">
+            ${shape.level >= 13 ? 1 : shape.level}
+            </div>
+            <div style="position: absolute; top: 2px; left: 45px; color: #fff; font-size: 24px;">
+            <strong>
+            ${returnStyledName(shape, shape.name)}
+            ${shape.level >= 13 ? `<span style="color: #${levelToMKColor(shape.level)};">${levelToMKText(shape.level)}</span>` : ""}
+            </strong>
+            </div>
+            </div>
+            <div id="imageShape2" style="position: absolute; top: ${(height / 2) - (box / 2)}px; left: 40px; width: ${box}px; height: ${box}px;">
+            </div>
+            <div style="position: absolute; color: #a3a3a3; top: 0px; left: ${width / 2}px; width: ${width / 2}px; height: 100%; overflow-y: scroll;">
+            <div style="margin-top: 5px;">
+            <strong style="color: #fff;">Industry: ${shape.name.split(" ")[shape.name.split(" ").length - 1]}</strong><br><br>
+            ${returnStyledName(shape, shape.desc)}<br><br>
+            ${shape.ability ? `
+            Ability:<br>
+            ${shape.ability.desc}<br><br>
+            ` : ``}
+            Shape Stats:<br>
+            ${infoDisplayTextThing}
+            <p></p>
+            </div>
+            </div>
+            `;
+            document.getElementById("sideDisplay").append(element);
+            element.onclick = function () {
+                this.remove();
+            }
+            if (shape.specialOf) {
+                document.getElementById(`imageShape2`).style.backgroundSize = `${box}px ${box}px`;
+                document.getElementById(`imageShape2`).style.backgroundImage = `url('${shape.specialOf}')`;
+            } else {
+                let ws = new SHAPPPPPPPPPE(shape, null, true);
+                ws.scale *= 10;
+                ws.increaseLine = 10;
+                let image = getShapeSprite(ws, true);
+                image.style = "width: 100%; height: 100%;";
+                document.getElementById("imageShape2").appendChild(image);
+            }
+        }
         document.getElementById("microchipList").onclick = function () {
-            this.style.display = "none";
+            //this.style.display = "none";
             document.getElementById("microchipDisplay").style.display = "block";
+            document.getElementById("abilityDescription").style.display = "none";
             doMicrochipStuff(document.getElementById("microchipDisplay"), this, shape);
         }
         document.getElementById("backButton").onclick = function () {
@@ -9394,11 +10642,27 @@
                 `;
             }
         }
+        if (player.drones.find(e => e.owner == shape.sid)) {
+            let Drone = player.drones.find(e => e.owner == shape.sid);
+            let newt = new drone(Drone);
+            newt.visualData.scale = Drone.visualData.scale * 5;
+            newt.visualData.increaseLine *= 5;
+            console.log(newt.visualData.scale, Drone.visualData.scale);
+            let image = getShapeSprite(newt.visualData, true);
+            image.style = "width: 100%; height: 100%;";
+            document.getElementById("dronesButton").innerHTML = "";
+            document.getElementById("dronesButton").appendChild(image);
+
+        }
+        document.getElementById("dronesButton").onclick = function () {
+            customizeDrones(player.drones.find(e => e.owner == shape.sid), shape);
+        }
         let hardpoints = shape.hardpoints.light + shape.hardpoints.heavy;
         let filteredWeapons = player.weapons.filter(e => e.owner == shape.sid);
         let elements = [];
         let doWeaponsStuff = () => {
             elements = [];
+            document.getElementById("abilityDescription").style.display = "none";
             for (let i = 0; i < hardpoints; i++) {
                 let weaponType = "";
                 if (i < shape.hardpoints.light && shape.hardpoints.light > 0) {
@@ -9455,6 +10719,7 @@
             this.style.cursor = null;
             this.style.color = "#000";
             this.style.backgroundColor = "rgb(255, 255, 255, .8)";
+            document.getElementById("abilityDescription").style.display = "none";
             document.getElementById("switchWeapon").style.color = "#fff";
             document.getElementById("switchWeapon").style.cursor = "pointer";
             document.getElementById("switchWeapon").style.backgroundColor = "rgb(0, 0, 0, .3)";
@@ -9511,6 +10776,7 @@
         doWeaponsStuff();
         document.getElementById("upgradeShape").onclick = function () {
             slotElement.style.display = "none";
+            document.getElementById("abilityDescription").style.display = "none";
             document.getElementById("microchipDisplay").style.display = "none";
             document.getElementById("microchipList").style.display = "block";
             document.body.appendChild(document.getElementById("moneyDisplay"));
@@ -9604,31 +10870,7 @@
         if (!shape.isItem) {
             shape = new SHAPPPPPPPPPE(shape, null, true);
         }
-        document.getElementById("WEAPONdisplay").innerHTML = `
-        <div style="position: absolute; top: 0px; left: 0px; width: 100%; height: 100%; background-image: linear-gradient(rgb(0, 0, 0, 0), ${tierColor(shape)});">
-        </div>
-        <div style="position: absolute; overflow-y: scroll; left: 80px; top: ${(window.innerHeight / 2) - 250}px; width: 325px; height: 500px; border: solid; border-radius: 6px; border-color: #fff; background-color: rgb(0, 0, 0, 0.4);">
-        <div style="position: absolute; top: 7px; left: 5px;">
-        <div style="position: absolute; top: 0px; left: 0px; text-align: center; color: #fff; font-size: 25px; border-radius: 100%; width: 40px; height: 40px; background-color: ${tierColor(shape)};">
-        ${shape.level >= 13 ? 1 : shape.level}
-        </div>
-        <div style="position: absolute; height: 32.5px; max-height: 32.5px; overflow: scroll; top: 2px; width: 260px; left: 45px; color: #fff; font-size: 24px;">
-        <strong>
-        ${shape.name}
-        ${shape.level >= 13 ? `<span style="color: #${levelToMKColor(shape.level)};">${levelToMKText(shape.level)}</span>` : ""}
-        </strong>
-        </div>
-        </div>
-        <div style="position: absolute; top: 45px; left: 0px;">
-        <hr style="position: absolute; top: 0px; left: 0px; color: #fff; width: 325px;">
-        <div style="position: absolute; top: 15px; left: 5px; width: 320px;">
-        <strong>Industry: ${shape.name.split(" ")[shape.name.split(" ").length - 1]}</strong><br><br>
-        ${shape.desc}<br>
-        <hr style="position: absolute; left: -5px; color: #fff; width: 325px;">
-        <br>
-        ${shape.ability ? shape.ability.desc + "<br>" : ""}
-        <hr style="position: absolute; left: -5px; color: #fff; width: 325px;">
-        <br>
+        let infoDisplayTextThing = `
         Health: ${abbreviateNumber(shape.health)}<br>
         ${shape.builtInDefensePoints ? `Defense Points: ${shape.builtInDefensePoints} (${((1 - defensePointsToResistance(shape.builtInDefensePoints)) * 100).toFixed(1)}% Resistance)<br>` : ""}
         Speed: ${shape.speed * 1000} PX/SEC<br>
@@ -9641,15 +10883,54 @@
         ${shape.dotResistance ? `DOT Resistance: ${((1 - shape.dotResistance) * 100)}%<br>` : ""}
         ${shape.healingMulti ? `Healing Effectiveness: ${removeDecimals(shape.healingMulti * 100)}%<br>` : ""}
         ${shape.revive ? `Revival Amount: ${removeDecimals(shape.revive * 100)}%<br>` : ""}
+        ${shape.healingAura ? `Healing Aura Power: ${abbreviateNumber(shape.healingAura)}<br>` : ""}
         ${shape.ability && shape.ability.showDuration ? `Ability Duration: ${(shape.ability.lastingTime / 1000)} sec<br>` : ""}
         ${shape.ability && shape.ability.abilityDefensePoints ? `Ability Defense Points: ${shape.ability.abilityDefensePoints}<br>` : ""}
         ${shape.ability && shape.ability.abilityHealthMulti ? `Ability Health Multiplier: ${(shape.ability.abilityHealthMulti * 100).toFixed(4)}%<br>` : ""}
         ${shape.ability && shape.ability.effectIncrease ? `Effect Accumulation: ${shape.ability.effectIncrease} (${removeDecimals((shape.ability.effectIncrease / effectThresholds[shape.ability.effectIncreaseName]) * (shape.ability.projPerShot * (shape.ability.lastingTime / shape.ability.fireRate)) * 100)}% Max Acc.)<br>` : ""}
+        `;
+        document.getElementById("WEAPONdisplay").innerHTML = `
+        <div style="position: absolute; top: 0px; left: 0px; width: 100%; height: 100%; background-image: linear-gradient(rgb(0, 0, 0, 0), ${tierColor(shape)});">
+        </div>
+        <div style="position: absolute; display: ${shape.ability ? "block" : "none"}; left: 80px; top: ${(window.innerHeight / 2) + 50}px; width: 325px; height: 100px; border: solid; border-radius: 6px; border-color: #fff; background-color: rgb(0, 0, 0, 0.4);">
+        <div id="seeAbilityInfo" style="cursor: pointer; position: absolute; left: 6px; top: 6px; width: 80px; height: 80px; background-size: 80px 80px; border: solid; border-color: #000; border-width: 4px; background-image: url('${shape.ability?.iconSource}'); border-radius: 100%; background-color: rgb(255, 255, 255, .5);">
+        </div>
+        <div style="position: absolute; color: #fff; font-size: 26px; left: 100px; top: 0px; width: 225px; height: 100%; display: flex; align-items: center;">
+        ${shape.ability?.name}
+        </div>
+        </div>
+        <div id="abilityDescription" style="position: absolute; display: none; z-index: 100; left: 420px; top: ${(window.innerHeight / 2) - 100}px; width: 325px; height: 250px; border: solid; border-radius: 6px; border-color: #fff; background-color: rgb(179, 179, 179, 0.3); overflow-y: scroll;">
+        <div style="margin-top: 5px; margin-left: 10px; width: 310px;">
+        ${shape.ability?.desc}
+        <p></p>
+        </div>
+        </div>
+        <div style="position: absolute; overflow-y: scroll; left: 80px; top: ${(window.innerHeight / 2) - 250}px; width: 325px; height: 290px; border: solid; border-radius: 6px; border-color: #fff; background-color: rgb(0, 0, 0, 0.4);">
+        <div style="position: absolute; top: 7px; left: 5px;">
+        <div style="position: absolute; top: 0px; left: 0px; text-align: center; color: #fff; font-size: 25px; border-radius: 100%; width: 40px; height: 40px; background-color: ${tierColor(shape)};">
+        ${shape.level >= 13 ? 1 : shape.level}
+        </div>
+        <div style="position: absolute; height: 32.5px; max-height: 32.5px; overflow-y: scroll; top: 2px; width: 260px; left: 45px; color: #fff; font-size: 24px;">
+        <strong>
+        ${returnStyledName(shape, shape.name)}
+        ${shape.level >= 13 ? `<span style="color: #${levelToMKColor(shape.level)};">${levelToMKText(shape.level)}</span>` : ""}
+        </strong>
+        </div>
+        </div>
+        <div style="position: absolute; top: 45px; left: 0px;">
+        <hr style="position: absolute; top: 0px; left: 0px; color: #fff; width: 325px;">
+        <div style="position: absolute; top: 15px; left: 5px; width: 320px;">
+        ${infoDisplayTextThing}
         <p></p>
         </div>
         </div>
         </div>
         <div id="shapeImage" style="position: absolute; left: ${window.innerWidth / 2 - 187.5}px; top: ${window.innerHeight / 2 - 187.5}px; width: 375px; height: 375px;">
+        <div id="showDescription" style="position: absolute; cursor: pointer; display: flex; align-items: center; right: 0px; top: 0px; width: 35px; height: 35px; background-color: rgb(255, 255, 255, .4); border-radius: 100%;">
+        <div style="width: 100%; color: #fff; text-align: center; font-size: 30px;">
+        i
+        </div>
+        </div>
         </div>
         <div style="position: absolute; overflow-y: scroll; right: 80px; top: ${(window.innerHeight / 2) - 267.5}px; width: 325px; height: 535px; border: solid; border-radius: 6px; border-color: #fff; background-color: rgb(0, 0, 0, 0.2);">
         <div style="position: absolute; width: 100%; height: 35px;">
@@ -9674,12 +10955,24 @@
         <div id="backButton" style="position: absolute; cursor: pointer; text-align: center; font-size: 40px; color: #fff; left: 20px; bottom: 20px; width: 150px; height: 60px; background-color: rgb(124, 124, 124, 1); border: solid; border-color: #fff; border-radius: 6px;">
         BACK
         </div>
+        <div id="microchipList" style="display: ${player.profile.level < 16 ? "none" : inInventory ? "block" : "none"}; position: absolute; cursor: pointer; font-size: 40px; text-align: center; color: #fff; left: 80px; top: ${window.innerHeight / 2 + (210 - 50)}px; width: 105px; height: 105px; background-color: rgb(0, 0, 0, .4); border: solid; border-color: #fff; border-radius: 6px;">
+        <span class="material-symbols-outlined" style="font-size: 100px; color: #fff;">
+        developer_board
+        </span>
+        </div>
+        <div id="microchipDisplay" style="display: none; position: absolute; top: 12.5%; left: 12.5%; width: 75%; height: 75%; border-radius: 6px; background-color: rgb(0, 0, 0, 0.3);">
+        </div>
+        <div id="dronesButton" style="display: ${player.profile.level < 10 ? "none" : inInventory ? "block" : "none"}; position: absolute; cursor: pointer; font-size: 40px; text-align: center; color: #fff; left: 197px; top: ${window.innerHeight / 2 + (210 - 50)}px; width: 105px; height: 105px; background-color: rgb(0, 0, 0, .4); border: solid; border-color: #fff; border-radius: 6px;">
+        <span class="material-symbols-outlined" style="font-size: 100px; color: #fff;">
+        smart_toy
+        </span>
+        </div>
         <div style="position: absolute; bottom: 100px; left: 12.5%; width: 75%; height: 6px; background-color: #fff; border-radius: 4px; overflow: hidden;">
         <div style="position: absolute; top: 0px; left: ${(1 / shapes.length) * 100 * currentIndex}%; width: ${(1 / shapes.length) * 100}%; height: 100%; background-color: #03fcec;">
         </div>
         </div>
         <div id="buyShape" style="position: absolute; ${shape.costParts ? "margin-left: -12px; padding-left: 12px; padding-right: 12px;" : ""} display: none; cursor: pointer; text-align: center; font-size: 40px; color: #fff; left: ${window.innerWidth / 2 - 87.5}px; bottom: 20px; width: 175px; height: 60px; background-color: rgb(0, 255, 0); border-radius: 6px;">
-        ${shape.costParts ? "Assemble" : "BUY"}
+        ${unlockedAtTier[shape.tier] > player.profile.level ? "LOCKED" : shape.costParts ? "Assemble" : "BUY"}
         </div>
         <div id="buyMenu" style="position: absolute; display: none; color: #fff; top: ${(window.innerHeight / 2) - (225 / 2)}px; left: ${(window.innerWidth / 2) - (425 / 2)}px; width: 425px; height: 225px; background-color: rgb(0, 0, 0, .7);">
         </div>
@@ -9689,6 +10982,92 @@
         </span>
         </div>
         `;
+        document.getElementById("microchipList").onclick = function () {
+            document.getElementById("microchipDisplay").style.display = "block";
+            document.getElementById("abilityDescription").style.display = "none";
+            doMicrochipStuff(document.getElementById("microchipDisplay"), this, shape);
+        }
+        document.getElementById("seeAbilityInfo").onclick = function () {
+            let e = document.getElementById("abilityDescription");
+            if (e.style.display == "block") {
+                e.style.display = "none";
+            } else {
+                e.style.display = "block";
+            }
+        }
+        document.getElementById("showDescription").onclick = function () {
+            let element = document.createElement("div");
+            element.style = `
+            position: absolute;
+            top: 12.5%;
+            left: 12.5%;
+            width: 75%;
+            height: 75%;
+            background-color: rgb(0, 0, 0, 0.75);
+            z-index: 99;
+            border-radius: 6px;
+            `;
+            let width = window.innerWidth * .75;
+            let height = window.innerHeight * .75;
+            let box = width / 2 - 80;
+            element.innerHTML = `
+            <div style="position: absolute; top: 7px; left: 10px; width: ${width - 10}px;">
+            <div style="position: absolute; top: 0px; left: 0px; text-align: center; color: #fff; font-size: 25px; border-radius: 100%; width: 40px; height: 40px; background-color: ${tierColor(shape)};">
+            ${shape.level >= 13 ? 1 : shape.level}
+            </div>
+            <div style="position: absolute; top: 2px; left: 45px; color: #fff; font-size: 24px;">
+            <strong>
+            ${returnStyledName(shape, shape.name)}
+            ${shape.level >= 13 ? `<span style="color: #${levelToMKColor(shape.level)};">${levelToMKText(shape.level)}</span>` : ""}
+            </strong>
+            </div>
+            </div>
+            <div id="imageShape2" style="position: absolute; top: ${(height / 2) - (box / 2)}px; left: 40px; width: ${box}px; height: ${box}px;">
+            </div>
+            <div style="position: absolute; color: #a3a3a3; top: 0px; left: ${width / 2}px; width: ${width / 2}px; height: 100%; overflow-y: scroll;">
+            <div style="margin-top: 5px;">
+            <strong style="color: #fff;">Industry: ${shape.name.split(" ")[shape.name.split(" ").length - 1]}</strong><br><br>
+            ${returnStyledName(shape, shape.desc)}<br><br>
+            ${shape.ability ? `
+            Ability:<br>
+            ${shape.ability.desc}<br><br>
+            ` : ``}
+            Shape Stats:<br>
+            ${infoDisplayTextThing}
+            <p></p>
+            </div>
+            </div>
+            `;
+            document.getElementById("sideDisplay").append(element);
+            element.onclick = function () {
+                this.remove();
+            }
+            if (shape.specialOf) {
+                document.getElementById(`imageShape2`).style.backgroundSize = `${box}px ${box}px`;
+                document.getElementById(`imageShape2`).style.backgroundImage = `url('${shape.specialOf}')`;
+            } else {
+                let ws = new SHAPPPPPPPPPE(shape, null, true);
+                ws.scale *= 10;
+                ws.increaseLine = 10;
+                let image = getShapeSprite(ws, true);
+                image.style = "width: 100%; height: 100%;";
+                document.getElementById("imageShape2").appendChild(image);
+            }
+        }
+        if (player.drones.find(e => e.owner == shape.sid)) {
+            let Drone = player.drones.find(e => e.owner == shape.sid);
+            let newt = new drone(Drone);
+            newt.visualData.scale *= 5;
+            newt.visualData.increaseLine *= 5;
+            let image = getShapeSprite(newt.visualData, true);
+            image.style = "width: 100%; height: 100%;";
+            document.getElementById("dronesButton").innerHTML = "";
+            document.getElementById("dronesButton").appendChild(image);
+
+        }
+        document.getElementById("dronesButton").onclick = function () {
+            customizeDrones(player.drones.find(e => e.owner == shape.sid), shape);
+        }
         document.getElementById("sellItem").onclick = function () {
             document.getElementById("buyMenu").style.display = "block";
             let num = 60;
@@ -9754,6 +11133,7 @@
             if (!shapes[currentIndex].dontSell) document.getElementById("buyShape").style.display = "block";
         }
         document.getElementById("buyShape").onclick = function () {
+            if (unlockedAtTier[shape.tier] > player.profile.level) return;
             document.body.appendChild(document.getElementById("moneyDisplay"));
             document.getElementById("buyMenu").style.display = "block";
             document.getElementById("storeButton").style.display = "none";
@@ -9810,21 +11190,21 @@
                 x
                 </div>
 
-                <div style="position: absolute; left: ${425/2-27.5}px; bottom: 100px;">
+                <div style="position: absolute; left: ${425 / 2 - 27.5}px; bottom: 100px;">
                 <span class="material-symbols-outlined" style="font-size: 55px;">
                 extension
                 </span>
                 </div>
 
                 <div style="position: absolute; bottom: 70px; width: 385px; height: 15px; left: ${425 / 2 - 192.5}px; background-color: #fff; border-radius: 4px; overflow: hidden;">
-                <div style="position: absolute; top: 0px; left: 0px; width: ${Math.min(1, parts/needed)*100}%; height: 100%; background-color: #00ffff;">
+                <div style="position: absolute; top: 0px; left: 0px; width: ${Math.min(1, parts / needed) * 100}%; height: 100%; background-color: #00ffff;">
                 </div>
                 <div style="position: absolute; color: #000; font-size: 12px; top: 0px; left: 0px; text-align: center; width: 100%;">
                 ${parts}/${needed}
                 </div>
                 </div>
 
-                <div id="confirm" style="position: absolute; ${parts/needed < 1 ? "" : "cursor: pointer;"} font-size: 24px; text-align: center; bottom: 10px; left: ${425 / 2 - 75}px; width: 150px; border-radius: 6px; height: 40px; background-color: ${parts/needed < 1 ? "#808080" : "#0f0"};">
+                <div id="confirm" style="position: absolute; ${parts / needed < 1 ? "" : "cursor: pointer;"} font-size: 24px; text-align: center; bottom: 10px; left: ${425 / 2 - 75}px; width: 150px; border-radius: 6px; height: 40px; background-color: ${parts / needed < 1 ? "#808080" : "#0f0"};">
                 Confirm
                 </div>
                 `;
@@ -9853,7 +11233,7 @@
             document.getElementById("confirm").onclick = function () {
                 let theThing = shapes[currentIndex];
                 if (theThing.costParts) {
-                    if (parts/needed >= 1) {
+                    if (parts / needed >= 1) {
                         player.parts.shapes[theHA.name] -= 10e3;
                         buy(theThing);
                     }
@@ -10092,8 +11472,6 @@
             document.getElementById("upgradeShape").click();
         }
     }
-    var auSource = "./images/icons/au_icon.png";
-    var agSource = "./images/icons/ag_icon.png";
     var lootboxes = [{
         source: "./images/lootbox/basic_lootbox.png",
         rewards: [{
@@ -10147,7 +11525,7 @@
         }, {
             type: "money",
             au: true,
-            amount: 1e3
+            amount: 500
         }, {
             type: "money",
             ag: true,
@@ -10216,19 +11594,19 @@
         }, {
             type: "money",
             ag: true,
-            amount: 50e6
+            amount: 10e6
         }, {
             type: "money",
             ag: true,
-            amount: 100e6
+            amount: 15e6
         }, {
             type: "money",
             ag: true,
-            amount: 150e6
+            amount: 10e6
         }, {
             type: "money",
             ag: true,
-            amount: 200e6
+            amount: 20e6
         }, {
             type: "money",
             au: true,
@@ -10236,15 +11614,15 @@
         }, {
             type: "money",
             au: true,
-            amount: 10e3
+            amount: 1e3
         }, {
             type: "money",
             au: true,
-            amount: 15e3
+            amount: 5e3
         }, {
             type: "money",
             au: true,
-            amount: 20e3
+            amount: 2e3
         }],
         cost: 10e3
     }];
@@ -10489,19 +11867,19 @@
     }, {
         type: "money",
         au: true,
-        amount: 100e3
+        amount: 1e3
     }, {
         type: "money",
         ag: true,
-        amount: 200e6
+        amount: 1e6
     }, {
         type: "money",
         au: true,
-        amount: 75e3
+        amount: 750
     }, {
         type: "money",
         ag: true,
-        amount: 150e6
+        amount: 5e6
     }];
     var mk2ChestRewards = [{
         type: "money",
@@ -10510,36 +11888,36 @@
     }, {
         type: "money",
         au: true,
-        amount: 500e3
+        amount: 5e3
     }, {
         type: "money",
         ag: true,
-        amount: 1e9
+        amount: 10e6
     }, {
         type: "money",
         au: true,
-        amount: 400e3
+        amount: 7e3
     }, {
         type: "money",
         ag: true,
-        amount: 750e6
+        amount: 20e6
     }];
     var mk3ChestRewards = [{
         type: "money",
         au: true,
-        amount: 2e6
+        amount: 10e3
     }, {
         type: "money",
         ag: true,
-        amount: 2.5e9
+        amount: 50e6
     }, {
         type: "money",
         au: true,
-        amount: 1.5e6
+        amount: 15e3
     }, {
         type: "money",
         ag: true,
-        amount: 1.5e9
+        amount: 40e6
     }];
     function getMKRewards(type, index, array) {
         if (type == "ulti") {
@@ -10680,7 +12058,7 @@
         <strong>i</strong>
         </div>
         <div id="getGoldBox" style="cursor: pointer; position: absolute; text-align: center; color: #fff; font-size: 26px; bottom: 10px; left: 20px; border-radius: 6px; width: 260px; height: 40px; background-color: #00ff00;">
-        Get (${abbreviateNumber(lootboxes[2].cost)} Keys)
+        ${unlockedAtTier[2] > player.profile.level ? "LOCKED" : `Get (${abbreviateNumber(lootboxes[2].cost)} Keys)`}
         </div>
         </div>
 
@@ -10692,7 +12070,7 @@
         <strong>i</strong>
         </div>
         <div id="getDiamondBox" style="cursor: pointer; position: absolute; text-align: center; color: #fff; font-size: 26px; bottom: 10px; left: 20px; border-radius: 6px; width: 260px; height: 40px; background-color: #00ff00;">
-        Get (${abbreviateNumber(lootboxes[3].cost)} Keys)
+        ${unlockedAtTier[3] > player.profile.level ? "LOCKED" : `Get (${abbreviateNumber(lootboxes[3].cost)} Keys)`}
         </div>
         </div>
 
@@ -10773,6 +12151,9 @@
         BACK
         </div>
         `;
+        if (unlockedAtTier[4] > player.profile.level) {
+            document.getElementById("goToNext").style.display = "none";
+        }
         document.getElementById("goToNext").onclick = function () {
             this.style.display = "none";
             document.getElementById("rewardAnimation").style.display = "none";
@@ -10787,19 +12168,19 @@
             document.getElementById("main").style.display = "block";
             document.getElementById("noMain").style.display = "none";
         }
-        document.getElementById("goToNext").onmouseover = function() {
+        document.getElementById("goToNext").onmouseover = function () {
             this.style.backgroundColor = "rgb(255, 255, 255, .45)";
             document.getElementById("goToNextCon").style.color = "#000";
         }
-        document.getElementById("goToNext").onmouseout = function() {
+        document.getElementById("goToNext").onmouseout = function () {
             this.style.backgroundColor = "rgb(0, 0, 0, 0.3)";
             document.getElementById("goToNextCon").style.color = "#fff";
         }
-        document.getElementById("goToPre").onmouseover = function() {
+        document.getElementById("goToPre").onmouseover = function () {
             this.style.backgroundColor = "rgb(255, 255, 255, .45)";
             document.getElementById("goToPreCon").style.color = "#000";
         }
-        document.getElementById("goToPre").onmouseout = function() {
+        document.getElementById("goToPre").onmouseout = function () {
             this.style.backgroundColor = "rgb(0, 0, 0, 0.3)";
             document.getElementById("goToPreCon").style.color = "#fff";
         }
@@ -11005,11 +12386,11 @@
                 }
             }
         }
-        document.getElementById("goToNext").onmouseover = function() {
+        document.getElementById("goToNext").onmouseover = function () {
             this.style.backgroundColor = "rgb(255, 255, 255, .45)";
             document.getElementById("goToNextCon").style.color = "#000";
         }
-        document.getElementById("goToNext").onmouseout = function() {
+        document.getElementById("goToNext").onmouseout = function () {
             this.style.backgroundColor = "rgb(0, 0, 0, 0.3)";
             document.getElementById("goToNextCon").style.color = "#fff";
         }
@@ -11030,11 +12411,11 @@
                 }
             }
         }
-        document.getElementById("goToPre").onmouseover = function() {
+        document.getElementById("goToPre").onmouseover = function () {
             this.style.backgroundColor = "rgb(255, 255, 255, .45)";
             document.getElementById("goToPreCon").style.color = "#000";
         }
-        document.getElementById("goToPre").onmouseout = function() {
+        document.getElementById("goToPre").onmouseout = function () {
             this.style.backgroundColor = "rgb(0, 0, 0, 0.3)";
             document.getElementById("goToPreCon").style.color = "#fff";
         }
@@ -11086,16 +12467,18 @@
             } else {
                 if (i > INDEX) {
                     document.getElementById("shapesDisplay").innerHTML += `
-                    <div id="slot${i}" style="position: absolute; top: ${i < 4 ? 0 : adjustedH / 2}px; left: ${(adjusted / 4) * (i < 4 ? i : i - 4)}px; pointer-events: auto; width: ${adjusted / 4}px; height: ${adjusted / 4}px; background-color: ${backgroundColor}">
-                    <div style="position: absolute; top: ${((adjusted / 4) / 2) - 65 / 2}px; left: ${((adjusted / 4) / 2) - 183 / 2}px; font-size: 48px;">
-                    LOCKED
+                    <div id="slot${i}" style="position: absolute; display: flex; align-items: center; top: ${i < 4 ? 0 : adjustedH / 2}px; left: ${(adjusted / 4) * (i < 4 ? i : i - 4)}px; pointer-events: auto; width: ${adjusted / 4}px; height: ${adjusted / 4}px; background-color: ${backgroundColor}">
+                    <div style="width: 100%; text-align: center;">
+                    <span class="material-symbols-outlined" style="font-size: 150px;">
+                    lock
+                    </span>
                     </div>
                     </div>
                     `;
                 } else {
                     document.getElementById("shapesDisplay").innerHTML += `
-                    <div id="slot${i}" style="position: absolute; top: ${i < 4 ? 0 : adjustedH / 2}px; left: ${(adjusted / 4) * (i < 4 ? i : i - 4)}px; cursor: pointer; width: ${adjusted / 4}px; height: ${adjusted / 4}px; background-color: ${backgroundColor}">
-                    <div style="position: absolute; top: 87.5px; left: 57.5px; font-size: 28px; width: 200px; height: 200px;">
+                    <div id="slot${i}" style="position: absolute; display: flex; align-items: center; top: ${i < 4 ? 0 : adjustedH / 2}px; left: ${(adjusted / 4) * (i < 4 ? i : i - 4)}px; cursor: pointer; width: ${adjusted / 4}px; height: ${adjusted / 4}px; background-color: ${backgroundColor}">
+                    <div style="width: 100%; text-align: center; font-size: 50px;">
                     Unlock: ${abbreviateNumber(slot.cost)} Gold
                     </div>
                     </div>
@@ -11114,7 +12497,7 @@
                         tmpImage.style = `position: absolute; top: 0px; left: 0px; width: ${adjusted / 4}px; height: ${adjusted / 4}px;`;
                         document.getElementById("slot" + i).innerHTML = `
                         <div style="color: ${tierColor(shape)}; z-index: 10; position: absolute; bottom: 5px; right: 5px; font-size: 30px;">
-                        <strong>${[14, 13].includes(shape.level) ? `${shape.name} <span style="color: ${shape.level == 13 ? "#0f0" : "#ffff00"};">${shape.level == 13 ? "MK2" : "MK3"}</span>` : `Lvl ${shape.level} ${shape.name}`}</strong>
+                        <strong>${[14, 13].includes(shape.level) ? `${returnStyledName(shape, shape.name)} <span style="color: ${shape.level == 13 ? "#0f0" : "#ffff00"};">${shape.level == 13 ? "MK2" : "MK3"}</span>` : `Lvl ${shape.level} ${shape.name}`}</strong>
                         </div>
                         `;
                         if (shape.specialOf) {
@@ -11255,38 +12638,38 @@
         operationData.xp = 0;
         operationData.currentIndex = 0;
         operationData.data = [];
-        for (let i = 0; i < 120; i++) {
+        for (let i = 0; i < 200; i++) {
             let amount = 1;
             let rewardType = "silver";
-            if (i >= 69 && (i + 1) % 10 == 0) {
-                if (i >= 69 && i <= 89) {
+            if (i >= 149 && (i + 1) % 10 == 0) {
+                if (i >= 149 && i < 179) {
                     rewardType = "token 1";
-                } else if (i >= 99 && i <= 109) {
+                } else if (i >= 179 && i < 199) {
                     rewardType = "token 2";
                 } else {
                     rewardType = "token 3";
                 }
             } else {
-                if (Math.random() < .5) {
+                if (Math.random() < 0.5) {
                     rewardType = "silver";
-                    if (i >= 90) {
-                        amount = i * 1e6;
-                    } else if (i >= 80) {
+                    if (i >= 160) {
+                        amount = i * 500e3;
+                    } else if (i >= 150) {
                         amount = i * 150e3;
-                    } else if (i >= 40) {
+                    } else if (i >= 120) {
                         amount = i * 80e3;
                     } else if (i >= 5) {
                         amount = i * 50e3;
                     } else {
                         amount = Math.max(i * 25e3, 20e3);
                     }
-                } else if (Math.random() < .3334) {
+                } else if (Math.random() < 0.3334) {
                     rewardType = "keys";
-                    if (i >= 90) {
-                        amount = i * 100;
-                    } else if (i >= 80) {
+                    if (i >= 160) {
+                        amount = i * 75;
+                    } else if (i >= 150) {
                         amount = i * 50;
-                    } else if (i >= 40) {
+                    } else if (i >= 120) {
                         amount = i * 20;
                     } else if (i >= 5) {
                         amount = i * 10;
@@ -11295,11 +12678,11 @@
                     }
                 } else {
                     rewardType = "gold";
-                    if (i >= 90) {
-                        amount = i * 240;
-                    } else if (i >= 80) {
+                    if (i >= 160) {
+                        amount = i * 180;
+                    } else if (i >= 150) {
                         amount = i * 120;
-                    } else if (i >= 40) {
+                    } else if (i >= 120) {
                         amount = i * 80;
                     } else if (i >= 5) {
                         amount = i * 40;
@@ -11309,10 +12692,10 @@
                 }
             }
             operationData.data.push({
-                maxxp: 100 + (i * 50),
+                maxxp: 100 + (i * (i >= 100 ? 125 : 50)),
                 done: false,
                 type: rewardType,
-                amount: amount
+                amount: amount,
             });
         }
     }
@@ -11533,7 +12916,6 @@
     });
     function saveGameData() {
         saveValue("hasSaved", 1);
-        saveValue("shapeSids", shapeSids);
         saveValue("parts", JSON.stringify(player.parts));
         let shapes = [];
         for (let i = 0; i < player.shapes.length; i++) {
@@ -11566,6 +12948,15 @@
                 level: MODLUE.level
             });
         }
+        let drones = [];
+        for (let i = 0; i < player.drones.length; i++) {
+            let MODLUE = player.drones[i];
+            drones.push({
+                name: MODLUE.name,
+                owner: MODLUE.owner,
+                level: MODLUE.level
+            });
+        }
         let chips = [];
         for (let i = 0; i < microchips.length; i++) {
             let CHIP = microchips[i];
@@ -11577,14 +12968,17 @@
                 NEW: 2
             });
         }
+        saveValue("profile", JSON.stringify(player.profile));
         saveValue("chips", JSON.stringify(chips));
         saveValue("tokens", JSON.stringify(player.tokens));
         saveValue("slotData", JSON.stringify(slotData));
         saveValue("shapes", JSON.stringify(shapes));
+        saveValue("drones", JSON.stringify(drones));
         saveValue("weapons", JSON.stringify(weapons));
         saveValue("modules", JSON.stringify(modules));
         saveValue("ULIMATEXP", player.ULIMATEXP);
         saveValue("league", player.league);
+        saveValue("league2", player.league2);
         saveValue("keys", player.keys);
         saveValue("sliver", player.sliver);
         saveValue("gold", player.gold);
@@ -11598,9 +12992,14 @@
             player.shapes = [];
             player.weapons = [];
             player.modules = [];
+            player.drones = [];
+            if (getValue("profile")) {
+                player.profile = JSON.parse(getValue("profile"));
+            }
             let ShapeData = JSON.parse(getValue("shapes"));
             let WeaponData = JSON.parse(getValue("weapons"));
             let ModuleData = JSON.parse(getValue("modules"));
+            let DronesData = JSON.parse(getValue("drones"));
             let ChipData = JSON.parse(getValue("chips"));
             if (getValue("parts")) {
                 let parts = getValue("parts");
@@ -11610,7 +13009,6 @@
                 let data = ShapeData[i];
                 if (data) {
                     try {
-                        let sid = shapeSids;
                         let Shape = shapeData.find(e => data.name == e.name);
                         let newShape = new shape(Shape, data.slot);
                         newShape.slot = data.slot;
@@ -11621,7 +13019,7 @@
                         newShape.activeModuleIndex = data.activeModuleIndex || 0;
                         newShape.sid = data.sid;
                         if (newShape.sid == undefined || newShape.sid == null) {
-                            newShape.sid = sid;
+                            newShape.sid = "get anew";
                         }
                         for (let t = 0; t < data.level - 1; t++) {
                             upgradeShape(newShape, true);
@@ -11631,6 +13029,18 @@
                     }
                 }
             }
+            let largestSid = player.shapes.filter(e => e.sid >= 0).sort((a, b) => b.sid - a.sid)[0].sid + 1;
+            player.shapes.filter(e => e.sid == "get anew").forEach(e => {
+                e.sid = largestSid;
+                largestSid++;
+            });
+            player.shapes.forEach(item => {
+                if (player.shapes.find(e => e.sid == item.sid && e != item)) {
+                    item.sid = largestSid;
+                    largestSid++;
+                }
+            });
+            shapeSids = largestSid;
             for (let i = 0; i < WeaponData.length; i++) {
                 let data = WeaponData[i];
                 if (data) {
@@ -11665,6 +13075,24 @@
                     }
                 }
             }
+            for (let i = 0; i < DronesData.length; i++) {
+                let data = DronesData[i];
+                if (data) {
+                    let Module = dronesData.find(e => data.name == e.name);
+                    if (Module) {
+                        let newModule = new drone(Module, data.owner);
+                        let shapeSid = player.shapes.find(e => e.sid == data.owner);
+                        if (!shapeSid) {
+                            newModule.owner = null;
+                            newModule.slot = null;
+                        }
+                        for (let t = 0; t < data.level - 1; t++) {
+                            upgradeDrone(newModule, null, null, true);
+                        }
+                        player.drones.push(newModule);
+                    }
+                }
+            }
             for (let i = 0; i < ChipData.length; i++) {
                 let data = ChipData[i];
                 if (data && data.NEW && data.NEW == 2) {
@@ -11679,7 +13107,7 @@
                         for (let t = 0; t < data.level; t++) {
                             upgradeMicrochip(newModule, true);
                         }
-                        if (newModule.slot >= 8) {
+                        if (newModule.slot >= 8 || !shapeSid || !canHaveMicro(newModule, shapeSid)) {
                         } else {
                             microchips.push(newModule);
                         }
@@ -11688,6 +13116,31 @@
                     }
                 }
             }
+            player.shapes.forEach(item => {
+                let weapons = player.weapons.filter(e => item.sid == e.owner);
+                let heavy = weapons.filter(e => e.type == "Heavy");
+                let light = weapons.filter(e => e.type == "Light");
+                if (heavy.length > item.hardpoints.heavy || light.length > item.hardpoints.light) {
+                    weapons.forEach(e => {
+                        e.owner = null;
+                        e.slot = null;
+                    });
+                }
+                let modules = player.modules.filter(e => item.sid == e.owner);
+                if (modules.length > item.moduleHardpoints) {
+                    modules.forEach(e => {
+                        e.slot = null;
+                        e.owner = null;
+                    });
+                }
+                let drones = player.drones.filter(e => item.sid == e.owner);
+                if (drones.length > 1) {
+                    drones.forEach(e => {
+                        e.slot = null;
+                        e.owner = null;
+                    });
+                }
+            });
             if (getValue("workshopPoints")) {
                 player.workshopPoints = parseInt(getValue("workshopPoints"));
             } else {
@@ -11701,6 +13154,11 @@
                 player.ULIMATEXP = parseInt(getValue("ULIMATEXP"));
             } else {
                 player.ULIMATEXP = 0;
+            }
+            if (getValue("league2")) {
+                player.league2 = parseInt(getValue("league2"));
+            } else {
+                player.league2 = 0;
             }
             if (getValue("league")) {
                 player.league = parseInt(getValue("league"));
@@ -11719,21 +13177,12 @@
             generateTasks();
             if (getValue("operationData")) {
                 operationData = JSON.parse(getValue("operationData"));
-                let hasKeys = operationData.data.find(e => e.type == "token 1");
-                if (!hasKeys) {
-                    generateOperation();
-                    addOperationXP(10e3);
-                }
             }
             player.keys = parseInt(getValue("keys"));
             player.sliver = parseInt(getValue("sliver"));
             player.gold = parseInt(getValue("gold"));
             updateMoneyDisplay();
-            if (getValue("shapeSids") && getValue("shapeSids") != "NaN") {
-                shapeSids = parseInt(getValue("shapeSids"));
-            } else {
-                saveGameData();
-            }
+            setUpUIStuffThing();
             setTimeout(() => {
                 updateSlots();
                 document.getElementById("LOADING SCREEN XD").style.display = "none";
@@ -11799,18 +13248,100 @@
                 shield.globalAlpha = Math.min(shield.globalAlpha + 0.0015 * delta, 1);
                 ctx.save();
                 ctx.globalAlpha = shield.globalAlpha;
-                ctx.rotate(shield.dir-(shield.angleDist/2));
+                ctx.rotate(shield.dir - (shield.angleDist / 2));
                 ctx.rotate(robot.dir);
                 ctx.lineWidth = 12;
                 let healthPercentage = shield.health / shield.maxhealth;
                 let redValue = Math.floor(128 + 127 * (1 - healthPercentage));
                 let otherValues = Math.floor(128 - 127 * (1 - healthPercentage));
-                ctx.strokeStyle = `rgb(${redValue}, ${otherValues}, ${otherValues})`;              
+                ctx.strokeStyle = `rgb(${redValue}, ${otherValues}, ${otherValues})`;
                 ctx.beginPath();
                 ctx.arc(0, 0, robot.scale + 20, 0, shield.angleDist * .85);
                 ctx.stroke();
                 ctx.restore();
             }
+        }
+    }
+    function renderDrone(ctx, parent, drone, delta) {
+        ctx.save();
+        if (drone) {
+            if (drone.visualData.dir == null) drone.visualData.dir = 0;
+            let r = (parent.scale + drone.visualData.scale + 40);
+            let addon = (delta * .75) / r;
+            if (parent.isMe && keysPressed[82]) {
+                addon *= 2;
+            } else if (parent.shields.find(e => e.droneShield)) {
+                addon *= 2;
+            }
+            let addom = 1;
+            for (let i = 0; i < drone.effects.length; i++) {
+                let data = drone.effects[i];
+                if (data) {
+                    data.lastTime -= delta;
+                    if (data.name == "speed") {
+                        addom += data.amount;
+                    }
+                    if (data.lastTime <= 0 || !data.lastTime) {
+                        drone.effects.splice(i, 1);
+                    }
+                }
+            }
+            addon *= addom;
+            drone.visualData.dir += addon;
+            let tmp = {
+                x: Math.cos(drone.visualData.dir) * r,
+                y: Math.sin(drone.visualData.dir) * r
+            };
+            ctx.translate(tmp.x, tmp.y);
+            renderShapeBody(ctx, drone.visualData, 6);
+        }
+        ctx.restore();
+    }
+    function renderShapeBody(ctx, robot, w) {
+        if (robot.reflector) {
+            ctx.rotate(Math.random() * 360);
+            ctx.strokeStyle = "#fff";
+            ctx.lineWidth = 12;
+            renderStar(ctx, 5, robot.scale + 10, robot.scale + 10);
+            ctx.stroke();
+            ctx.rotate(Math.random() * 360);
+            ctx.strokeStyle = "#00f";
+            ctx.lineWidth = 12;
+            renderStar(ctx, 4, robot.scale + 5, robot.scale + 5);
+            ctx.stroke();
+        }
+        if (robot.name.includes("Circle")) {
+            renderCircle(0, 0, robot.scale, ctx, false, false, Date.now() - robot.damagedTime <= 20 ? "#fff" : robot.color, robot.isFREEZE ? "#fff" : robot.borderColor || "#000", w);
+            if (robot.name == "Ultimate Green Circle") {
+                renderCircle(0, 0, 600, ctx, false, true, "#fff", "#06a600", 20);
+            }
+        } else if (robot.name.includes("Pentagon")) {
+            ctx.rotate(robot.dir + Math.PI / 2);
+            ctx.strokeStyle = robot.isFREEZE ? "#fff" : (robot.borderColor || "#000");
+            ctx.lineWidth = robot.name == "Gray Pentagon" ? 18 : w;
+            ctx.fillStyle = robot.color;
+            renderStar(ctx, 2.5, robot.scale, robot.scale);
+            ctx.stroke();
+            ctx.fill();
+            ctx.rotate(-(robot.dir + Math.PI / 2));
+        } else if (robot.name.includes("Hexagon")) {
+            ctx.rotate(robot.dir + Math.PI / 2);
+            ctx.strokeStyle = robot.isFREEZE ? "#fff" : "#000";
+            ctx.lineWidth = robot.effects.filter(e => e.name == "Blink Support").length ? w * (robot.effects.filter(e => e.name == "Blink Support").length + 1) : w;
+            ctx.fillStyle = robot.color;
+            renderStar(ctx, 3, robot.scale, robot.scale);
+            ctx.stroke();
+            ctx.fill();
+            ctx.rotate(-(robot.dir + Math.PI / 2));
+        } else if (robot.name.includes("Heptagon")) {
+            ctx.rotate(robot.dir + Math.PI / 2);
+            ctx.strokeStyle = robot.isFREEZE ? "#fff" : "#000";
+            ctx.lineWidth = w;
+            ctx.fillStyle = robot.color;
+            renderStar(ctx, 3.5, robot.scale, robot.scale);
+            ctx.stroke();
+            ctx.fill();
+            ctx.rotate(-(robot.dir + Math.PI / 2));
         }
     }
     function renderPlayer(delta) {
@@ -11873,49 +13404,9 @@
                         ctx.drawImage(image, -(size / 2), -(size / 2), size, size);
                     }
                 } else {
-                    if (robot.reflector) {
-                        ctx.rotate(Math.random() * 360);
-                        ctx.strokeStyle = "#fff";
-                        ctx.lineWidth = 12;
-                        renderStar(ctx, 5, robot.scale + 10, robot.scale + 10);
-                        ctx.stroke();
-                        ctx.rotate(Math.random() * 360);
-                        ctx.strokeStyle = "#00f";
-                        ctx.lineWidth = 12;
-                        renderStar(ctx, 4, robot.scale + 5, robot.scale + 5);
-                        ctx.stroke();
-                    }
-                    if (robot.name.includes("Circle")) {
-                        renderCircle(0, 0, robot.scale, ctx, false, false, Date.now() - robot.damagedTime <= 20 ? "#fff" : robot.color, robot.isFREEZE ? "#fff" : robot.borderColor || "#000", robot.borderColor ? 12 : undefined);
-                        if (robot.name == "Ultimate Green Circle") {
-                            renderCircle(0, 0, 600, ctx, false, true, "#fff", "#06a600", 20);
-                        }
-                    } else if (robot.name.includes("Pentagon")) {
-                        ctx.rotate(robot.dir + Math.PI / 2);
-                        ctx.strokeStyle = robot.isFREEZE ? "#fff" : (robot.borderColor || "#000");
-                        ctx.lineWidth = robot.name == "Gray Pentagon" ? 18 : 12;
-                        ctx.fillStyle = robot.color;
-                        renderStar(ctx, 2.5, robot.scale, robot.scale);
-                        ctx.stroke();
-                        ctx.fill();
-                    } else if (robot.name.includes("Hexagon")) {
-                        ctx.rotate(robot.dir + Math.PI / 2);
-                        ctx.strokeStyle = robot.isFREEZE ? "#fff" : "#000";
-                        ctx.lineWidth = robot.effects.filter(e => e.name == "Blink Support").length ? 12*(robot.effects.filter(e => e.name == "Blink Support").length+1) : 12;
-                        ctx.fillStyle = robot.color;
-                        renderStar(ctx, 3, robot.scale, robot.scale);
-                        ctx.stroke();
-                        ctx.fill();
-                    } else if (robot.name.includes("Heptagon")) {
-                        ctx.rotate(robot.dir + Math.PI / 2);
-                        ctx.strokeStyle = robot.isFREEZE ? "#fff" : "#000";
-                        ctx.lineWidth = 12;
-                        ctx.fillStyle = robot.color;
-                        renderStar(ctx, 3.5, robot.scale, robot.scale);
-                        ctx.stroke();
-                        ctx.fill();
-                    }
+                    renderShapeBody(ctx, robot);
                 }
+                renderDrone(ctx, robot, robot.drone, delta);
                 ctx.restore();
             }
         }
@@ -12052,7 +13543,7 @@
                     }
                 });
             } else if (weapon.name == "Razor" || weapon.name == "Smuta") {
-                for(let i = 0; i < 2; i++) projectiles.push({
+                for (let i = 0; i < 2; i++) projectiles.push({
                     x: x,
                     y: y,
                     oldX: x,
@@ -12270,7 +13761,7 @@
                     isAlly: isAlly,
                     slowEffect: {
                         name: "slowdown",
-                        last: 2e3,
+                        last: 5e3,
                         power: 0.0086
                     },
                     color: "./images/bullets/purple_bullet.png",
@@ -12700,406 +14191,722 @@
             e.remove();
         });
     }
-    function obtainBattleRewards(result, oldYAY, rewardsMulti) {
+    function getLeagueName(league) {
+        if (league >= 4701) {
+            return "Champion";
+        } else if (league >= 3801 && league <= 4700) {
+            return "Master";
+        } else if (league >= 2901 && league <= 3800) {
+            return "Expert";
+        } else if (league >= 2101 && league <= 2900) {
+            return "Diamond";
+        } else if (league >= 1501 && league <= 2100) {
+            return "Gold";
+        } else if (league >= 1001 && league <= 1500) {
+            return "Silver";
+        } else if (league >= 701 && league <= 1000) {
+            return "Bronze";
+        } else if (league >= 451 && league <= 700) {
+            return "Private";
+        } else {
+            return "Recruit";
+        }
+    }
+    function getWinHonor(league) {
+        let name = getLeagueName(league);
+        if (name == "Champion") {
+            return 423;
+        } else if (name == "Master") {
+            return 380;
+        } else if (name == "Expert") {
+            return 289;
+        } else if (name == "Diamond") {
+            return 289;
+        } else if (name == "Gold") {
+            return 220;
+        } else if (name == "Silver") {
+            return 168;
+        } else if (name == "Bronze") {
+            return 108;
+        } else if (name == "Private") {
+            return 0;
+        } else {
+            return 0;
+        }
+    }
+    function getBeaconKillHonor(league) {
+        let name = getLeagueName(league);
+        if (name == "Champion") {
+            return 34;
+        } else if (name == "Master") {
+            return 50;
+        } else if (name == "Expert" || name == "Diamond") {
+            return 28;
+        } else if (name == "Gold") {
+            return 24;
+        } else if (name == "Silver") {
+            return 19;
+        } else if (name == "Bronze") {
+            return 9;
+        } else {
+            return 0;
+        }
+    }
+    function setBattleStats(player, isWin, league) {
+        for (let i = 0; i < player.robots.length; i++) {
+            let robot = player.robots[i];
+            if (robot && robot.battleStats) {
+                if (robot.battleStats.dmg) {
+                    let dmg = Math.abs(robot.battleStats.dmg);
+                    dmg /= 6250;
+                    dmg = Math.round(dmg / 2);
+                    player.honor += dmg;
+                    dmg = Math.abs(robot.battleStats.dmg);
+                    dmg /= 1e6;
+                    dmg = Math.round(dmg);
+                    player.honor += dmg * 50;
+                }
+                if (robot.battleStats.kills) {
+                    let kills = Math.abs(robot.battleStats.kills);
+                    player.honor += kills * getBeaconKillHonor(league);
+                    player.honor += Math.round(kills / 5) * getBeaconKillHonor(league);
+                }
+                if (robot.battleStats.beacons) {
+                    let beacons = Math.abs(robot.battleStats.beacons);
+                    player.honor += beacons * getBeaconKillHonor(league);
+                    player.honor += Math.round(beacons / 10) * getBeaconKillHonor(league);
+                }
+            }
+        }
+        if ((player.isAlly && isWin) || (!player.isAlly && !isWin)) {
+            player.honor += getWinHonor(league);
+        }
+    }
+    function getRank1Honor(league) {
+        let name = getLeagueName(league);
+        if (name == "Champion") {
+            return 360;
+        } else if (name == "Master") {
+            return 300;
+        } else if (name == "Expert" || name == "Diamond") {
+            return 221;
+        } else if (name == "Gold") {
+            return 160;
+        } else if (name == "Silver") {
+            return 108;
+        } else if (name == "Bronze") {
+            return 72;
+        } else {
+            return 0;
+        }
+    }
+    function getRank2Honor(league) {
+        let name = getLeagueName(league);
+        if (name == "Champion") {
+            return 216;
+        } else if (name == "Master") {
+            return 180;
+        } else if (name == "Expert" || name == "Diamond") {
+            return 131;
+        } else if (name == "Gold") {
+            return 99;
+        } else if (name == "Silver") {
+            return 66;
+        } else if (name == "Bronze") {
+            return 42;
+        } else {
+            return 0;
+        }
+    }
+    function getRank3Honor(league) {
+        let name = getLeagueName(league);
+        if (name == "Champion") {
+            return 108;
+        } else if (name == "Master") {
+            return 90;
+        } else if (name == "Expert" || name == "Diamond") {
+            return 68;
+        } else if (name == "Gold") {
+            return 50;
+        } else if (name == "Silver") {
+            return 30;
+        } else if (name == "Bronze") {
+            return 24;
+        } else {
+            return 0;
+        }
+    }
+    function setGlobalStats(data, isWin, league) {
+        let thingy = [];
+        for (let i = 0; i < data.length; i++) {
+            let _ = data[i];
+            if (_) {
+                _.robots.forEach(e => {
+                    if (e && e.battleStats) {
+                        if (!thingy[i]) {
+                            thingy[i] = {
+                                index: i,
+                                dmg: e.battleStats.dmg || 0,
+                                beacons: e.battleStats.beacons || 0
+                            };
+                        } else {
+                            if (e.battleStats.dmg) thingy[i].dmg += e.battleStats.dmg;
+                            if (e.battleStats.beacons) thingy[i].beacons += e.battleStats.beacons;
+                        }
+                    }
+                });
+            }
+        }
+        if (data.length) {
+            for (let i = 0; i < 3; i++) {
+                let dmgThing = thingy.sort((a, b) => b.dmg - a.dmg)[i];
+                let beaconThing = thingy.sort((a, b) => b.beacons - a.beacons)[i];
+                if (!dmgThing || !beaconThing) continue;
+                if (i == 0) {
+                    data[dmgThing.index].honor += getRank1Honor(league);
+                    data[beaconThing.index].honor += getRank1Honor(league);
+                } else if (i == 1 && data.length >= 2) {
+                    data[dmgThing.index].honor += getRank2Honor(league);
+                    data[beaconThing.index].honor += getRank2Honor(league);
+                } else if (i == 2 && data.length >= 3) {
+                    data[dmgThing.index].honor += getRank3Honor(league);
+                    data[beaconThing.index].honor += getRank3Honor(league);
+                }
+            }
+        }
+    }
+    var LegauePointRewardData = {
+        Champion: {
+            win: [13, 10, 7, 4, 3, 2],
+            lose: [7, 3, -5, -11, -17, -22]
+        },
+        Master: {
+            win: [17, 13, 10, 7, 4, 3],
+            lose: [7, 3, 1, -5, -11, -17]
+        },
+        Expert: {
+            win: [17, 13, 10, 7, 4, 3],
+            lose: [7, 3, 1, -5, -11, -17]
+        },
+        Diamond: {
+            win: [17, 13, 10, 7, 4, 3],
+            lose: [10, 7, 3, 1, -5, -11]
+        },
+        Gold: {
+            win: [17, 13, 10, 7, 4, 3],
+            lose: [10, 7, 3, 1, -5, -11]
+        },
+        Silver: {
+            win: [22, 17, 13, 7, 4, 3],
+            lose: [10, 7, 3, 1, -5, -11]
+        },
+        Bronze: {
+            win: [22, 17, 13, 7, 4, 3],
+            lose: [10, 7, 3, 1, 0, 0]
+        },
+        Private: {
+            win: [27, 22, 17, 13, 7, 4],
+            lose: [10, 7, 3, 1, 0, 0]
+        },
+        Recruit: {
+            win: [27, 22, 17, 13, 7, 4],
+            lose: [13, 10, 7, 3, 1, 0]
+        },
+    };
+    function getLegauePointReward(league, place, isWin, gameMode) {
+        let name = getLeagueName(league);
+        if (isWin) {
+            let data = LegauePointRewardData[name].win;
+            return data[place] || (data[data.length - 1]);
+        } else {
+            let data = LegauePointRewardData[name].lose;
+            if (gameMode == 3 || gameMode == 5) {
+                return data[data.length - 1];
+            } else if (gameMode == 4 && place <= 5) {
+                data = LegauePointRewardData[name].win;
+            }
+            return data[place] || (data[data.length - 1]);
+        }
+    }
+    function getRewardsForGame(type, player, league) {
         let total = {
             sliver: 0,
             gold: 0,
             oxp: 0,
-            keys: 0,
-            workshopPoints: 0
+            playerXP: 0,
+            keys: 0
         };
-        total.sliver += 10e3 * result.kills;
-        total.sliver += 1e2 * (Math.abs(result.dmg) / 750);
-        total.sliver += Math.max(Math.round(result.dmg / 500e3), 0) * 150e3;
-        total.sliver += Math.max(Math.round(result.dmg / 1e6), 0) * 500e3;
-        total.sliver = parseInt(removeDecimals(total.sliver));
+        let dmg = Math.round(player.robots.filter(item => item && item.battleStats && item.battleStats.dmg).map(item => item.battleStats.dmg).reduce((acc, current) => acc + current, 0));
+        let kills = Math.round(player.robots.filter(item => item && item.battleStats && item.battleStats.kills).map(item => item.battleStats.kills).reduce((acc, current) => acc + current, 0));
+        let beacons = Math.round(player.robots.filter(item => item && item.battleStats && item.battleStats.beacons).map(item => item.battleStats.beacons).reduce((acc, current) => acc + current, 0));
+        if (type == "pvp") {
+            total.sliver += (player.honor / 15) * 5e3;
+            total.sliver += (player.honor / 100) * 20e3;
+            total.sliver += (player.honor / 1e3) * 150e3;
+            total.sliver = Math.round(total.sliver);
 
-        total.gold += result.kills * 5;
-        let dmg = Math.abs(result.dmg);
-        total.gold += Math.floor(dmg / 100e3) * 2.5;
-        total.gold = Math.round(total.gold);
+            total.gold += player.honor * .8;
+            total.gold += (player.honor / 1e3) * 250;
+            total.gold = Math.round(total.gold);
 
-        for (let i = 0; i < result.kills; i++) {
-            if (total.keys >= 250) {
-                total.keys += 1;
-            } else if (total.keys >= 100) {
-                total.keys += 2.5;
-            } else {
-                total.keys += 5;
+            total.oxp += player.honor / 10;
+            total.oxp += (player.honor / 100) * 25;
+            total.oxp = Math.round(total.oxp);
+
+            total.playerXP += player.honor / 20;
+            total.playerXP += (player.honor / 1e3) * 150;
+            total.playerXP = Math.round(total.playerXP);
+
+            total.keys += kills * 2;
+            total.keys += beacons * 2;
+            total.keys += (dmg / 500e3) * 25;
+            total.keys += (dmg / 100e3) * 5;
+            total.keys += (dmg / 15e3);
+            total.keys = Math.round(total.keys);
+        } else if (type == "pve") {
+            total.sliver += (dmg / 100e3) * 50e3;
+            total.sliver += kills * 15e3;
+            total.sliver = Math.round(total.sliver);
+            if (player.rewardBonus && player.rewardBonus.silver) {
+                total.sliver += player.rewardBonus.silver;
+            }
+
+            total.gold += kills * 1.5;
+            total.gold += (dmg / 100e3) * 10;
+            total.gold = Math.round(total.gold);
+            if (player.rewardBonus && player.rewardBonus.gold) {
+                total.gold += player.rewardBonus.gold;
+            }
+
+            total.playerXP += kills / 10;
+            total.playerXP += (dmg / 500e3) * 150;
+            total.playerXP = Math.round(total.playerXP);
+
+            total.oxp += kills / 5;
+            total.oxp += (dmg / 200e3) * 25;
+            total.oxp = Math.round(total.oxp);
+            if (player.rewardBonus && player.rewardBonus.OXP) {
+                total.oxp += player.rewardBonus.OXP;
+            }
+
+            total.keys += kills * 2;
+            total.keys += (dmg / 500e3) * 25;
+            total.keys += (dmg / 100e3) * 5;
+            total.keys += (dmg / 15e3);
+            total.keys = Math.round(total.keys);
+            if (player.rewardBonus && player.rewardBonus.keys) {
+                total.keys += player.rewardBonus.keys;
+            }
+
+            if (player.rewardBonus && player.rewardBonus.WSP) {
+                if (total.workshopPoints == null) total.workshopPoints = 0;
+                total.workshopPoints += player.rewardBonus.WSP;
             }
         }
-        total.keys = Math.min(Math.floor(total.keys), 2500);
-
-        total.oxp = result.kills * 2;
-        total.oxp += Math.max(Math.round(result.dmg / 750e3), 0) * 10;
-        total.oxp = Math.floor(total.oxp);
-
-        if (result.rewardBonus) {
-            total.sliver += result.rewardBonus.silver;
-            total.gold += result.rewardBonus.gold;
-            total.keys += result.rewardBonus.keys;
-            total.oxp += result.rewardBonus.OXP;
+        if (total.playerXP >= 500) {
+            let amount = total.playerXP - 500;
+            total.playerXP = 500;
+            total.playerXP += amount * .25;
+            total.playerXP = Math.round(total.playerXP);
         }
-
-        if (result.beacons) {
-            total.sliver += result.beacons * 25e2;
-            total.gold += result.beacons;
-            total.keys += result.beacons * 2;
-            total.oxp += result.beacons * 4;
-        }
-
-        total.sliver *= rewardsMulti || 1;
-        total.gold *= rewardsMulti || 1;
-        total.keys *= rewardsMulti || 1;
-        total.oxp *= rewardsMulti || 1;
-
-        if (oldYAY !== "YAY WIN" && rewardsMulti === 2) {
-            total.sliver += 15e3;
-            total.gold += 20;
-            total.keys += 10;
-            total.oxp += 20;
-        }
-
-        total.sliver = Math.floor(total.sliver);
-        total.gold = Math.floor(total.gold);
-        total.keys = Math.floor(total.keys);
-        total.oxp = Math.floor(total.oxp);
-
-        total.workshopPoints = result.rewardBonus ? (result.rewardBonus.WSP || 0) : 0;
-
         return total;
     }
-    function endGame(playersData, rewardsMulti) {
+    function endGame(playersData, isWin, notFinish) {
         let gameMode = player.gameMode;
         document.getElementById("hangerUI").style.display = "none";
         document.getElementById("sideDisplay").style.display = "block";
         document.getElementById("goToBattle").style.display = "block";
         document.getElementById("gameModesDisplay").style.display = "none";
         resetDataStuff();
-        let leaguePointsEarned = 0;
-        let oldRewardMulti = rewardsMulti;
-        if (rewardsMulti == "YAY WIN") {
-            rewardsMulti = 1;
-        }
-        if (gameMode == 3 || gameMode == 2 || oldRewardMulti == "YAY WIN") {
-            let lastAmount = player.league;
-            getLeaguePoints(rewardsMulti);
-            leaguePointsEarned = player.league - lastAmount;
-        }
-        let endResult = new Array(playersData.length);
-        for (let i = 0; i < endResult.length; i++) {
-            endResult[i] = {
-                id: i,
-                isAlly: playersData[i].isAlly,
-                dmg: 0,
-                kills: 0,
-                beacons: 0,
-                honor: 0,
-                name: playersData[i].name
-            };
-        }
-        for (let i = 0; i < playersData.length; i++) {
-            for (let t = 0; t < playersData[i].robots.length; t++) {
-                let robot = playersData[i].robots[t];
-                if (robot && robot.battleStats) {
-                    if (robot.battleStats.dmg) {
-                        endResult[i].dmg += Math.round(robot.battleStats.dmg);
-                        if (i == 0) addTaskXP("dmg", Math.abs(robot.battleStats.dmg));
-                    }
-                    if (robot.battleStats.kills) {
-                        endResult[i].kills += robot.battleStats.kills;
-                        if (i == 0) addTaskXP("kills", robot.battleStats.kills);
-                    }
-                    if (robot.battleStats.beacons) {
-                        endResult[i].beacons += robot.battleStats.beacons;
-                    }
-                }
-            }
-            endResult[i].rewardBonus = playersData[i].rewardBonus;
-        }
-        for (let i = 0; i < endResult.length; i++) {
-            let result = endResult[i];
-            if (result) {
-                result.honor += Math.round(Math.min(1e9, result.dmg) / 50e3);
-                result.honor += Math.round((result.dmg / 500e3) * 10);
-                result.honor += result.kills * 100;
-                result.honor += result.beacons * 75;
-            }
-        }
-        let team = [];
+        let allies = [];
         let enemies = [];
-        let total = obtainBattleRewards(endResult[0], oldRewardMulti, rewardsMulti);
-        for (let i = 0; i < endResult.length; i++) {
-            let result = endResult[i];
-            if (result.isAlly) {
-                team.push({ ...result });
+        for (let i = 0; i < playersData.length; i++) {
+            let data = playersData[i];
+            if (data.honor == null) data.honor = 0;
+            if (i == 0) data.isMe = true;
+            if (data.isAlly) {
+                allies.push(data);
             } else {
-                enemies.push({ ...result });
+                enemies.push(data);
             }
         }
-        team = team.sort((a, b) => b.honor - a.honor);
+        allies.forEach(e => {
+            setBattleStats(e, isWin, player.league);
+        });
+        enemies.forEach(e => {
+            setBattleStats(e, isWin, player.league);
+        });
+        setGlobalStats(allies, isWin, player.league);
+        setGlobalStats(enemies, isWin, player.league);
+        allies = allies.sort((a, b) => b.honor - a.honor);
         enemies = enemies.sort((a, b) => b.honor - a.honor);
-        let myPlayer = playersData[0];
-        if (gameMode == 4) {
-            document.getElementById("sideDisplay").innerHTML = `
-            <div style="font-size: 40px; width: 100%; text-align: center;">
-            ${rewardsMulti >= 1 ? "Victory" : "Defeat"}
-            </div>
-            <div style="position: absolute; right: 5px; bottom: 10px; font-size: 12px;">
-            Read the scores from: up -> down and left -> right<br>
-            For example: 6th place is at the left box, 6 down from the top.<br>
-            Another example: 12th place is right box, 2 down.
-            </div>
-            `;
-            endResult = endResult.sort((a, b) => b.honor - a.honor);
-            for (let i = 0; i < 10; i++) {
-                let robot = endResult[i];
-                if (robot) {
-                    let textcolor = (i % 2 == 0 ? "#000" : "#fff");
-                    let color = (i % 2 == 0 ? `rgb(255, 255, 255, 0.4)` : `rgb(0, 0, 0, 0.2)`);
-                    document.getElementById("sideDisplay").innerHTML += `
-                    <div style="position: absolute; left: 60px; top: ${(window.innerHeight / 2 - ((40 * (9)) / 2)) + (i * 40)}px; background-color: ${color}; width: ${(window.innerWidth / 2) - 120}px; height: 40px;">
-                    <div id="showRobots${i}" style="cursor: pointer; position: absolute; top: 9.25px; left: 10px; height: 21.5px; width: 215px; color: ${textcolor}; font-size: 16px; overflow: scroll;">
-                    ${robot.name.length > 14 ? (robot.name.slice(0, 10) + "...") : robot.name}
-                    </div>
-                    <div style="position: absolute; top: 9.25px; left: 145px; color: ${textcolor}; font-size: 16px;">
-                    ${abbreviateNumber(robot.kills)}
-                    </div>
-                    <div style="position: absolute; top: 9.25px; left: 245px; color: ${textcolor}; font-size: 16px;">
-                    ${robot.dmg >= 999999 ? abbreviateNumber(robot.dmg) : robot.dmg}
-                    </div>
-                    <div style="position: absolute; top: 9.25px; left: 345px; color: ${textcolor}; font-size: 16px;">
-                    ${robot.honor}
-                    </div>
-                    </div>
-                    `;
-                }
-            }
-            for (let i = 0; i < 10; i++) {
-                let robot = endResult[i + 10];
-                if (robot) {
-                    let textcolor = (i % 2 == 0 ? "#000" : "#fff");
-                    let color = (i % 2 == 0 ? `rgb(255, 255, 255, 0.4)` : `rgb(0, 0, 0, 0.2)`);
-                    document.getElementById("sideDisplay").innerHTML += `
-                    <div style="position: absolute; right: 60px; top: ${(window.innerHeight / 2 - ((40 * (9)) / 2)) + (i * 40)}px; background-color: ${color}; width: ${(window.innerWidth / 2) - 120}px; height: 40px;">
-                    <div id="showRobots${i + 10}" style="cursor: pointer; position: absolute; top: 9.25px; left: 10px; height: 21.5px; width: 215px; color: ${textcolor}; font-size: 16px; overflow: scroll;">
-                    ${robot.name.length > 14 ? (robot.name.slice(0, 10) + "...") : robot.name}
-                    </div>
-                    <div style="position: absolute; top: 9.25px; left: 165px; color: ${textcolor}; font-size: 16px;">
-                    ${abbreviateNumber(robot.kills)}
-                    </div>
-                    <div style="position: absolute; top: 9.25px; left: 265px; color: ${textcolor}; font-size: 16px;">
-                    ${robot.dmg >= 999999 ? abbreviateNumber(robot.dmg) : robot.dmg}
-                    </div>
-                    <div style="position: absolute; top: 9.25px; left: 365px; color: ${textcolor}; font-size: 16px;">
-                    ${robot.honor}
-                    </div>
-                    </div>
-                    `;
-                }
-            }
-            let thingIndex = 0;
-            let length = 0;
-            for (let i in total) {
-                length++;
-            }
-            for (let i in total) {
-                let width = 150;
-                let backgroundImage = i == "sliver" ? agSource : "";
-                if (i == "gold") {
-                    backgroundImage = auSource;
-                } else if (i == "keys") {
-                    backgroundImage = keysSource;
-                } else if (i == "workshopPoints") {
-                    backgroundImage = "./images/icons/workshop.png";
-                }
-                document.getElementById("sideDisplay").innerHTML += `
-                <div style="position: absolute; width: ${width}px; height: 40px; top: 95px; left: ${(180 * thingIndex) + ((window.innerWidth / 2) - ((length * 180) / 2))}px; border-radius: 4px; background-color: rgb(0, 0, 0, 0.4);">
-                <div style="position: absolute; width: 40px; height: 40px; background-size: 40px 40px; background-image: url('${backgroundImage}');">
-                ${backgroundImage ? "" : `
-                <span class="material-symbols-outlined" style="font-size: 40px; color: #ffff00;">
-                star
-                </span>
-                `}
-                </div>
-                <div style="position: absolute; color: #fff; top: 9.25px; font-size: 16px; right: 5px;">
-                ${total[i] >= 1e9 ? abbreviateNumber(total[i]) : total[i]}
-                </div>
-                </div>
-                </div>
-                `;
-                thingIndex++;
-            }
-        } else if (gameMode == 2 || gameMode == 3 || gameMode == 5) {
-            document.getElementById("sideDisplay").innerHTML = `
-            <div style="font-size: 40px; width: 100%; text-align: center;">
-            ${rewardsMulti >= 1 ? "Victory" : "Defeat"}
-            </div>
-            `;
-            for (let i = 0; i < team.length; i++) {
-                let robot = team[i];
-                if (robot) {
-                    let textcolor = (i % 2 == 0 ? "#000" : "#fff");
-                    let color = (i % 2 == 0 ? `rgb(255, 255, 255, 0.4)` : `rgb(0, 0, 0, 0.2)`);
-                    document.getElementById("sideDisplay").innerHTML += `
-                    <div style="position: absolute; left: 60px; top: ${(window.innerHeight / 2 - ((40 * (team.length - 1)) / 2)) + (i * 40)}px; background-color: ${color}; width: ${(window.innerWidth / 2) - 120}px; height: 40px;">
-                    <div id="showAllyRobots${i}" style="cursor: pointer; position: absolute; top: 9.25px; left: 10px; height: 21.5px; width: 215px; color: ${textcolor}; font-size: 16px; overflow: scroll;">
-                    ${robot.name.length > 14 ? (robot.name.slice(0, 10) + "...") : robot.name}
-                    </div>
-                    <div style="position: absolute; top: 9.25px; left: 145px; color: ${textcolor}; font-size: 16px;">
-                    ${abbreviateNumber(robot.kills)}
-                    </div>
-                    <div style="position: absolute; top: 9.25px; left: 245px; color: ${textcolor}; font-size: 16px;">
-                    ${robot.dmg >= 999999 ? abbreviateNumber(robot.dmg) : robot.dmg}
-                    </div>
-                    <div style="position: absolute; top: 9.25px; left: 345px; color: ${textcolor}; font-size: 16px;">
-                    ${robot.honor}
-                    </div>
-                    </div>
-                    `;
-                }
-            }
-            for (let i = 0; i < enemies.length; i++) {
-                let robot = enemies[i];
-                if (robot) {
-                    let textcolor = (i % 2 == 0 ? "#000" : "#fff");
-                    let color = (i % 2 == 0 ? `rgb(255, 255, 255, 0.4)` : `rgb(0, 0, 0, 0.2)`);
-                    document.getElementById("sideDisplay").innerHTML += `
-                    <div style="position: absolute; right: 60px; top: ${(window.innerHeight / 2 - ((40 * (enemies.length - 1)) / 2)) + (i * 40)}px; background-color: ${color}; width: ${(window.innerWidth / 2) - 120}px; height: 40px;">
-                    <div id="showEnemyRobots${i}" style="cursor: pointer; position: absolute; top: 9.25px; left: 10px; height: 21.5px; width: 215px; color: ${textcolor}; font-size: 16px; overflow: scroll;">
-                    ${robot.name.length > 14 ? (robot.name.slice(0, 10) + "...") : robot.name}
-                    </div>
-                    <div style="position: absolute; top: 9.25px; left: 165px; color: ${textcolor}; font-size: 16px;">
-                    ${abbreviateNumber(robot.kills)}
-                    </div>
-                    <div style="position: absolute; top: 9.25px; left: 265px; color: ${textcolor}; font-size: 16px;">
-                    ${robot.dmg >= 999999 ? abbreviateNumber(robot.dmg) : robot.dmg}
-                    </div>
-                    <div style="position: absolute; top: 9.25px; left: 365px; color: ${textcolor}; font-size: 16px;">
-                    ${robot.honor}
-                    </div>
-                    </div>
-                    `;
-                }
-            }
-            let thingIndex = 0;
-            let length = 0;
-            for (let i in total) {
-                length++;
-            }
-            for (let i in total) {
-                let width = 150;
-                let backgroundImage = i == "sliver" ? agSource : "";
-                if (i == "gold") {
-                    backgroundImage = auSource;
-                } else if (i == "keys") {
-                    backgroundImage = keysSource;
-                } else if (i == "workshopPoints") {
-                    backgroundImage = "./images/icons/workshop.png";
-                }
-                document.getElementById("sideDisplay").innerHTML += `
-                <div style="position: absolute; width: ${width}px; height: 40px; top: 95px; left: ${(180 * thingIndex) + ((window.innerWidth / 2) - ((length * 180) / 2))}px; border-radius: 4px; background-color: rgb(0, 0, 0, 0.4);">
-                <div style="position: absolute; width: 40px; height: 40px; background-size: 40px 40px; background-image: url('${backgroundImage}');">
-                ${backgroundImage ? "" : `
-                <span class="material-symbols-outlined" style="font-size: 40px; color: #ffff00;">
-                star
-                </span>
-                `}
-                </div>
-                <div style="position: absolute; color: #fff; top: 9.25px; font-size: 16px; right: 5px;">
-                ${total[i] >= 1e9 ? abbreviateNumber(total[i]) : total[i]}
-                </div>
-                </div>
-                </div>
-                `;
-                thingIndex++;
-            }
-        } else if (gameMode == 1 || gameMode == 0) {
-            document.getElementById("sideDisplay").innerHTML = `
-            <div style="width: 100%; font-size: 36px; text-align: center;">
-            Battle Overview
-            </div>
-            `;
-            for (let i = 0; i < myPlayer.robots.length; i++) {
-                let robot = myPlayer.robots[i];
-                if (robot) {
-                    let textcolor = (i % 2 == 0 ? "#000" : "#fff");
-                    let color = (i % 2 == 0 ? `rgb(255, 255, 255, 0.4)` : `rgb(0, 0, 0, 0.2)`);
-                    document.getElementById("sideDisplay").innerHTML += `
-                    <div style="position: absolute; left: 60px; top: ${(window.innerHeight / 2 - ((40 * (myPlayer.robots.length - 1)) / 2)) + (i * 40)}px; background-color: ${color}; width: ${(window.innerWidth / 2) - 120}px; height: 40px;">
-                    <div style="position: absolute; top: 9.25px; left: 10px; height: 21.5px; width: 215px; color: ${textcolor}; font-size: 16px; overflow: scroll;">
-                    ${robot.level >= 13 ? `${robot.name} <span style="color: ${levelToMKColor(robot.level)}">${levelToMKText(robot.level)}</span>` : `Lvl ${robot.level} ${robot.name}`}
-                    </div>
-                    <div style="position: absolute; top: 9.25px; left: 245px; color: ${textcolor}; font-size: 16px;">
-                    ${robot.battleStats ? (abbreviateNumber(robot.battleStats.kills) || 0) : 0}
-                    </div>
-                    <div style="position: absolute; top: 9.25px; left: 345px; color: ${textcolor}; font-size: 16px;">
-                    ${robot.battleStats ? (robot.battleStats.dmg ? robot.battleStats.dmg >= 999999 ? abbreviateNumber(robot.battleStats.dmg) : robot.battleStats.dmg : 0) : 0}
-                    </div>
-                    </div>
-                    `;
-                }
-            }
-            document.getElementById("sideDisplay").innerHTML += `
-            <div style="position: absolute; left: 60px; width: ${(window.innerWidth / 2) - 120}px; height: 40px; background-color: rgb(0, 0, 0, 0.6); top: ${(window.innerHeight / 2 - ((40 * (myPlayer.robots.length)) / 2)) - 20}">
-            <div style="position: absolute; width: 40px; height: 40px; left: 245px; background-size: 40px 40px; background-image: url('./images/icons/cant_use_shape.png');">
-            </div>
-            <div style="position: absolute; width: 40px; height: 40px; left: 345px;">
-            <span class="material-symbols-outlined" style="font-size: 40px; color: #fff;">
-            explosion
+        let leagueReward = getLegauePointReward(player.league, allies.findIndex(e => e.isMe), isWin, gameMode);
+        if (gameMode == 2 || gameMode == 3 || gameMode == 5) {
+            let rewards = getRewardsForGame("pvp", allies.find(e => e.isMe), player.league);
+            let width = window.innerWidth / 2 - 10 - 60;
+            let width2 = window.innerWidth - 120;
+            let height = window.innerHeight - 490;
+            let text = `
+            <div style="position: absolute; top: 0px; text-align: center; left: 250px; color: #fff; width: 75px; height: 50px;">
+            <span class="material-symbols-outlined" style="font-size: 52px;">
+            military_tech
             </span>
             </div>
+            <div style="position: absolute; top: 0px; text-align: center; left: 337.5px; color: #fff; width: 150px; height: 50px;">
+            <span class="material-symbols-outlined" style="font-size: 50px;">
+            destruction
+            </span>
+            </div>
+            <div style="position: absolute; top: 2.5px; text-align: center; left: 500px; color: #fff; width: 75px; height: 50px;">
+            <span class="material-symbols-outlined" style="font-size: 45px;">
+            missing_controller
+            </span>
+            </div>
+            <div style="position: absolute; top: 2.5px; text-align: center; left: 575px; color: #fff; width: 75px; height: 50px;">
+            <span class="material-symbols-outlined" style="font-size: 45px;">
+            skull
+            </span>
             </div>
             `;
-            let thingIndex = 0;
-            for (let i in total) {
-                let backgroundImage = i == "sliver" ? agSource : "";
-                if (i == "gold") {
-                    backgroundImage = auSource;
-                } else if (i == "keys") {
-                    backgroundImage = keysSource;
-                } else if (i == "workshopPoints") {
-                    backgroundImage = "./images/icons/workshop.png";
+            document.getElementById("sideDisplay").innerHTML = `
+            <div style="position: absolute; color: #fff; text-align: center; font-size: 35px; top: 10px; left: 60px; width: ${width2}px; height: 50px; background: linear-gradient(to right, transparent 0%, transparent 20%, ${isWin ? "#0f0" : "#f00"} 50%, transparent 80%, transparent 100%);">
+            ${isWin ? "Victory" : "Defeat"}
+            </div>
+            <div style="position: absolute; top: 150px; left: 60px; width: ${width}px; height: 50px; background-color: rgb(0, 255, 0, .75); overflow-x: scroll;">
+            <div style="font-size: 35px; color: #fff; margin-left: 10px;">ALLIES</div>
+            ${text}
+            </div>
+            <div style="position: absolute; top: 150px; right: 60px; width: ${width}px; height: 50px; background-color: rgb(255, 0, 0, .75); overflow-x: scroll;">
+            <div style="font-size: 35px; color: #fff; margin-left: 10px;">ENEMIES</div>
+            ${text}
+            </div>
+            <div id="allies" style="position: absolute; top: 210px; left: 60px; width: ${width}px; height: ${height}px; overflow: scroll;">
+            </div>
+            <div id="enemies" style="position: absolute; top: 210px; right: 60px; width: ${width}px; height: ${height}px; overflow: scroll;">
+            </div>
+            <div id="rewards" style="position: absolute; left: ${window.innerWidth / 2 - 200}px; bottom: 20px; width: 400px; height: 200px; border-radius: 6px; background-color: rgb(0, 0, 0, 0.25); overflow-y: scroll;">
+            </div>
+            <div style="position: absolute; font-size: 35px; text-align: center; left: ${window.innerWidth / 2 - 200}px; bottom: 225px; width: 400px;">
+            REWARDS
+            </div>
+            `;
+            let allyE = document.getElementById("allies");
+            for (let i = 0; i < allies.length; i++) {
+                let data = allies[i];
+                if (data) {
+                    allyE.innerHTML += `
+                    <div style="position: absolute; ${i == 0 ? `top: 0px;` : `top: ${50 * i}px; border: solid; border-width: 5px 0px 0px 0px; border-color: #000;`} height: 50px; width: 100%; background-color: rgb(0, 0, 0, .25);">
+                    <div style="position: absolute; cursor: pointer; top: 13.5px; left: 5px; color: #fff;">
+                    ${data.name}
+                    </div>
+                    <div style="position: absolute; top: 13.5px; text-align: center; left: 250px; color: #fff; width: 75px;">
+                    ${data.honor}
+                    </div>
+                    <div style="position: absolute; top: 13.5px; text-align: center; left: 337.5px; color: #fff; width: 150px;">
+                    ${abbreviateNumber(Math.round(data.robots.filter(item => item && item.battleStats && item.battleStats.dmg).map(item => item.battleStats.dmg).reduce((acc, current) => acc + current, 0)))}
+                    </div>
+                    <div style="position: absolute; top: 13.5px; text-align: center; left: 500px; color: #fff; width: 75px;">
+                    ${Math.round(data.robots.filter(item => item && item.battleStats && item.battleStats.beacons).map(item => item.battleStats.beacons).reduce((acc, current) => acc + current, 0))}
+                    </div>
+                    <div style="position: absolute; top: 13.5px; text-align: center; left: 575px; color: #fff; width: 75px;">
+                    ${Math.round(data.robots.filter(item => item && item.battleStats && item.battleStats.kills).map(item => item.battleStats.kills).reduce((acc, current) => acc + current, 0))}
+                    </div>
+                    </div>
+                    `;
                 }
-                document.getElementById("sideDisplay").innerHTML += `
-                <div style="position: absolute; right: ${(((window.innerWidth / 4) / 2)) + 60}px; top: ${160 + (thingIndex * 60)}px; background-color: rgb(0, 0, 0, 0.2); width: ${(window.innerWidth / 4) - 120}px; height: 40px; overflow: hidden; border-radius: 6px;">
-                <div style="position: absolute; width: 40px; height: 40px; background-size: 40px 40px; background-image: url('${backgroundImage}');">
-                ${backgroundImage ? "" : `
-                <span class="material-symbols-outlined" style="font-size: 40px; color: #ffff00;">
-                star
-                </span>
-                `}
-                </div>
-                <div style="position: absolute; color: #fff; top: 9.25px; font-size: 16px; right: 5px;">
-                ${total[i] >= 1e9 ? abbreviateNumber(total[i]) : total[i]}
-                </div>
-                </div>
-                `;
-                thingIndex++;
             }
-            document.getElementById("sideDisplay").innerHTML += `
-            <div style="position: absolute; right: ${(((window.innerWidth / 4) / 2)) + 60}px; top: ${160 + (thingIndex * 60)}px; background-color: rgb(0, 0, 0, 0.2); width: ${(window.innerWidth / 4) - 120}px; height: 40px; overflow: hidden; border-radius: 6px;">
-            <div style="position: absolute; width: 40px; height: 40px;">
-            <span class="material-symbols-outlined" style="font-size: 40px; color: #ffff00;">
+            let enemyE = document.getElementById("enemies");
+            for (let i = 0; i < enemies.length; i++) {
+                let data = enemies[i];
+                if (data) {
+                    enemyE.innerHTML += `
+                    <div style="position: absolute; ${i == 0 ? `top: 0px;` : `top: ${50 * i}px; border: solid; border-width: 5px 0px 0px 0px; border-color: #000;`} height: 50px; width: 100%; background-color: rgb(0, 0, 0, .25);">
+                    <div style="position: absolute; cursor: pointer; top: 13.5px; left: 5px; color: #fff;">
+                    ${data.name}
+                    </div>
+                    <div style="position: absolute; top: 13.5px; text-align: center; left: 250px; color: #fff; width: 75px;">
+                    ${data.honor}
+                    </div>
+                    <div style="position: absolute; top: 13.5px; text-align: center; left: 337.5px; color: #fff; width: 150px;">
+                    ${abbreviateNumber(Math.round(data.robots.filter(item => item && item.battleStats && item.battleStats.dmg).map(item => item.battleStats.dmg).reduce((acc, current) => acc + current, 0)))}
+                    </div>
+                    <div style="position: absolute; top: 13.5px; text-align: center; left: 500px; color: #fff; width: 75px;">
+                    ${Math.round(data.robots.filter(item => item && item.battleStats && item.battleStats.beacons).map(item => item.battleStats.beacons).reduce((acc, current) => acc + current, 0))}
+                    </div>
+                    <div style="position: absolute; top: 13.5px; text-align: center; left: 575px; color: #fff; width: 75px;">
+                    ${Math.round(data.robots.filter(item => item && item.battleStats && item.battleStats.kills).map(item => item.battleStats.kills).reduce((acc, current) => acc + current, 0))}
+                    </div>
+                    </div>
+                    `;
+                }
+            }
+            let index = 1;
+            let elemtn = document.getElementById("rewards");
+            elemtn.innerHTML += `
+            <div style="position: absolute; top: 0px; left: 0px; width: 100%;">
+            <div style="position: absolute; top: 0px; left: 0px; width: 50px; height: 50px;">
+            <span class="material-symbols-outlined" style="font-size: 50px; color: #ffff00;">
             rewarded_ads
             </span>
             </div>
-            <div style="position: absolute; color: #fff; top: 9.25px; font-size: 16px; right: 5px;">
-            ${leaguePointsEarned}
+            <div style="position: absolute; color: #fff; font-size: 35px; top: 0px; right: 5px;">
+            ${leagueReward}
             </div>
             </div>
             `;
+            updateMoneyDisplay("league", leagueReward);
+            for (let i in rewards) {
+                if (i == "sliver" || i == "gold" || i == "keys") {
+                    elemtn.innerHTML += `
+                    <div style="position: absolute; top: ${50 * index}px; left: 0px; width: 100%;">
+                    <div style="position: absolute; top: 0px; left: 0px; width: 50px; height: 50px; background-size: 50px 50px; background-image: url('${i == "sliver" ? agSource : i == "keys" ? keysSource : auSource}');">
+                    </div>
+                    <div style="position: absolute; color: #fff; font-size: 35px; top: 0px; right: 5px;">
+                    ${abbreviateNumber(rewards[i])}
+                    </div>
+                    </div>
+                    `;
+                    updateMoneyDisplay(i, rewards[i]);
+                } else if (i == "oxp" || i == "playerXP") {
+                    elemtn.innerHTML += `
+                    <div style="position: absolute; top: ${50 * index}px; left: 0px; width: 100%;">
+                    <div style="position: absolute; top: 0px; left: 0px; width: 50px; height: 50px;">
+                    <span class="material-symbols-outlined" style="font-size: 50px; color: ${i == "playerXP" ? "#bdbdbd" : "#ffff00"};">
+                    ${i == "playerXP" ? "token" : "star"}
+                    </span>
+                    </div>
+                    <div style="position: absolute; color: #fff; font-size: 35px; top: 0px; right: 5px;">
+                    ${abbreviateNumber(rewards[i])}
+                    </div>
+                    </div>
+                    `;
+                    if (i == "oxp") {
+                        addOperationXP(rewards[i]);
+                    } else {
+                        updateMoneyDisplay("player_xp", rewards[i]);
+                    }
+                }
+                index++;
+            }
+        } else if (gameMode == 0 || gameMode == 1) {
+            let me = allies.find(e => e.isMe);
+            let rewards = getRewardsForGame("pve", me, player.league);
+            let width = window.innerWidth - 20 - 120;
+            let width2 = window.innerWidth - 120;
+            let height = window.innerHeight - 490;
+            let text = `
+            <div style="position: absolute; top: 0px; text-align: center; left: 337.5px; color: #fff; width: 150px; height: 50px;">
+            <span class="material-symbols-outlined" style="font-size: 50px;">
+            destruction
+            </span>
+            </div>
+            <div style="position: absolute; top: 2.5px; text-align: center; left: 500px; color: #fff; width: 75px; height: 50px;">
+            <span class="material-symbols-outlined" style="font-size: 45px;">
+            skull
+            </span>
+            </div>
+            `;
+            document.getElementById("sideDisplay").innerHTML = `
+            <div style="position: absolute; color: #fff; text-align: center; font-size: 35px; top: 10px; left: 60px; width: ${width2}px; height: 50px; background: linear-gradient(to right, transparent 0%, transparent 20%, #808080 50%, transparent 80%, transparent 100%);">
+            Battle Overview
+            </div>
+            <div style="position: absolute; top: 150px; left: 60px; width: ${width}px; height: 50px; background: linear-gradient(to right, #808080, transparent); overflow-x: scroll;">
+            <div style="font-size: 35px; color: #fff; margin-left: 10px;">ROBOTS</div>
+            ${text}
+            </div>
+            <div id="robots" style="position: absolute; top: 210px; left: 60px; width: ${width}px; height: ${height}px; overflow: scroll;">
+            </div>
+            <div id="rewards" style="position: absolute; left: ${window.innerWidth / 2 - 200}px; bottom: 20px; width: 400px; height: 200px; border-radius: 6px; background-color: rgb(0, 0, 0, 0.25); overflow-y: scroll;">
+            </div>
+            <div style="position: absolute; font-size: 35px; text-align: center; left: ${window.innerWidth / 2 - 200}px; bottom: 225px; width: 400px;">
+            REWARDS
+            </div>
+            `;
+            let allyE = document.getElementById("robots");
+            for (let i = 0; i < me.robots.length; i++) {
+                let data = me.robots[i];
+                if (data) {
+                    allyE.innerHTML += `
+                    <div style="position: absolute; ${i == 0 ? `top: 0px;` : `top: ${50 * i}px; border: solid; border-width: 5px 0px 0px 0px; border-color: #000;`} height: 50px; width: 100%; background-color: rgb(0, 0, 0, .25);">
+                    <div style="position: absolute; cursor: pointer; top: 13.5px; left: 5px; color: #fff;">
+                    ${data.name}
+                    </div>
+                    <div style="position: absolute; top: 13.5px; text-align: center; left: 337.5px; color: #fff; width: 150px;">
+                    ${data.battleStats ? (data.battleStats.dmg || 0) : 0}
+                    </div>
+                    <div style="position: absolute; top: 13.5px; text-align: center; left: 500px; color: #fff; width: 75px;">
+                    ${data.battleStats ? (data.battleStats.kills || 0) : 0}
+                    </div>
+                    </div>
+                    `;
+                }
+            }
+            let index = 0;
+            let elemtn = document.getElementById("rewards");
+            for (let i in rewards) {
+                if (i == "sliver" || i == "gold" || i == "keys" || i == "workshopPoints") {
+                    elemtn.innerHTML += `
+                    <div style="position: absolute; top: ${50 * index}px; left: 0px; width: 100%;">
+                    <div style="position: absolute; top: 0px; left: 0px; width: 50px; height: 50px; background-size: 50px 50px; background-image: url('${i == "sliver" ? agSource : i == "keys" ? keysSource : i == "workshopPoints" ? "./images/icons/workshop.png" : auSource}');">
+                    </div>
+                    <div style="position: absolute; color: #fff; font-size: 35px; top: 0px; right: 5px;">
+                    ${abbreviateNumber(rewards[i])}
+                    </div>
+                    </div>
+                    `;
+                    updateMoneyDisplay(i, rewards[i]);
+                } else if (i == "oxp" || i == "playerXP") {
+                    elemtn.innerHTML += `
+                    <div style="position: absolute; top: ${50 * index}px; left: 0px; width: 100%;">
+                    <div style="position: absolute; top: 0px; left: 0px; width: 50px; height: 50px;">
+                    <span class="material-symbols-outlined" style="font-size: 50px; color: ${i == "playerXP" ? "#bdbdbd" : "#ffff00"};">
+                    ${i == "playerXP" ? "token" : "star"}
+                    </span>
+                    </div>
+                    <div style="position: absolute; color: #fff; font-size: 35px; top: 0px; right: 5px;">
+                    ${abbreviateNumber(rewards[i])}
+                    </div>
+                    </div>
+                    `;
+                    if (i == "oxp") {
+                        addOperationXP(rewards[i]);
+                    } else {
+                        updateMoneyDisplay("player_xp", rewards[i]);
+                    }
+                }
+                index++;
+            }
+        } else if (gameMode == 4) {
+            let me = allies.find(e => e.isMe);
+            let rewards = getRewardsForGame("pvp", me, player.league);
+            let width = window.innerWidth - 20 - 120;
+            let width2 = window.innerWidth - 120;
+            let height = window.innerHeight - 490;
+            let text = `
+            <div style="position: absolute; top: 0px; text-align: center; left: 250px; color: #fff; width: 75px; height: 50px;">
+            <span class="material-symbols-outlined" style="font-size: 52px;">
+            military_tech
+            </span>
+            </div>
+            <div style="position: absolute; top: 0px; text-align: center; left: 337.5px; color: #fff; width: 150px; height: 50px;">
+            <span class="material-symbols-outlined" style="font-size: 50px;">
+            destruction
+            </span>
+            </div>
+            <div style="position: absolute; top: 2.5px; text-align: center; left: 500px; color: #fff; width: 75px; height: 50px;">
+            <span class="material-symbols-outlined" style="font-size: 45px;">
+            skull
+            </span>
+            </div>
+            `;
+            document.getElementById("sideDisplay").innerHTML = `
+            <div style="position: absolute; color: #fff; text-align: center; font-size: 35px; top: 10px; left: 60px; width: ${width2}px; height: 50px; background: linear-gradient(to right, transparent 0%, transparent 20%, #808080 50%, transparent 80%, transparent 100%);">
+            Battle Overview
+            </div>
+            <div style="position: absolute; top: 150px; left: 60px; width: ${width}px; height: 50px; background: linear-gradient(to right, #808080, transparent); overflow-x: scroll;">
+            <div style="font-size: 35px; color: #fff; margin-left: 10px;">ROBOTS</div>
+            ${text}
+            </div>
+            <div id="robots" style="position: absolute; top: 210px; left: 60px; width: ${width}px; height: ${height}px; overflow: scroll;">
+            </div>
+            <div id="rewards" style="position: absolute; left: ${window.innerWidth / 2 - 200}px; bottom: 20px; width: 400px; height: 200px; border-radius: 6px; background-color: rgb(0, 0, 0, 0.25); overflow-y: scroll;">
+            </div>
+            <div style="position: absolute; font-size: 35px; text-align: center; left: ${window.innerWidth / 2 - 200}px; bottom: 225px; width: 400px;">
+            REWARDS
+            </div>
+            `;
+            let allyE = document.getElementById("robots");
+            for (let i = 0; i < allies.length + enemies.length; i++) {
+                let data = allies[i] || enemies[i - allies.length];
+                if (data) {
+                    allyE.innerHTML += `
+                    <div style="position: absolute; ${i == 0 ? `top: 0px;` : `top: ${50 * i}px; border: solid; border-width: 5px 0px 0px 0px; border-color: #000;`} height: 50px; width: 100%; background-color: rgb(0, 0, 0, .25);">
+                    <div style="position: absolute; cursor: pointer; top: 13.5px; left: 5px; color: #fff;">
+                    ${data.name}
+                    </div>
+                    <div style="position: absolute; top: 13.5px; text-align: center; left: 250px; color: #fff; width: 75px;">
+                    ${data.honor}
+                    </div>
+                    <div style="position: absolute; top: 13.5px; text-align: center; left: 337.5px; color: #fff; width: 150px;">
+                    ${abbreviateNumber(Math.round(data.robots.filter(item => item && item.battleStats && item.battleStats.dmg).map(item => item.battleStats.dmg).reduce((acc, current) => acc + current, 0)))}
+                    </div>
+                    <div style="position: absolute; top: 13.5px; text-align: center; left: 500px; color: #fff; width: 75px;">
+                    ${abbreviateNumber(Math.round(data.robots.filter(item => item && item.battleStats && item.battleStats.kills).map(item => item.battleStats.kills).reduce((acc, current) => acc + current, 0)))}
+                    </div>
+                    </div>
+                    `;
+                }
+            }
+            let index = 1;
+            let elemtn = document.getElementById("rewards");
+            elemtn.innerHTML += `
+            <div style="position: absolute; top: 0px; left: 0px; width: 100%;">
+            <div style="position: absolute; top: 0px; left: 0px; width: 50px; height: 50px;">
+            <span class="material-symbols-outlined" style="font-size: 50px; color: #ffff00;">
+            rewarded_ads
+            </span>
+            </div>
+            <div style="position: absolute; color: #fff; font-size: 35px; top: 0px; right: 5px;">
+            ${leagueReward}
+            </div>
+            </div>
+            `;
+            updateMoneyDisplay("league", leagueReward);
+            for (let i in rewards) {
+                if (i == "sliver" || i == "gold" || i == "keys" || i == "workshopPoints") {
+                    elemtn.innerHTML += `
+                    <div style="position: absolute; top: ${50 * index}px; left: 0px; width: 100%;">
+                    <div style="position: absolute; top: 0px; left: 0px; width: 50px; height: 50px; background-size: 50px 50px; background-image: url('${i == "sliver" ? agSource : i == "keys" ? keysSource : i == "workshopPoints" ? "./images/icons/workshop.png" : auSource}');">
+                    </div>
+                    <div style="position: absolute; color: #fff; font-size: 35px; top: 0px; right: 5px;">
+                    ${abbreviateNumber(rewards[i])}
+                    </div>
+                    </div>
+                    `;
+                    updateMoneyDisplay(i, rewards[i]);
+                } else if (i == "oxp" || i == "playerXP") {
+                    elemtn.innerHTML += `
+                    <div style="position: absolute; top: ${50 * index}px; left: 0px; width: 100%;">
+                    <div style="position: absolute; top: 0px; left: 0px; width: 50px; height: 50px;">
+                    <span class="material-symbols-outlined" style="font-size: 50px; color: ${i == "playerXP" ? "#bdbdbd" : "#ffff00"};">
+                    ${i == "playerXP" ? "token" : "star"}
+                    </span>
+                    </div>
+                    <div style="position: absolute; color: #fff; font-size: 35px; top: 0px; right: 5px;">
+                    ${abbreviateNumber(rewards[i])}
+                    </div>
+                    </div>
+                    `;
+                    if (i == "oxp") {
+                        addOperationXP(rewards[i]);
+                    } else {
+                        updateMoneyDisplay("player_xp", rewards[i]);
+                    }
+                }
+                index++;
+            }
         }
+        for (let i = 0; i < allies.length; i++) {
+            let data = allies[i];
+            if (data && data.isMe) {
+                if (player.profile.dmg == null) player.profile.dmg = [];
+                player.profile.dmg.push(Math.round(data.robots.filter(item => item && item.battleStats && item.battleStats.dmg).map(item => item.battleStats.dmg).reduce((acc, current) => acc + current, 0)));
+                if (player.profile.dmg.length > 25) {
+                    player.profile.dmg.shift();
+                }
+            }
+        }
+        if (player.profile.wins == null) player.profile.wins = [];
+        player.profile.wins.push(isWin ? 1 : 0);
+        if (player.profile.wins.length > 25) {
+            player.profile.wins.shift();
+        }
+        saveGameData();
         document.getElementById("sideDisplay").innerHTML += `
-        <div id="backButton" style="position: absolute; cursor: pointer; text-align: center; font-size: 40px; color: #fff; left: 20px; bottom: 20px; width: 150px; height: 60px; background-color: rgb(124, 124, 124, 1); border: solid; border-color: #fff; border-radius: 6px;">
+        <div id="backButton" style="cursor: pointer; position: absolute; bottom: 15px; left: 10px; text-align: center; width: 150px; height: 40px; font-size: 30px; border-radius: 6px; background-color: rgb(0, 0, 0, .35);">
         BACK
         </div>
         `;
-        if (!isNaN(total.workshopPoints)) updateMoneyDisplay("workshopPoints", total.workshopPoints);
-        if (!isNaN(total.sliver)) updateMoneyDisplay("sliver", total.sliver);
-        if (!isNaN(total.gold)) updateMoneyDisplay("gold", total.gold);
-        if (!isNaN(total.keys)) updateMoneyDisplay("keys", total.keys);
-        if (!isNaN(total.oxp)) addOperationXP(total.oxp);
         document.getElementById("backButton").onclick = function () {
             document.getElementById("sideDisplay").innerHTML = "";
             document.getElementById("hangerUI").style.display = "block";
@@ -13107,7 +14914,7 @@
     }
     var deltaTimer = 0;
     var shieldEffects = [];
-    function addGrayDamage(shape, amount, graydmg) {
+    function addGrayDamage(shape, amount, graydmg, isDotDamage) {
         let grayDamageMulti = 1;
         if (shape.modules && shape.modules.length) {
             shape.modules.forEach(e => {
@@ -13116,10 +14923,10 @@
                 }
             });
         }
-        grayDamageMulti = Math.max(grayDamageMulti, 0.05);
+        grayDamageMulti = Math.max(grayDamageMulti, 0.01);
         let grayDmg = (graydmg + 1 >= 1 ? graydmg : .4);
-        if (shape.effects && shape.effects.find(e => e.name == "stampede")) {
-            grayDmg *= 0.01;
+        if (shape.name == "Tan Circle" && isDotDamage) {
+            grayDmg *= 0;
         } else if ((shape.name && shape.name.includes("Orange Circle")) || shape.name == "Gold Circle" || shape.name == "Gray Pentagon") {
             grayDmg *= .65;
         } else if (shape.increasedAbilityDefenseLaLaLaLa__1) {
@@ -13270,7 +15077,7 @@
             moveSpeed *= slowdownMulti;
             moveSpeed *= speedMulti;
             if (robot.name == "Brown Pentagon" && robot.ability.mode == 1) {
-                moveSpeed *= (1/3);
+                moveSpeed *= (1 / 3);
             }
             robot.velx += Math.cos(moveDir) * (moveSpeed * delta);
             robot.vely += Math.sin(moveDir) * (moveSpeed * delta);
@@ -13421,7 +15228,7 @@
                     }
                 }
                 if ((shield.health <= 0 && shield.type != "purple" && !shield.regen) || shield.kill) {
-                    if ((shield.health <= 0 && shield.type != "purple" && !shield.regen) && shield.type == "yellow" && robot.ability.name == "Paladin") {
+                    if (!shield.droneShield && (shield.health <= 0 && shield.type != "purple" && !shield.regen) && shield.type == "yellow" && robot.ability && robot.ability.name == "Paladin") {
                         doPaldinStuff(robot, isAlly);
                     }
                     robot.shields.splice(i, 1);
@@ -13858,12 +15665,6 @@
                             speedMulti = 0;
                             if (effect.dngs2 == null) effect.dngs2 = 0;
                             effect.dngs2 += delta;
-                            if (effect.dngs22 == null) effect.dngs22 = 250;
-                            effect.dngs22 += delta;
-                            if (effect.dngs22 >= 1e3) {
-                                effect.dngs22 = 0;
-                                robot.grayDamage = Math.max(robot.grayDamage - (robot.grayDamage * .1), 0);
-                            }
                             if (effect.dngs2 >= 2e3) {
                                 effect.dir = robot.dir;
                                 effect.stage++;
@@ -13953,7 +15754,7 @@
                         let healthIncreased = effect.onEndDecrease[0];
                         let grayIncreased = effect.onEndDecrease[1];
                         robot.grayDamage -= grayIncreased;
-                        let multi = robot.health/robot.maxhealth;
+                        let multi = robot.health / robot.maxhealth;
                         robot.maxhealth -= healthIncreased;
                         robot.health = multi * robot.maxhealth;
                     }
@@ -14185,7 +15986,7 @@
     function drawEffects(MATH1HA___, effectNames) {
         let INDEXXXXXX = 0;
         for (let i in effectNames) {
-            if (INDEXXXXXX <= 10) {
+            if (INDEXXXXXX < 6) {
                 let string = (effectNames[i].duration / 1000).toString();
                 let DOTINDEXXX = string.indexOf('.');
                 if (DOTINDEXXX == -1) {
@@ -14220,6 +16021,13 @@
                 `;
             }
             INDEXXXXXX++;
+        }
+        if (INDEXXXXXX > 6) {
+            document.getElementById("LMAOLMAOLMAOLMAO").innerHTML += `
+            <div style="position: absolute; left: 20px; width: 125px; bottom: ${(48 * 6) + (MATH1HA___ + 15)}px;">
+            +${INDEXXXXXX - 6} More
+            </div>
+            `;
         }
     }
     function drawWeaponUI(robot, delta) {
@@ -14549,8 +16357,8 @@
                 name: "defense points",
                 amount: robot.onAbilityUseDefense,
                 endAfterAbilityIsEnd: true,
-                lastForever: true,
-                lastTime: 1
+                lastForever: !robot.ability.lastingTime ? false : true,
+                lastTime: !robot.ability.lastingTime ? 5e3 : 1
             });
         }
         if (robot.onAbilityUseAttack) {
@@ -14558,8 +16366,8 @@
                 name: "attack",
                 power: robot.onAbilityUseAttack,
                 endAfterAbilityIsEnd: true,
-                lastForever: true,
-                lastTime: 1
+                lastForever: !robot.ability.lastingTime ? false : true,
+                lastTime: !robot.ability.lastingTime ? 5e3 : 1
             });
         }
         if (robot.onAbilityUseSpeed) {
@@ -14567,8 +16375,8 @@
                 name: "speed",
                 power: robot.onAbilityUseSpeed,
                 endAfterAbilityIsEnd: true,
-                lastForever: true,
-                lastTime: 1
+                lastForever: !robot.ability.lastingTime ? false : true,
+                lastTime: !robot.ability.lastingTime ? 5e3 : 1
             });
         }
     }
@@ -14678,7 +16486,7 @@
                             Color: "rgb(255, 255, 255, 0.5)",
                             Color2: "rgb(255, 255, 255, 0.65)",
                         });
-                        amount += 0.05;
+                        amount += 0.025;
                         shield.kill = true;
                     }
                 }
@@ -14938,13 +16746,13 @@
                         },
                         onKillDomain: {
                             name: "Roulette Strike",
-                            dmg: Math.round(robot.ability.dotDamage/10),
+                            dmg: Math.round(robot.ability.dotDamage / 10),
                             isAlly: isAlly,
                             increaseSpeedOfPinkishRedAbility: (robot.increaseSpeedOfPinkishRedAbility == undefined ? 0 : robot.increaseSpeedOfPinkishRedAbility),
                             last: 10e3
                         },
                         range: 1400,
-                        dir: robot.dir,
+                        dir: robot.target ? Math.atan2(robot.target.y - robot.y, robot.target.x - robot.x) : robot.dir,
                         isAlly: isAlly,
                         color: `rgb(128, 0, 128)`,
                         owner: robot,
@@ -14977,8 +16785,8 @@
                         rate: rate,
                         name: "Blink Turret T1",
                         scale: scale,
-                        x: robot.x + Math.cos(robot.dir + (Math.PI/4)) * (robot.scale * 2),
-                        y: robot.y + Math.sin(robot.dir + (Math.PI/4)) * (robot.scale * 2),
+                        x: robot.x + Math.cos((robot.target ? Math.atan2(robot.target.y - robot.y, robot.target.x - robot.x) : robot.dir) + (Math.PI / 4)) * (robot.scale * 2),
+                        y: robot.y + Math.sin((robot.target ? Math.atan2(robot.target.y - robot.y, robot.target.x - robot.x) : robot.dir) + (Math.PI / 4)) * (robot.scale * 2),
                         owner: robot,
                         duration: duration,
                         isAlly: isAlly
@@ -14989,8 +16797,8 @@
                         rate: rate * 3,
                         scale: scale,
                         name: "Blink Turret T2",
-                        x: robot.x + Math.cos(robot.dir - (Math.PI/4)) * (robot.scale * 2),
-                        y: robot.y + Math.sin(robot.dir - (Math.PI/4)) * (robot.scale * 2),
+                        x: robot.x + Math.cos((robot.target ? Math.atan2(robot.target.y - robot.y, robot.target.x - robot.x) : robot.dir) - (Math.PI / 4)) * (robot.scale * 2),
+                        y: robot.y + Math.sin((robot.target ? Math.atan2(robot.target.y - robot.y, robot.target.x - robot.x) : robot.dir) - (Math.PI / 4)) * (robot.scale * 2),
                         owner: robot,
                         duration: duration,
                         isAlly: isAlly
@@ -15066,10 +16874,12 @@
                 });
             }
             if (robot.abilityLast <= (robot.name == "Ultimate Tan Pentagon" ? 8e3 : 4e3)) {
+                let shield = robot.shields.find(e => e.type == "purple" && !e.droneShield);
                 (!robot.isMe ? robot.deltaTimer -= delta : deltaTimer -= delta);
                 if ((!robot.isMe ? robot.deltaTimer <= 0 : deltaTimer <= 0)) {
-                    (!robot.isMe ? robot.deltaTimer = 100 : deltaTimer = 100);
-                    let dmgMulti = 1 + (Math.floor((robot.shields[0] ? robot.shields[0].health : 0) / 5e3) * 0.075);
+                    let amount = robot.name == "Ultimate Tan Pentagon" ? 25 : 100;
+                    (!robot.isMe ? robot.deltaTimer = amount : deltaTimer = amount);
+                    let dmgMulti = 1 + (Math.floor((shield ? shield.health : 0) / 5e3) * 0.075);
                     dmgMulti = Math.min(dmgMulti, 2);
                     let dir = 0;
                     if (robot.weaponSlotThingyAbility == null) robot.weaponSlotThingyAbility = 0;
@@ -15182,7 +16992,7 @@
             (!robot.isMe ? robot.deltaTimer -= delta : deltaTimer -= delta);
             robot.abilitySpeedMulti = 3;
             if ((!robot.isMe ? robot.deltaTimer <= 0 : deltaTimer <= 0)) {
-                let shieldDmg = robot.shields.find(e => e.type == "purple");
+                let shieldDmg = robot.shields.find(e => e.type == "purple" && !e.droneShield);
                 if (shieldDmg) {
                     shieldDmg = shieldDmg.health;
                 } else {
@@ -15223,7 +17033,7 @@
                     vely: 0,
                     scale: scale,
                     speed: 0.25,
-                    dmg: robot.ability.dmg * Math.min((1 + (Math.floor(shieldDmg/15e3) * .05)), 4),
+                    dmg: robot.ability.dmg * Math.min((1 + (Math.floor(shieldDmg / 15e3) * .05)), 5),
                     range: 1600,
                     dir: dir,
                     isAlly: isAlly,
@@ -15233,7 +17043,7 @@
                     blastEffect: {
                         name: "blast",
                         last: 7e3,
-                        power: (robot.ability.effectIncrease * (1 + Math.min(Math.floor(shieldDmg/7500) * .15, 1)))
+                        power: (robot.ability.effectIncrease * (1 + Math.min(Math.floor(shieldDmg / 7500) * .15, 20)))
                     },
                     aoeRange: 45,
                     owner: robot,
@@ -15252,6 +17062,9 @@
             if (robot.ability.name == "Paladin") {
                 if (robot.shields[0] && robot.shields[0].health > 0) {
                     let increase = Math.min(robot.shields[0].health / 25, 100e3);
+                    if (robot.normalMaxHealth) {
+                        robot.normalMaxHealth += increase;
+                    }
                     robot.maxhealth += increase;
                     changeHealth(robot, {
                         amount: increase * 5
@@ -15263,12 +17076,12 @@
                 if (shield) {
                     let h = shield.health;
                     robot.effects.push({
-                        amount: 100 + Math.floor(h/15e3),
+                        amount: 100 + Math.floor(h / 15e3),
                         name: "defense points",
                         lastTime: 7e3
                     });
                     changeHealth(robot, {
-                        amount: h/10,
+                        amount: h / 10,
                     }, false, robot);
                 }
                 if (robot.isMe) transitionProgress = 0;
@@ -15291,7 +17104,7 @@
             let grayIncreased = robot.oldGrayDamage * (robot.ability.abilityHealthMulti - 1);
             robot.grayDamage -= grayIncreased;
             robot.grayDamage /= 4;
-            let multi = robot.health/robot.maxhealth;
+            let multi = robot.health / robot.maxhealth;
             robot.maxhealth -= healthIncreased;
             robot.health = multi * robot.maxhealth;
         }
@@ -15411,7 +17224,7 @@
         }
         if (robot.ability) {
             let abilityName = robot.ability.name;
-            if (["Reflector", "Stampede", "Clear Sky", "Reinforce Hull", "Cold Pulse", "Divine Judgement", "Full Action", "Stealth", "Domain Expansion: Infinite Void", "Paladin", "Dragon Flight", "Phase Shift", "Ultimate Mending", "Self Heal", "Retribution"].includes(abilityName) && Date.now() - robot.damagedTime <= 50) {
+            if (["Blink Support", "Reflector", "Stampede", "Clear Sky", "Reinforce Hull", "Cold Pulse", "Divine Judgement", "Full Action", "Stealth", "Domain Expansion: Infinite Void", "Paladin", "Dragon Flight", "Phase Shift", "Ultimate Mending", "Self Heal", "Retribution"].includes(abilityName) && Date.now() - robot.damagedTime <= 50) {
                 robot.useAbility = true;
             } else if (["Overload", "Dash", "Fortify"].includes(abilityName)) {
                 robot.useAbility = true;
@@ -15500,8 +17313,8 @@
     }
     function useActiveModule(robot, module, isAlly) {
         if (robot.isMe ? player.workshopPoints - module.cost >= 0 : true) {
-            if (robot.isMe) updateMoneyDisplay("workshopPoints", -module.cost);
             if (robot.activeModuleReload == 0) {
+                if (robot.isMe) updateMoneyDisplay("workshopPoints", -module.cost);
                 if (module.name == "Repair Unit" || module.name == "Advanced Repair Unit") {
                     robot.effects.push({
                         name: "healing",
@@ -15519,7 +17332,7 @@
                     });
                 } else if (module.name == "Unstable Conduit") {
                     let moreHealth = robot.health * module.healthMulti;
-                    let moreGrayDamage = moreHealth * (robot.grayDamage/robot.maxhealth);
+                    let moreGrayDamage = moreHealth * (robot.grayDamage / robot.maxhealth);
                     robot.maxhealth += moreHealth;
                     robot.health += moreHealth;
                     robot.grayDamage += moreGrayDamage;
@@ -15547,10 +17360,10 @@
             document.getElementById("useActiveModule").style.display = player.workshopPoints - module.cost >= 0 ? "block" : "none";
             if (robot.ability && (robot.ability.name == "Phase Shift" ? true : !robot.isFREEZE)) {
                 document.getElementById("useActiveModule").style.bottom = weapons > 4 ? `${MATH1HA___ + 20}px` : "170px";
-                document.getElementById("useActiveModule").style.left = weapons > 4 ? robot.effects.length ? `285px` : "140px" : "380px";    
+                document.getElementById("useActiveModule").style.left = weapons > 4 ? robot.effects.length ? `285px` : "140px" : "380px";
             } else {
                 document.getElementById("useActiveModule").style.left = weapons > 4 ? robot.effects.length ? `165px` : "20px" : "350px";
-                document.getElementById("useActiveModule").style.bottom = weapons > 4 ? `${MATH1HA___ + 20}px` : "40px";    
+                document.getElementById("useActiveModule").style.bottom = weapons > 4 ? `${MATH1HA___ + 20}px` : "40px";
             }
         }
         if (robot.isMe ? keysPressed[81] : robot.useActiveModule) {
@@ -15776,7 +17589,7 @@
                         if (!hasRobots) {
                             document.getElementById("chooseSlot").style.bottom = `-200px`;
                             document.getElementById("mapName").style.display = "none";
-                            endGame([...players], (hasPlayers() ? .5 : 5));
+                            endGame([...players], false);
                         }
                         updateChooseSlots();
                     } else {
@@ -15798,7 +17611,7 @@
                                 document.getElementById("weaponThing").style.display = "none";
                                 document.getElementById("healthBar").style.display = "none";
                                 document.getElementById("chooseSlot").style.bottom = "-200px";
-                                endGame([...players], 15);
+                                endGame([...players], true);
                             }
                         }
                     }
@@ -15926,10 +17739,93 @@
             }
         }
     }
+    /*name: "On Mild Damage: Fix",
+            desc: "After the shape takes X amount of damage, instantly repairs X durability.",
+            required: 70e3,
+            in: 5e3,
+            icon: "./images/modules/self_fix_unit.png",
+            reload: 5e3,
+            main: "healing",
+            healingData: {
+                base: 12e3,
+                level: [0, 1e3, 2e3]
+            }*/
+    function doDroneDamageStuff(robot, amount) {
+        if (!robot.drone) return;
+        amount = Math.abs(amount);
+        let health = robot.health - amount;
+        for (let i = 0; i < robot.drone.abilities.length; i++) {
+            let data = robot.drone.abilities[i];
+            if (data) {
+                if (data.name == "On Low Durability: [Y_Shield]") {
+                    if (health > robot.maxhealth * .3) continue;
+                    if (data.oneTimeUse) {
+                        if (!data.used) {
+                            data.used = true;
+                            doer.drone.effects.push({
+                                name: "speed",
+                                amount: 1,
+                                lastTime: 5e3
+                            });
+                            robot.shields.push({
+                                type: data.type,
+                                health: data.shielding,
+                                maxhealth: data.shielding
+                            });
+                        }
+                    }
+                } else if (data.name == "On Mild Damage: [B_Shield]" || data.name == "On High Damage: [P_Shield]" || data.name == "On Mild Damage: Fix") {
+                    if (data.damageTook == null) data.damageTook = 0;
+                    if (data.damageTook2 == null) data.damageTook2 = [];
+                    if (data.damageTook < 0) data.damageTook = 0;
+                    if (!robot.effects.find(e => e.name == "cooldown_timer" && e.reason == data.name)) {
+                        data.damageTook += amount;
+                        data.damageTook2.push(setTimeout(() => {
+                            data.damageTook -= amount;
+                        }, data.in));
+                        if (data.damageTook >= data.required) {
+                            robot.effects.push({
+                                name: "cooldown_timer",
+                                reason: data.name,
+                                lastTime: data.reload
+                            });
+                            if (data.name == "On Mild Damage: Fix") {
+                                changeHealth(robot, {
+                                    amount: data.healing
+                                }, false, robot);
+                                doer.drone.effects.push({
+                                    name: "speed",
+                                    amount: 3,
+                                    lastTime: 5e3
+                                });
+                            } else {
+                                robot.shields.unshift({
+                                    type: data.type,
+                                    lastTime: data.duration,
+                                    droneShield: true,
+                                    health: data.shielding,
+                                    maxhealth: data.shielding
+                                });
+                            }
+                            data.damageTook2.forEach(e => {
+                                clearTimeout(e);
+                            });
+                        }
+                    } else {
+                        data.damageTook = 0;
+                        data.damageTook2.forEach(e => {
+                            if (e) clearTimeout(e);
+                        });
+                    }
+                }
+            }
+        }
+    }
     function doOnDamageEffects(robot, amount) {
         if (amount >= 0) return;
         amount = Math.round(amount);
         manageImmuneAmp(robot, amount);
+        doDroneDamageStuff(robot, amount);
         if (!robot.effects || robot.dummy) {
             if (robot.dps == null) robot.dps = 0;
             if (robot.dpsh == null) robot.dpsh = 0;
@@ -15959,12 +17855,12 @@
                         robot.shields.push({
                             type: "purple",
                             health: 0,
-                            lastTime: 2000
+                            lastTime: 3000
                         });
                         robot.effects.push({
                             name: "cooldown_timer",
                             onDamageHealShield: robot.name,
-                            lastTime: 16e3
+                            lastTime: 18e3
                         });
                     }
                 }
@@ -15972,8 +17868,7 @@
                 if (!robot.effects.find(e => e.name == "cooldown_timer" && e.onDamageHealShield == robot.name)) {
                     if (robot.damageTokenHAHA >= 150e3) {
                         clearTimeout(thingy);
-                        let amount = robot.maxhealth * .2;
-                        robot.grayDamage = Math.max(robot.grayDamage - (amount * .05), 0);
+                        let amount = robot.maxhealth * .25;
                         robot.damageTokenHAHA = 0;
                         changeHealth(robot, {
                             amount: amount
@@ -15981,7 +17876,7 @@
                         robot.effects.push({
                             name: "cooldown_timer",
                             onDamageHealShield: robot.name,
-                            lastTime: 14e3
+                            lastTime: 15e3
                         });
                     }
                 }
@@ -16077,6 +17972,33 @@
                                         lastTime: 5e3
                                     });
                                 }
+                                if (doer.drone) {
+                                    for (let t = 0; t < doer.drone.abilities.length; t++) {
+                                        let data = doer.drone.abilities[t];
+                                        if (data) {
+                                            if (data.name == "On Kill: Defense") {
+                                                if (!doer.effects.find(e => e.name == "cooldown_timer" && e.reason == data.name)) {
+                                                    doer.effects.push({
+                                                        name: "defense points",
+                                                        lastForever: true,
+                                                        amount: data.defenseIncrease,
+                                                        lastTime: 1
+                                                    });
+                                                    doer.effects.push({
+                                                        name: "cooldown_timer",
+                                                        reason: data.name,
+                                                        lastTime: data.reload
+                                                    });
+                                                    doer.drone.effects.push({
+                                                        name: "speed",
+                                                        amount: 1,
+                                                        lastTime: 5e3
+                                                    });
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         }
                     } else {
@@ -16123,7 +18045,7 @@
                 amount *= object.dotResistance;
             }
             if ((object.turnDmgIntoDOT ? isDotDamage : true) && amount < 0 && !object.LASTSTANDISON) {
-                addGrayDamage(object, amount, graydmg);
+                addGrayDamage(object, amount, graydmg, isDotDamage);
             }
             if (amount != 0) {
                 if (doer && amount < 0 && object.reflector && bypassReflector != true) {
@@ -16230,7 +18152,7 @@
                 document.getElementById("weaponThing").style.display = "none";
                 document.getElementById("healthBar").style.display = "none";
                 document.getElementById("chooseSlot").style.bottom = "-200px";
-                endGame([...players], "YAY WIN");
+                endGame([...players], true);
             }, 50);
         }
     }
@@ -16320,7 +18242,7 @@
         if (player.gameMode == 0 && playerRobot && (enemies.length == 0 || Date.now() - extermination.last >= 7500)) {
             extermination.last = Date.now();
             extermination.waveIndex++;
-            for (let iii = 0; iii < (5 + Math.floor(Math.min(extermination.waveIndex/2.5, 25))); iii++) {
+            for (let iii = 0; iii < (5 + Math.floor(Math.min(extermination.waveIndex / 2.5, 25))); iii++) {
                 spawnEnemy(1 + (extermination.waveIndex / 5));
             }
         }
@@ -17115,7 +19037,7 @@
                     bullet.x += (bullet.velx * delta);
                     bullet.y += (bullet.vely * delta);
                     if (bullet.splitData) {
-                        if(dist({x: bullet.oldX, y: bullet.oldY}, bullet) >= bullet.splitData.range) {
+                        if (dist({ x: bullet.oldX, y: bullet.oldY }, bullet) >= bullet.splitData.range) {
                             for (let t = 0; t < bullet.splitData.amount; t++) {
                                 projectiles.push({
                                     x: bullet.x,
@@ -17147,7 +19069,7 @@
                     }
                     if (bullet.targetDir == null) bullet.targetDir = bullet.dir;
                     if (bullet.autoTargetData) {
-                        if (dist({x: bullet.oldX, y: bullet.oldY}, bullet) >= bullet.autoTargetData.range || bullet.autoTargetData.canDo) {
+                        if (dist({ x: bullet.oldX, y: bullet.oldY }, bullet) >= bullet.autoTargetData.range || bullet.autoTargetData.canDo) {
                             bullet.autoTargetData.canDo = true;
                             if (bullet.autoTargetData.type == "nearest") {
                                 let near = [];
@@ -17440,7 +19362,7 @@
                         } else if (robot.name.includes("Hexagon")) {
                             ctx.rotate(robot.dir + Math.PI / 2);
                             ctx.strokeStyle = robot.isFREEZE ? "#fff" : "#000";
-                            ctx.lineWidth = robot.effects.filter(e => e.name == "Blink Support").length ? 12*(robot.effects.filter(e => e.name == "Blink Support").length+1) : 12;
+                            ctx.lineWidth = robot.effects.filter(e => e.name == "Blink Support").length ? 12 * (robot.effects.filter(e => e.name == "Blink Support").length + 1) : 12;
                             ctx.fillStyle = robot.color;
                             renderStar(ctx, 3, robot.scale, robot.scale);
                             ctx.stroke();
@@ -17664,14 +19586,39 @@
     function doCapturedBeaconStuff(obj, isAlly) {
         for (let i = 0; i < players.length; i++) {
             let player = players[i].robots[players[i].robotIndex];
-            if (player && players[i].isAlly) {
+            if (player && players[i].isAlly == isAlly) {
                 if (dist(obj, player) <= 400) {
-                    if (player.isMe) {
-                        addTaskXP("beacon", 1);
-                    }
+                    if (player.isMe) { addTaskXP("beacon", 1); }
                     if (player.battleStats == null) player.battleStats = {};
                     if (player.battleStats.beacons == null) player.battleStats.beacons = 0;
                     player.battleStats.beacons++;
+                    if (player.drone) {
+                        for (let t = 0; t < player.drone.abilities.length; t++) {
+                            let data = player.drone.abilities[t];
+                            if (data) {
+                                if (data.name == "On Beacon Capture: Defense") {
+                                    if (!player.effects.find(e => e.name == "cooldown_timer" && e.reason == data.name)) {
+                                        player.effects.push({
+                                            name: "defense points",
+                                            lastForever: true,
+                                            amount: data.defenseIncrease,
+                                            lastTime: 1
+                                        });
+                                        player.effects.push({
+                                            name: "cooldown_timer",
+                                            reason: data.name,
+                                            lastTime: data.reload
+                                        });
+                                        player.drone.effects.push({
+                                            name: "speed",
+                                            amount: 1,
+                                            lastTime: 5e3
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -17683,11 +19630,15 @@
         }
         if (obj.name == "beacon") {
             if (obj.LASTLAST == null) obj.LASTLAST = 0;
-            if (Date.now() - obj.LASTLAST >= 200) {
+            if (Date.now() - obj.LASTLAST >= 75) {
                 obj.LASTLAST = Date.now();
                 if (obj.ENEMYPOINTS >= 5e3) {
+                    if (obj.LASTENEMYPOINTS < 5e3) {
+                        doCapturedBeaconStuff(obj, false);
+                    }
                     beaconPoints.enemy = Math.min(beaconPoints.enemy + 1, 3500);
                 }
+                obj.LASTENEMYPOINTS = obj.ENEMYPOINTS;
                 if (obj.ALLYPOINTS >= 5e3) {
                     if (obj.LASTALLYPOINTS < 5e3) {
                         doCapturedBeaconStuff(obj, true);
@@ -17727,10 +19678,10 @@
                         obj.lastFire = Date.now();
                         let dir = Math.atan2(nearestEnemies.y - obj.y, nearestEnemies.x - obj.x);
                         projectiles.push({
-                            x: obj.x + Math.cos(dir + Math.PI/2) * obj.scale,
-                            y: obj.y + Math.sin(dir + Math.PI/2) * obj.scale,
-                            oldX: obj.x + Math.sin(dir + Math.PI/2) * obj.scale,
-                            oldY: obj.y + Math.sin(dir + Math.PI/2) * obj.scale,
+                            x: obj.x + Math.cos(dir + Math.PI / 2) * obj.scale,
+                            y: obj.y + Math.sin(dir + Math.PI / 2) * obj.scale,
+                            oldX: obj.x + Math.sin(dir + Math.PI / 2) * obj.scale,
+                            oldY: obj.y + Math.sin(dir + Math.PI / 2) * obj.scale,
                             projType: "normal",
                             velx: 0,
                             vely: 0,
@@ -17748,10 +19699,10 @@
                             }
                         });
                         projectiles.push({
-                            x: obj.x + Math.cos(dir - Math.PI/2) * obj.scale,
-                            y: obj.y + Math.sin(dir - Math.PI/2) * obj.scale,
-                            oldX: obj.x + Math.sin(dir - Math.PI/2) * obj.scale,
-                            oldY: obj.y + Math.sin(dir - Math.PI/2) * obj.scale,
+                            x: obj.x + Math.cos(dir - Math.PI / 2) * obj.scale,
+                            y: obj.y + Math.sin(dir - Math.PI / 2) * obj.scale,
+                            oldX: obj.x + Math.sin(dir - Math.PI / 2) * obj.scale,
+                            oldY: obj.y + Math.sin(dir - Math.PI / 2) * obj.scale,
                             projType: "normal",
                             velx: 0,
                             vely: 0,
@@ -17822,8 +19773,6 @@
     function renderBuildings(delta) {
         BEACONS = [];
         ACTUALBUILDINGSTOTOUCH = [];
-        document.getElementById("gameDataThing").style.left = `${window.innerWidth / 2 - 100}px`;
-        document.getElementById("gameDataThing").innerHTML = "";
         ctx.globalAlpha = 1;
         for (let i = 0; i < buildings.length; i++) {
             let obj = buildings[i];
@@ -17880,6 +19829,10 @@
                     ctx.fillStyle = "#969595";
                     ctx.fillRect(20, 20, obj.width - 40, obj.height - 40);
                 } else if (obj.name.includes("Blink Turret")) {
+                    if (obj.globalAlpha == null) obj.globalAlpha = 0;
+                    obj.globalAlpha += 0.003 * delta;
+                    if (obj.globalAlpha > 1) obj.globalAlpha = 1;
+                    ctx.globalAlpha = obj.globalAlpha;
                     let color = obj.name == "Blink Turret T2" ? "#00ffff" : "#00f";
                     renderCircle(0, 0, obj.scale, ctx, false, false, color, obj.isAlly ? "#000" : "#f00");
                 } else {
@@ -17893,37 +19846,53 @@
         }
     }
     var LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    function updateBuilding() {
+    function renderGameDataThing() {
+        let value = (gameTimePlayed / 1000) / 60;
+        value = value.toString().split(".");
+        let minutes = value[0];
+        let seconds = parseFloat("0." + value[1]) * 60;
+        let text = "";
+        if (gameTimePlayed <= 59999) {
+            text = `0:${gameTimePlayed <= 10e3 ? "0" : ""}${removeDecimals(gameTimePlayed / 1000)}`;
+        } else {
+            text = `${minutes}:${seconds <= 10 ? "0" : ""}${removeDecimals(seconds)}`;
+        }
+        let beaconIndexx = 0;
+        let maxwidth = BEACONS.length * 30 - 5;
+        console.log(beaconPoints.ally);
         document.getElementById("gameDataThing").innerHTML = `
-        <div style="position: absolute; border-radius: 12px; top: 0px; right: 0px; height: 12px; width: 100%; background-color: #fff; overflow: hidden;">
-        <div style="position: absolute; top: 0px; left: 0px; height: 100%; width: ${(beaconPoints.ally / 3500) * 50}%; background-color: #00f;">
+        <div style="position: absolute; top: 0px; font-size: 18px; text-align: center; left: 0px; width: 100%;">
+        ${text}
         </div>
-        <div style="position: absolute; right: 0px; top: 0px; height: 100%; width: ${(beaconPoints.enemy / 3500) * 50}%; background-color: #f00;">
+        <div style="display: ${BEACONS.length ? "block" : "none"}; position: absolute; height: 25px; left: ${(window.innerWidth / 2) - ((maxwidth * 1.5) - 10)}px; top: 25px; width: 125px; border-radius: 2px; overflow: hidden; background-color: rgb(0, 0, 0, .6);">
+        <div style="position: absolute; height: 100%; left: 0px; top: 0px; width: ${(beaconPoints.ally / 3500)*100}%; background-color: #00e3e3;">
+        </div>
+        </div>
+        <div style="display: ${BEACONS.length ? "block" : "none"}; position: absolute; height: 25px; left: ${(window.innerWidth / 2) + ((maxwidth * .5) + 10)}px; top: 25px; width: 125px; border-radius: 2px; overflow: hidden; background-color: rgb(0, 0, 0, .6);">
+        <div style="position: absolute; height: 100%; right: 0px; top: 0px; width: ${(beaconPoints.enemy / 3500)*100}%; background-color: #00e3e3;">
         </div>
         </div>
         `;
-        let beaconIndexx = 0;
         for (let i = 0; i < BEACONS.length; i++) {
             let obj = BEACONS[i];
             let backgroundcolor = "#fff";
-            let height = 1;
+            let multi = 1;
             let textColor = "#000";
             if (obj.ENEMYPOINTS > obj.ALLYPOINTS) {
                 backgroundcolor = "#f00";
-                height = obj.ENEMYPOINTS / 5e3;
+                multi = obj.ENEMYPOINTS / 5e3;
             } else {
-                backgroundcolor = "#00f";
-                height = obj.ALLYPOINTS / 5e3;
-                if (height > .5) {
-                    textColor = "#fff";
-                }
+                backgroundcolor = "#00e3e3";
+                multi = obj.ALLYPOINTS / 5e3;
             }
             document.getElementById("gameDataThing").innerHTML += `
-            <div style="position: absolute; top: 16px; left: ${(40 * beaconIndexx) + 2}px; border-radius: 100%; width: 35px; height: 35px; background-color: #fff; overflow: hidden;">
-            <div style="position: absolute; top: 0px; left: 0px; width: 100%; height: ${height * 100}%; background-color: ${backgroundcolor};">
+            <div style="position: absolute; top: 25px; left: ${window.innerWidth / 2 - (maxwidth / 2)}">
+            <div style="position: absolute; top: 0px; left: ${(30 * beaconIndexx)}px; border-radius: 100%; width: 25px; height: 25px; background-color: #fff; overflow: hidden;">
+            <div style="position: absolute; top: 0px; left: 0px; width: 100%; height: 100%; border-radius: 100%; background: conic-gradient(${backgroundcolor} ${360 * (multi)}deg, #fff 0deg);">
             </div>
-            <div style="position: absolute; height: 100%; width: 100%; top: 0px; left: 0px; color: ${textColor};">
-            <div style="height: 100%; width: 100%; text-align: center; font-size: 24px;">${LETTERS[beaconIndexx]}</div>
+            <div style="position: absolute; height: 100%; width: 100%; display: flex; align-items: center; top: 0px; left: 0px; color: ${textColor};">
+            <div style="width: 100%; text-align: center; font-size: 18px;">${LETTERS[beaconIndexx]}</div>
+            </div>
             </div>
             </div>
             `;
@@ -17937,7 +19906,7 @@
             document.getElementById("weaponThing").style.display = "none";
             document.getElementById("healthBar").style.display = "none";
             document.getElementById("chooseSlot").style.bottom = "-200px";
-            endGame([...players], .5);
+            endGame([...players], false);
         } else if (beaconPoints.ally >= 3500) {
             beaconPoints.enemy = 0;
             beaconPoints.ally = 0;
@@ -17946,7 +19915,7 @@
             document.getElementById("weaponThing").style.display = "none";
             document.getElementById("healthBar").style.display = "none";
             document.getElementById("chooseSlot").style.bottom = "-200px";
-            endGame([...players], 15);
+            endGame([...players], true);
         }
     }
     function levelToMKColor(level) {
@@ -18440,7 +20409,6 @@
                 if (hasPlayers()) updatePlayers(delta);
                 ctx.globalAlpha = 1;
                 renderLasers(delta);
-                if (player.gameMode == 2) updateBuilding(delta);
                 updateBullets(delta);
                 for (let i = 0; i < text.length; i++) {
                     let Text = text[i];
@@ -18478,6 +20446,7 @@
                 renderDomains(delta);
                 if (players[0] && players[0].robotIndex >= 0 || player.gameMode == 2) gameTimePlayed += delta;
                 let kills = players[0] ? players[0].robots.filter(e => e && e.battleStats && e.battleStats.kills).reduce((accumulator, currentValue) => accumulator + currentValue.battleStats.kills, 0) : 0;
+                renderGameDataThing(delta);
                 if (gameTimePlayed <= 60e3) {
                     document.getElementById("timePlayed").innerHTML = `${hasPlayers() && players[0] ? `Kills: ${kills} | ` : player.gameMode == 0 ? `Wave: ${extermination.waveIndex + 1} | ` : ""}${fpsInfo.real} | 0:${gameTimePlayed <= 10e3 ? "0" : ""}${removeDecimals(gameTimePlayed / 1000)}`;
                 } else {
@@ -18502,7 +20471,7 @@
                             name: log.victim.name
                         };
                         document.getElementById("LOGGER").innerHTML += `
-                        <div>
+                        <div style="background-color: rgb(0, 0, 0, 0.2); margin-top: 3px; border-radius: 4px; padding-left: 5px; padding-right: 5px;">
                         <span style="color: ${nameOne.name == "GAME_P2W (pay to win)" ? "#fff" : nameOne.color};">${nameOne.name}</span>
                         <span style="color: #fff;">[${log.weapon.name}${log.weapon.level >= 13 ? ` <span style="color: #${levelToMKColor(log.weapon.level)}">${levelToMKText(log.weapon.level)}</span>` : ""}]</span>
                         <span style="color: ${nameTwo.color};">${nameTwo.name}</span>
@@ -18522,7 +20491,7 @@
                 ctx.fillStyle = "rgb(0, 0, 0, 0.1)";
                 ctx.fillRect(0, 0, maxScreen.x, maxScreen.y);
             }
-        }catch(e) {
+        } catch (e) {
             console.error(e);
         }
         window.requestAnimationFrame(updateGame);
