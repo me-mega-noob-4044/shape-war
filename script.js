@@ -12999,7 +12999,7 @@
             let ShapeData = JSON.parse(getValue("shapes"));
             let WeaponData = JSON.parse(getValue("weapons"));
             let ModuleData = JSON.parse(getValue("modules"));
-            let DronesData = JSON.parse(getValue("drones"));
+            let DronesData = JSON.parse(getValue("drones")) || [];
             let ChipData = JSON.parse(getValue("chips"));
             if (getValue("parts")) {
                 let parts = getValue("parts");
