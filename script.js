@@ -165,11 +165,11 @@
                 <br><br>
                 CURRENT ACTIVE MODULE(S):<br>
                 ${updateLogger.lineBlock([
-                    "<strong>Repair Unit</strong>: Repairs X% durability over X seconds. 200 WKSP Cost",
-                    "<strong>Advanced Repair Unit</strong>: Repairs X% durability over X seconds. 400 WKSP Cost",
-                    "<strong>Phase Shift</strong>: Activates a phase shift for 3 seconds. 800 WKSP Cost",
-                    "<strong>Unstable Conduit</strong>: Find out ability at in-game description. 1600 WKSP Cost"
-                ])}
+        "<strong>Repair Unit</strong>: Repairs X% durability over X seconds. 200 WKSP Cost",
+        "<strong>Advanced Repair Unit</strong>: Repairs X% durability over X seconds. 400 WKSP Cost",
+        "<strong>Phase Shift</strong>: Activates a phase shift for 3 seconds. 800 WKSP Cost",
+        "<strong>Unstable Conduit</strong>: Find out ability at in-game description. 1600 WKSP Cost"
+    ])}
             `)}
             ${updateLogger.title("h2", `BALANCE CHANGES`)}
             ${updateLogger.marginBlock(10, `
@@ -276,6 +276,15 @@
             ${updateLogger.title("h2", `BALANCE CHANGES`)}
             ${updateLogger.marginBlock(10, `
                 ${updateLogger.lineBlock(["Delay and Slumber: +25% Damage", "Gray Pentagon: Total shield count: 8 -> 5", "Magenta Circle: Enchancement how prefers ability damage over blast charge effect accumulation", "Magenta Circle: +200% Ability Damage", "Atomizer and Nucleon: Time until overheat: 16 -> 10 seconds", "Atomizer and Nucleon: Cooldown: 5.3 -> 1 seconds", "Damper, Deceiver, Trickster, Tamer: Rate of Fire: 24 -> 48 ms", "Trickster and Tamer: +15 Dmg", "Damper and Deceiver: DoT Damage -35%", "Damper and Deceiver: No limit on DoT Stacks"])}
+            `)}
+        `)}
+    `);
+    updateLogger.newLog("V51 UPDATE NOTES", `
+        ${updateLogger.marginBlock(10, `
+            ${updateLogger.lineBlock(["New Weapon(s): Tonans and Fulgur", "Balance Changes"])}
+            ${updateLogger.title("h2", `BALANCE CHANGES`)}
+            ${updateLogger.marginBlock(10, `
+                ${updateLogger.lineBlock(["White Heptagon: Suppression Limit: 2 -> 5"])}
             `)}
         `)}
     `);
@@ -433,9 +442,9 @@
                     iconSource: data.ability.iconSource,
                     oldIconSource: data.ability.iconSource
                 };
-                if (data.ability.name == "Support") {
+                if (data.ability.name == "Support" || data.ability.name == "Long Shot") {
                     this.ability.lastingTime = data.ability.lastingTime;
-                    this.ability.healingPower = data.ability.healingPowerData ? data.ability.healingPowerData.base : data.ability.healingPower;
+                    if (data.ability.name == "Support") this.ability.healingPower = data.ability.healingPowerData ? data.ability.healingPowerData.base : data.ability.healingPower;
                 } else if (data.ability.name == "Matrix") {
                     this.ability.lastingTime = data.ability.lastingTime;
                     this.ability.dmg = data.ability.damageData ? data.ability.damageData.base : data.ability.dmg;
@@ -2249,7 +2258,7 @@
             During the movement, the player can activate the ability a second time to force end the "leap".
             After the movement, the player becomes unable to move and it suppresses enemies that shoot it.<br><br>
             When enemies reach the max-suppression limit, it'll instead repenish all effect stacks instead of adding new ones.<br><br>
-            Suppression Limit: 2<br>
+            Suppression Limit: 5<br>
             Suppression Power: depends on shape level<br>
             Defense Points Increase during ability: depends on shape level<br>
             Duration: 8 seconds<br>
@@ -2315,6 +2324,48 @@
         },
         color: "#0f0",
         moduleHardpoints: 3,
+        costParts: true
+    }, {
+        dontSell: true,
+        tier: 4,
+        name: "Purple Heptagon",
+        speed: 0.001,
+        speedLevel: [0, 0, 0, 0.0001, 0.0001, 0, 0.0001, 0, 0.0001, 0.0001, 0, 0.0004],
+        scale: 125,
+        fieldOfViewMulti: 3.25,
+        baseDamageIncrease: .25,
+        desc: `
+        Heptagon Industries promotes all sorts of playstyles, but the playstyle that the Industry prefers the most is sniping.
+        Purple Heptagon is a long ranged sniper that can fire a powerful built-in weapon charge that deals damage based on the max health of enemies.<br><br>
+        Recommened Equipment: x2 Fulgur + x2 Tonans
+        `,
+        healthData: {
+            base: 150e3,
+            level: [0, 12e3, 12e3, 12e3, 12e3, 12e3, 16e3, 16e3, 16e3, 25e3, 30e3, 40e3],
+        },
+        builtInDefensePoints: 50,
+        ability: {
+            name: "Long Shot",
+            desc: `
+            <span style="font-width: bolder; color: #fff;">Long Shot</span> The shape activates a built-in weapon that goes though walls and deals damage based on the enemies' max health.<br><br>
+            Built-In Weapon Defense Mitigation: 100%<br>
+            Ability Range: 3800<br>
+            Damage Percentage: 10%<br>
+            Projectiles: 1<br>
+            Duration: 1 seconds<br>
+            Fire Rate: 0 ms (Instant)<br>
+            Cooldown: 6 seconds
+            `,
+            iconSource: "./images/weapons/shocker.png",
+            lastingTime: 1e3,
+            reload: 6e3
+        },
+        hardpoints: {
+            light: 2,
+            heavy: 2
+        },
+        color: "#800080",
+        moduleHardpoints: 4,
         costParts: true
     }];
     function defensePointsToResistance(defense) {
@@ -3825,7 +3876,63 @@
             gold: 200e3,
             workshopPoints: 100e3
         }
-    }];
+    }, {
+        tier: 4,
+        industryName: "Heptagon",
+        name: "Fulgur",
+        type: "Light",
+        projType: "energy",
+        desc: `
+        Next generation of laser weapons, Fulgur is a light laser weapon that deals quick bursts of damage.
+        It is ideal weapon to use aganist T5 shapes since it deals extra 150% more damage.
+        `,
+        damageData: {
+            base: 796,
+            level: [0, 49, 49, 81, 81, 81, 81, 162, 162, 105, 228, 325]
+        },
+        defenseBypassData: {
+            base: .05,
+            level: [0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.1, 0.15],
+        },
+        imageSource: "./images/weapons/fulgur.png",
+        fireRate: 100,
+        ammo: 10,
+        reload: 8e3,
+        range: 3800,
+        cost: {
+            sliver: 15e9,
+            gold: 200e3,
+            workshopPoints: 100e3
+        }
+    }, {
+        tier: 4,
+        industryName: "Heptagon",
+        name: "Tonans",
+        type: "Heavy",
+        projType: "energy",
+        desc: `
+        Next generation of laser weapons, Tonans is a heavy laser weapon that deals quick bursts of damage.
+        It is ideal weapon to use aganist T5 shapes since it deals extra 150% more damage.
+        `,
+        damageData: {
+            base: 1194,
+            level: [0, 74, 74, 122, 122, 122, 122, 243, 243, 157, 342, 487]
+        },
+        defenseBypassData: {
+            base: .05,
+            level: [0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.15, 0.15, 0.15, 0.15],
+        },
+        imageSource: "./images/weapons/tonans.png",
+        fireRate: 100,
+        ammo: 10,
+        reload: 8e3,
+        range: 3800,
+        cost: {
+            sliver: 15e9,
+            gold: 200e3,
+            workshopPoints: 100e3
+        }
+    }];//Fulgur
     class module {
         constructor(data, ownerSID = null, slot = null) {
             this.name = data.name;
@@ -4636,7 +4743,7 @@
         if (league >= 4701) {
             return 1;
         }
-    
+
         const ranges = [
             { min: 3801, max: 4700 },
             { min: 2901, max: 3800 },
@@ -4646,7 +4753,7 @@
             { min: 701, max: 1000 },
             { min: 451, max: 700 }
         ];
-    
+
         for (const range of ranges) {
             if (league >= range.min && league <= range.max) {
                 const min = league - range.min;
@@ -4654,7 +4761,7 @@
                 return min / max;
             }
         }
-    
+
         return league / 450;
     }
     function getLeagueBadge(league) {
@@ -5486,8 +5593,8 @@
         `;
         document.getElementById("hangerUI").appendChild(element);
         let checkboxs = document.getElementById("123__thingyyy").getElementsByTagName("input");
-        for(let i = 0; i < checkboxs.length; i++) {
-            if(checkboxs[i].type == "checkbox") {
+        for (let i = 0; i < checkboxs.length; i++) {
+            if (checkboxs[i].type == "checkbox") {
                 checkboxs[i].addEventListener("change", () => {
                     settingToggles[checkboxs[i].id] = checkboxs[i].checked;
                     if (checkboxs[i].id == "renderBulletShadows") {
@@ -5506,14 +5613,14 @@
             `;
         }
         for (let i = 0; i < tabs.length; i++) {
-            document.getElementById(`tab${tabs[i]}`).onclick = function() {
+            document.getElementById(`tab${tabs[i]}`).onclick = function () {
                 tabs.forEach((item, index) => {
                     document.getElementById(item + "_thingy").style.display = item == tabs[i] ? "block" : "none";
-                    document.getElementById(`tab${item}`).style = `${item == tabs[i] ? "" : "cursor: pointer;"} width: 100%; height: 25px; font-size: 17px; color: ${item == tabs[i] ? "#000" : "#fff"}; background-color: ${item == tabs[i]? "rgb(255, 255, 255, .6)" : index % 2 == 0 ? "rgb(0, 0, 0, .1)" : "rgb(0, 0, 0, .2)"};`;
+                    document.getElementById(`tab${item}`).style = `${item == tabs[i] ? "" : "cursor: pointer;"} width: 100%; height: 25px; font-size: 17px; color: ${item == tabs[i] ? "#000" : "#fff"}; background-color: ${item == tabs[i] ? "rgb(255, 255, 255, .6)" : index % 2 == 0 ? "rgb(0, 0, 0, .1)" : "rgb(0, 0, 0, .2)"};`;
                 });
             }
         }
-        document.getElementById("sellItems_").onclick = function() {
+        document.getElementById("sellItems_").onclick = function () {
             let typeToSell = document.getElementById("typeToSell").value;
             let highestTierToSell = parseInt(document.getElementById("highestTierToSell").value);
             let highestLevelToSell = parseInt(document.getElementById("highestLevelToSell").value);
@@ -5552,7 +5659,7 @@
 
             this.blur();
         }
-        document.getElementById("closeSettings").onclick = function() {
+        document.getElementById("closeSettings").onclick = function () {
             element.remove();
         }
         document.getElementById("import").onclick = function () {
@@ -7899,6 +8006,19 @@
         keysPressed[e.keyCode] = 0;
     });
     var blueBell = [{
+        "name": "Purple Heptagon",
+        "weapons": {
+            "heavy": "Tonans",
+            "light": "Fulgur"
+        },
+        "modules": [
+            "Nuclear Amplifier",
+            "Nuclear Amplifier",
+            "Last Stand",
+            "Balance Unit"
+        ],
+        "drone": "Pascal"
+    }, {
         "name": "Gold Circle",
         "weapons": {
             "heavy": "Tumultus",
@@ -7911,6 +8031,19 @@
             "Immune Amplifier",
             "Damage Controller",
             "Nuclear Amplifier"
+        ],
+        "drone": "Pascal"
+    }, {
+        "name": "Purple Heptagon",
+        "weapons": {
+            "heavy": "Tonans",
+            "light": "Fulgur"
+        },
+        "modules": [
+            "Nuclear Amplifier",
+            "Nuclear Amplifier",
+            "Last Stand",
+            "Balance Unit"
         ],
         "drone": "Pascal"
     }, {
@@ -7964,19 +8097,6 @@
         ],
         "drone": "Hiruko"
     }, {
-        "name": "Cyan Pentagon",
-        "weapons": {
-            "heavy": "null",
-            "light": "Tamer"
-        },
-        "modules": [
-            "Last Stand",
-            "Fortifier",
-            "Fortifier",
-            "Nuclear Amplifier"
-        ],
-        "drone": "Beak"
-    }, {
         "name": "Gold Circle",
         "weapons": {
             "heavy": "Veyron",
@@ -7991,19 +8111,6 @@
             "Nuclear Amplifier"
         ],
         "drone": "Pascal"
-    }, {
-        "name": "Tan Circle",
-        "weapons": {
-            "heavy": "Brisant",
-            "light": "Shatter"
-        },
-        "modules": [
-            "Repair Amplifier",
-            "Repair Amplifier",
-            "Immune Amplifier",
-            "Nuclear Amplifier"
-        ],
-        "drone": "Hiruko"
     }];
     function leagueToTier(type) {
         let league = player.league;
@@ -8243,6 +8350,12 @@
         if (skill.stampedeV2) {
             robot.stampedeV2 = true;
         }
+        if (skill.dmgPercentage) {
+            robot.dmgPercentage = skill.dmgPercentage;
+        }
+        if (skill.onAbilityUseSpeed) {
+            robot.onAbilityUseSpeed = skill.onAbilityUseSpeed;
+        }
         if (skill.extraAbilityDamage) {
             if (robot.extraAbilityDamageAddM == null) robot.extraAbilityDamageAddM = 0;
             robot.extraAbilityDamageAddM += skill.extraAbilityDamage;
@@ -8421,7 +8534,7 @@
             let amount = gameMode == 4 ? 9 : 11;
             let did = false;
             let allBluebell = false;
-            if (gameMode != 4 && player.league >= 5e3 && Math.random() < .3) {
+            if (gameMode != 4 && player.league >= 5e3 && Math.random() < .35) {
                 allBluebell = true;
             }
             let index = 1;
@@ -8509,7 +8622,7 @@
                             let mainSkill = droneData.abilities[0];
                             let e = typeof mainSkill.main == "object" ? mainSkill.main[0] : mainSkill.main;
                             if (e == "dmg") e = "damage";
-                            let levels = mainSkill[e+"Data"].level.length;
+                            let levels = mainSkill[e + "Data"].level.length;
                             for (let i = 0; i < levels - 1; i++) {
                                 upgradeDrone(Drone, null, null, true);
                             }
@@ -8681,39 +8794,39 @@
             if (!noBeacons.includes(player.gameMode)) {
                 buildings.push({
                     name: "beacon",
-                    layer: 0,
+                    antiAvoid: true,
                     x: (mapInfo.x / 2) - 4e3,
                     y: mapInfo.y / 2
                 });
                 buildings.push({
                     name: "beacon",
-                    layer: 0,
+                    antiAvoid: true,
                     x: (mapInfo.x / 2) - 2e3,
                     y: mapInfo.y / 2
                 });
                 buildings.push({
                     name: "beacon",
-                    layer: 0,
+                    antiAvoid: true,
                     x: mapInfo.x / 2,
                     y: mapInfo.y / 2
                 });
                 buildings.push({
                     name: "beacon",
-                    layer: 0,
+                    antiAvoid: true,
                     x: (mapInfo.x / 2) + 2e3,
                     y: mapInfo.y / 2
                 });
                 buildings.push({
                     name: "beacon",
-                    layer: 0,
+                    antiAvoid: true,
                     x: (mapInfo.x / 2) + 4e3,
                     y: mapInfo.y / 2
                 });
             }
             buildings.push({
                 name: "border rect",
-                layer: 100,
                 opacity: 1,
+                antiAvoid: true,
                 x: 0,
                 y: 0,
                 width: 3e3,
@@ -8721,7 +8834,7 @@
             });
             buildings.push({
                 name: "border rect",
-                layer: 100,
+                antiAvoid: true,
                 opacity: 1,
                 x: mapInfo.x / 2 - 1000,
                 y: 0,
@@ -8730,7 +8843,7 @@
             });
             buildings.push({
                 name: "border rect",
-                layer: 100,
+                antiAvoid: true,
                 opacity: 1,
                 x: mapInfo.x / 2 - 1000,
                 y: mapInfo.y - 2e3,
@@ -8739,7 +8852,7 @@
             });
             buildings.push({
                 name: "border rect",
-                layer: 100,
+                antiAvoid: true,
                 opacity: 1,
                 x: mapInfo.x - 3e3,
                 y: 0,
@@ -8748,7 +8861,7 @@
             });
             buildings.push({
                 name: "border rect",
-                layer: 100,
+                antiAvoid: true,
                 opacity: 1,
                 x: 0,
                 y: mapInfo.y - 2e3,
@@ -8757,7 +8870,7 @@
             });
             buildings.push({
                 name: "border rect",
-                layer: 100,
+                antiAvoid: true,
                 opacity: 1,
                 x: mapInfo.x - 3e3,
                 y: mapInfo.y - 2e3,
@@ -8766,27 +8879,24 @@
             });
             buildings.push({
                 name: "rect",
-                layer: 100,
                 color: "#808080",
                 opacity: 1,
-                x: 3e3-1500,
+                x: 3e3 - 1500,
                 y: 500,
                 width: 1500,
                 height: 1000
             });
             buildings.push({
                 name: "rect",
-                layer: 100,
                 color: "#808080",
                 opacity: 1,
-                x: 3e3-1500,
+                x: 3e3 - 1500,
                 y: mapInfo.y - 1500,
                 width: 1500,
                 height: 1000
             });
             buildings.push({
                 name: "wall rect",
-                layer: 1,
                 x: 1280,
                 y: mapInfo.y / 2 - 625,
                 width: 300,
@@ -8794,7 +8904,6 @@
             });
             buildings.push({
                 name: "wall rect",
-                layer: 1,
                 x: mapInfo.x - 1280,
                 y: mapInfo.y / 2 - 625,
                 width: 300,
@@ -8802,7 +8911,6 @@
             });
             buildings.push({
                 name: "wall rect",
-                layer: 1,
                 x: 10e3 - 2e3,
                 y: 1800,
                 width: 1500,
@@ -8810,7 +8918,6 @@
             });
             buildings.push({
                 name: "wall rect",
-                layer: 1,
                 x: 3e3,
                 y: 1800,
                 width: 1500,
@@ -8818,7 +8925,6 @@
             });
             buildings.push({
                 name: "wall rect",
-                layer: 1,
                 x: 3e3,
                 y: mapInfo.y - 2e3,
                 width: 1500,
@@ -8826,7 +8932,6 @@
             });
             buildings.push({
                 name: "wall rect",
-                layer: 1,
                 x: mapInfo.x - 4500,
                 y: mapInfo.y - 2e3,
                 width: 1500,
@@ -8834,37 +8939,33 @@
             });
             buildings.push({
                 name: "wall rect",
-                layer: 1,
                 x: mapInfo.x / 2 - 1e3,
                 y: mapInfo.y - 3500,
-                onlyDir_up_down: -(Math.PI/2),
+                onlyDir_up_down: -(Math.PI / 2),
                 width: 200,
                 height: 1500
             });
             buildings.push({
                 name: "wall rect",
-                layer: 1,
                 x: mapInfo.x / 2 + 800,
                 y: 2e3,
-                onlyDir_up_down: (Math.PI/2),
+                onlyDir_up_down: (Math.PI / 2),
                 width: 200,
                 height: 1500
             });
             buildings.push({
                 name: "wall rect",
-                layer: 1,
                 x: 9500,
                 y: mapInfo.x / 2 - 3750,
-                onlyDir_up_down: -(Math.PI/2),
+                onlyDir_up_down: -(Math.PI / 2),
                 width: 200,
                 height: 1500
             });
             buildings.push({
                 name: "wall rect",
-                layer: 1,
                 x: 2800,
                 y: 2000,
-                onlyDir_up_down: (Math.PI/2),
+                onlyDir_up_down: (Math.PI / 2),
                 width: 200,
                 height: 1500
             });
@@ -8915,7 +9016,7 @@
         } else if (gameMode == 6) {
             mapInfo.x = mapInfo.y = 1e3;
             enemies.push(new enemy({
-                health: 1e6,
+                health: 1e10,
                 scale: 200,
                 name: "Test Dummy",
                 speed: 0,
@@ -9546,7 +9647,7 @@
             this.name = data.name;
             this.tier = data.tier;
             this.industryName = data.industryName;
-            this.story = [ ...data.story ];
+            this.story = [...data.story];
             this.owner = ownerSID;
             this.level = 1;
             this.skills = [];
@@ -9579,7 +9680,6 @@
             healthIncrease: .1
         }
     }, {
-        dontSell: true,
         tier: 3,
         name: "Mosi Kristoffer",
         industryName: "Circle",
@@ -9594,6 +9694,19 @@
             desc: "Tan Circle gains defense points for every DoT effect it gains during its ability.",
             stampedeV2: 1
         }
+    }, {
+        tier: 3,
+        name: "Eleanor Thorne",
+        story: [],
+        industryName: "Heptagon",
+        legendarySkill: {
+            name: "Thorne's Precision",
+            main: "dmgPercentage",
+            onlyFor: "Purple Heptagon",
+            imageSource: "./images/modules/nuclear_reactor.png",
+            desc: "Purple Heptagon's ability deals additional damage percentage.",
+            dmgPercentage: .2
+        }
     }];
     class skill {
         constructor(data, slot, robot) {
@@ -9607,6 +9720,7 @@
             this.needAbilityDmg = data.needAbilityDmg;
             this.needAbility = data.needAbility;
             this.imageSource = data.imageSource;
+            this.onAbilityUseSpeed = data.onAbilityUseSpeedData ? data.onAbilityUseSpeedData[0] : data.onAbilityUseSpeed;
             this.healthIncrease = data.healthIncreaseData ? data.healthIncreaseData[0] : data.healthIncrease;
             this.dmgIncrease = data.dmgIncreaseData ? data.dmgIncreaseData[0] : data.dmgIncrease;
             this.onLowDefense = data.onLowDefenseData ? data.onLowDefenseData[0] : data.onLowDefense;
@@ -9734,7 +9848,25 @@
         needShield: true,
         main: "extraShieldHealth",
         extraShieldHealthData: [.05, .1, .12, .1875]
-    }]
+    }, {
+        name: "Movement Expert",
+        desc: "The ability gains increased movement speed during the ability.",
+        imageSource: {
+            name: "speed"
+        },
+        needAbility: true,
+        main: "onAbilityUseSpeed",
+        onAbilityUseSpeedData: [.07, .15, .25, .375]
+    }, {
+        name: "Speed Demon",
+        desc: "The shape has increased movement speed, but its durability is decreased by 10%.",
+        imageSource: {
+            name: "speed"
+        },
+        main: "speedIncrease",
+        speedIncreaseData: [.025, .05, .1, .15],
+        healthIncreaseData: [-.1, -.1, -.1, -.1]
+    }];
     function displayActiveSkills(pilot, robot) {
         if (!pilot) return 0;
         if (!pilot.skills) return 0;
@@ -9766,7 +9898,7 @@
         return text;
     }
     function getDisplayPilotSkill(skill) {
-        if (["extraShieldHealth", "extraAbilityDamage", "increaseDurationOfPositiveEffects", "speedIncrease", "onLowSpeed", "dmgIncrease", "mechanicHeal", "onAbilityUseFix", "healthIncrease", "dmgIncrease"].includes(skill.main)) {
+        if (["dmgPercentage", "onAbilityUseSpeed", "extraShieldHealth", "extraAbilityDamage", "increaseDurationOfPositiveEffects", "speedIncrease", "onLowSpeed", "dmgIncrease", "mechanicHeal", "onAbilityUseFix", "healthIncrease", "dmgIncrease"].includes(skill.main)) {
             if (skill[skill.main] == .007) {
                 return `0.7%`;
             } else if (skill[skill.main] == .07) {
@@ -9781,7 +9913,6 @@
     }
     function possibleSkills(pilot, robot, s) {
         let skills = [];
-        console.log(robot);
         for (let i = 0; i < pilotSkillList.length; i++) {
             let skill = pilotSkillList[i];
             if (skill) {
@@ -9804,7 +9935,7 @@
         }
         return skills;
     }
-    function learnSkill(pilot, slot, robot, name, level=0) {
+    function learnSkill(pilot, slot, robot, name, level = 0) {
         let skills = possibleSkills(pilot, robot);
         if (skills.length) {
             skills = skills.filter(e => e.name != name);
@@ -9867,7 +9998,7 @@
                             </span>
                             ` : ""}
                             </div>
-                            <div style="position: absolute; display: flex; flex-direction: column; justify-content: center; top: 0px; left: 60px; width: ${width - 60- (getDisplayPilotSkill(skill).toString().length * 20)}px; height: 100%;">
+                            <div style="position: absolute; display: flex; flex-direction: column; justify-content: center; top: 0px; left: 60px; width: ${width - 60 - (getDisplayPilotSkill(skill).toString().length * 20)}px; height: 100%;">
                             <div style="font-size: 18px;">${skill.name}</div>
                             <div style="font-size: 12px;">${skill.desc}</div>
                             </div>
@@ -9970,7 +10101,7 @@
             </span>
             ` : ""}
             </div>
-            <div style="position: absolute; display: flex; flex-direction: column; justify-content: center; top: 0px; left: 60px; width: ${width - 60- (getDisplayPilotSkill(skill).toString().length * 20)}px; height: 100%;">
+            <div style="position: absolute; display: flex; flex-direction: column; justify-content: center; top: 0px; left: 60px; width: ${width - 60 - (getDisplayPilotSkill(skill).toString().length * 20)}px; height: 100%;">
             <div style="font-size: 18px;">${skill.name}</div>
             <div style="font-size: 12px;">${skill.desc}</div>
             </div>
@@ -10015,7 +10146,7 @@
         </div>
         `;
         document.getElementById("pilotDisplay").appendChild(element);
-        element.onclick = function() {
+        element.onclick = function () {
             this.remove();
         };
         let image = getShapeSprite({
@@ -10033,6 +10164,9 @@
         let theskill = pilotSkillList.find(e => e.name == skill.name);
         if (theskill.onLowDefenseData) {
             skill.onLowDefense = theskill.onLowDefenseData[skill.level];
+        }
+        if (theskill.onAbilityUseSpeedData) {
+            skill.onAbilityUseSpeed = theskill.onAbilityUseSpeedData[skill.level];
         }
         if (theskill.increaseDurationOfPositiveEffectsData) {
             skill.increaseDurationOfPositiveEffects = theskill.increaseDurationOfPositiveEffectsData[skill.level];
@@ -10138,7 +10272,7 @@
         </div>
         `;
         document.getElementById("pilotDisplay").appendChild(element);
-        document.getElementById("upgradeTheThing").onclick = function() {
+        document.getElementById("upgradeTheThing").onclick = function () {
             if (player.workshopPoints - skillUpgradeCost[skill.level] >= 0) {
                 updateMoneyDisplay("workshopPoints", -skillUpgradeCost[skill.level]);
                 upgradePilotSkill(skill);
@@ -10147,7 +10281,7 @@
                 saveGameData();
             }
         }
-        document.getElementById("leaveThisThing").onclick = function() {
+        document.getElementById("leaveThisThing").onclick = function () {
             element.remove();
         }
     }
@@ -10222,7 +10356,7 @@
         </div>
         `;
         document.getElementById("pilotDisplay").appendChild(element);
-        document.getElementById("switch").onclick = function() {
+        document.getElementById("switch").onclick = function () {
             slotSelected = -1
             if (mode == "random") {
                 mode = "choose";
@@ -10279,7 +10413,7 @@
                             let Element = Elements[i];
                             if (Element.id.includes("chooseSkill")) {
                                 ff.push(Element);
-                                Element.onclick = function() {
+                                Element.onclick = function () {
                                     document.getElementById("chooseSKILLHA").style.display = "flex";
                                     chooseSelected = parseInt(Element.id.split("_")[1]);
                                     ff.forEach(e => {
@@ -10300,7 +10434,7 @@
                 };
             }
         }
-        document.getElementById("chooseSKILLHA").onclick = function() {
+        document.getElementById("chooseSKILLHA").onclick = function () {
             if (slotSelected >= 0 && player.workshopPoints - chooseCost >= 0) {
                 let theSkilll = pilot.skills.find(e => e.slot == slotSelected);
                 let indexxxx = pilot.skills.findIndex(e => e.slot == slotSelected);
@@ -10313,7 +10447,7 @@
                 }
             }
         }
-        document.getElementById("randomSkillRoll").onclick = function() {
+        document.getElementById("randomSkillRoll").onclick = function () {
             if (slotSelected >= 0 && player.workshopPoints - randomRollCost >= 0) {
                 let theSkilll = pilot.skills.find(e => e.slot == slotSelected);
                 let indexxxx = pilot.skills.findIndex(e => e.slot == slotSelected);
@@ -10353,7 +10487,7 @@
             <div id="showDe_sc_${i}" style="position: absolute; cursor: pointer; color: #fff; font-size: 30px; right: 10px; text-align: center; top: 70px; width: 40px; height: 40px; border-radius: 100%; background-color: rgb(255, 255, 255, .6);">
             i
             </div>
-            <div id="selecttoequip${i}" style="font-size: 30px; color: #fff; position: absolute; cursor: pointer; display: flex; flex-direction: column; justify-content: center; align-items: center; bottom: 10px; left: 20px; width: ${350 - (20*2)}px; height: 60px; border-radius: 6px; background-color: #0f0;">
+            <div id="selecttoequip${i}" style="font-size: 30px; color: #fff; position: absolute; cursor: pointer; display: flex; flex-direction: column; justify-content: center; align-items: center; bottom: 10px; left: 20px; width: ${350 - (20 * 2)}px; height: 60px; border-radius: 6px; background-color: #0f0;">
             ASSIGN
             </div>
             </div>
@@ -10370,10 +10504,10 @@
             }, true);
             image.style = "width: 100%; height: 100%;";
             document.getElementById(`image__13${i}`).appendChild(image);
-            document.getElementById(`showDe_sc_${i}`).onclick = function() {
+            document.getElementById(`showDe_sc_${i}`).onclick = function () {
                 showPilotDescription(Pilot);
             }
-            document.getElementById(`selecttoequip${i}`).onclick = function() {
+            document.getElementById(`selecttoequip${i}`).onclick = function () {
                 let old = player.pilots.find(e => e.owner == robot.sid);
                 if (old) {
                     old.owner = null;
@@ -10485,17 +10619,17 @@
             let element = elements[i];
             if (element.id.includes("learnSkill")) {
                 let id = element.id.split("_")[1];
-                element.onclick = function() {
+                element.onclick = function () {
                     learnSkill(thePilot, parseInt(id), robot);
                 };
             } else if (element.id.includes("upgradeSkill")) {
                 let id = element.id.split("_")[1];
-                element.onclick = function() {
+                element.onclick = function () {
                     upgradeSkill(thePilot.skills.find(e => e.slot == parseInt(id)), robot);
                 };
             }
         }
-        document.getElementById("upgradePilot").onclick = function() {
+        document.getElementById("upgradePilot").onclick = function () {
             if (pilotUpgradeCost[thePilot.level] && player.workshopPoints - pilotUpgradeCost[thePilot.level] >= 0) {
                 updateMoneyDisplay("workshopPoints", -pilotUpgradeCost[thePilot.level]);
                 thePilot.level++;
@@ -10503,7 +10637,7 @@
                 saveGameData();
             }
         }
-        document.getElementById("changeASkill").onclick = function() {
+        document.getElementById("changeASkill").onclick = function () {
             changeSkill(thePilot, robot);
         }
         let image = getShapeSprite({
@@ -10534,7 +10668,7 @@
             <div id="showDesc_${i}" style="position: absolute; cursor: pointer; color: #fff; font-size: 30px; right: 10px; text-align: center; top: 70px; width: 40px; height: 40px; border-radius: 100%; background-color: rgb(255, 255, 255, .6);">
             i
             </div>
-            <div id="hire_p${i}" style="position: absolute; cursor: pointer; display: flex; flex-direction: column; justify-content: center; align-items: center; bottom: 10px; left: 20px; width: ${350 - (20*2)}px; height: 90px; border-radius: 6px; background-color: #0f0;">
+            <div id="hire_p${i}" style="position: absolute; cursor: pointer; display: flex; flex-direction: column; justify-content: center; align-items: center; bottom: 10px; left: 20px; width: ${350 - (20 * 2)}px; height: 90px; border-radius: 6px; background-color: #0f0;">
             <div style="font-size: 30px;">HIRE</div>
             <div style="display: flex; justify-content: center;">
             <div style="display: inline-block; width: 30px; height: 30px; background-size: 30px 30px; background-image: url('./images/icons/workshop.png');"></div>
@@ -10554,10 +10688,10 @@
             }, true);
             image.style = "width: 100%; height: 100%;";
             document.getElementById(`image_1${i}`).appendChild(image);
-            document.getElementById(`showDesc_${i}`).onclick = function() {
+            document.getElementById(`showDesc_${i}`).onclick = function () {
                 showPilotDescription(Pilot);
             }
-            document.getElementById(`hire_p${i}`).onclick = function() {
+            document.getElementById(`hire_p${i}`).onclick = function () {
                 if (player.workshopPoints - pilotTierCost[Pilot.tier] >= 0) {
                     updateMoneyDisplay("workshopPoints", -pilotTierCost[Pilot.tier]);
                     if (player.pilots.find(e => e.owner == robot.sid)) {
@@ -10571,18 +10705,18 @@
                 }
             }
         }
-        document.getElementById("trainingCenterButton_").onclick = function() {
+        document.getElementById("trainingCenterButton_").onclick = function () {
             document.getElementById("trainingCenter").style.display = "block";
             document.getElementById("pilotInventory___").style.display = "none";
         }
-        document.getElementById("inventoryButton_").onclick = function() {
+        document.getElementById("inventoryButton_").onclick = function () {
             if (player.pilots.find(e => e.owner == null)) {
                 document.getElementById("trainingCenter").style.display = "none";
                 document.getElementById("pilotInventory___").style.display = "block";
                 doPilotInventory(robot);
             }
         }
-        document.getElementById("changePilot___").onclick = function() {
+        document.getElementById("changePilot___").onclick = function () {
             document.getElementById("hangerUI").append(document.getElementById("moneyDisplay"));
             document.getElementById("trainingCenterButton_").style.display = "block";
             document.getElementById("inventoryButton_").style.display = "block";
@@ -10606,7 +10740,7 @@
             document.body.append(document.getElementById("moneyDisplay"));
             document.getElementById("mainPilotDisplay").style.display = "block";
         }
-        document.getElementById("closePilotTab").onclick = function() {
+        document.getElementById("closePilotTab").onclick = function () {
             document.getElementById("sideDisplay").style.display = "block";
             document.getElementById("hangerUI").append(document.getElementById("moneyDisplay"));
             element.remove();
@@ -11291,7 +11425,7 @@
                 document.getElementById("WEAPONdisplay").appendChild(element);
             }
         }
-        document.getElementById("showDescription").onclick = function() {}
+        document.getElementById("showDescription").onclick = function () { }
         document.getElementById("Upgrade").onclick = function () {
             document.body.appendChild(document.getElementById("moneyDisplay"));
             document.getElementById("upgradeMenu").style.display = "block";
@@ -13173,6 +13307,8 @@
             type: "shape", rarity: "Common", name: "Purple Hexagon",
         }, {
             type: "shape", rarity: "Epic", name: "White Heptagon",
+        }, {
+            type: "shape", rarity: "Epic", name: "Purple Heptagon",
         }],
         tokenCost: "token 3"
     }];
@@ -13343,7 +13479,7 @@
         }
         rewardsElement.innerHTML = rewardsText;
 
-        element.onclick = function() {
+        element.onclick = function () {
             this.remove();
         }
     }
@@ -13359,7 +13495,7 @@
         }
         if (possible.length) {
             let randomNums = [];
-            for (let i = 0; i < 20; i++) {
+            for (let i = 0; i < 50; i++) {
                 randomNums.push(Math.random());
             }
             let randomNums2 = [];
@@ -13431,7 +13567,7 @@
         `;
         document.body.appendChild(element);
         let isDone = false;
-        let gete = function(id) {
+        let gete = function (id) {
             return document.getElementById(id);
         }
         let first = 0;
@@ -13448,7 +13584,7 @@
                 first -= speed;
                 gete("first1").style.left = `${first}px`;
                 gete("first2").style.right = `${first}px`;
-                if (first <= -window.innerWidth/2) {
+                if (first <= -window.innerWidth / 2) {
                     gete("first").style.display = "none";
                 }
             } else if (gete("second").style.display == "block") {
@@ -13456,10 +13592,10 @@
                 second -= speed;
                 gete("second1").style.top = `${second}px`;
                 gete("second2").style.bottom = `${second}px`;
-                if (Math.abs(second) >= window.innerHeight/4) {
+                if (Math.abs(second) >= window.innerHeight / 4) {
                     start = true;
                 }
-                if (second <= -window.innerHeight/2) {
+                if (second <= -window.innerHeight / 2) {
                     gete("second").style.display = "none";
                 }
             }
@@ -13478,7 +13614,7 @@
             }
             if (isDone != "pop") window.requestAnimationFrame(animation);
         }
-        gete("getmeout").onclick = function() {
+        gete("getmeout").onclick = function () {
             isDone = "pop";
             document.getElementById("money2Display").style.display = "block";
             document.getElementById("sideDisplay").style.display = "block";
@@ -13497,7 +13633,7 @@
         saveGameData();
     }
     function doLootBoxStuff(lootbox) {
-        let dosssss = function() {
+        let dosssss = function () {
             let reward = getLootboxReward(lootbox.rewards);
             lootboxGetItem(reward);
             doLootboxAnimation(reward);
@@ -13626,19 +13762,19 @@
             `;
         });
         noMainElement.innerHTML = noMainText;
-        
+
         let elements = [...document.getElementById("sideDisplay").getElementsByTagName("div")];
         for (let i = 0; i < elements.length; i++) {
             let element = elements[i];
             if (element.id && (element.id.includes("get_") || element.id.includes("_rewards"))) {
                 if (element.id.includes("_rewards")) {
                     let name = element.id.split("_rewards")[0];
-                    element.onclick = function() {
+                    element.onclick = function () {
                         showLootboxRewards(lootboxes.find(e => e.name == name));
                     }
                 } else if (element.id.includes("get_")) {
                     let name = element.id.split("get_")[1];
-                    element.onclick = function() {
+                    element.onclick = function () {
                         doLootBoxStuff(lootboxes.find(e => e.name == name));
                     }
                 }
@@ -14709,7 +14845,7 @@
             ctx.lineWidth = 12;
             renderStar(ctx, 4, robot.scale + 5, robot.scale + 5);
             ctx.stroke();
-            ctx.rotate(-asd*2);
+            ctx.rotate(-asd * 2);
         }
         let dir = robot.dir2 || robot.dir;
         if (robot.name.includes("Circle")) {
@@ -14928,7 +15064,7 @@
                     },
                     defensePointsBypass: (1 - weapon.defenseBypass),
                     color: "./images/bullets/bullet.png",
-                    avoidBuildings: shape.abilitySpeedMulti == 3 ? true : false,
+                    avoidBuildings: shape.avoidBuildings,
                     owner: shape,
                     weaponOwner: {
                         name: weapon.name,
@@ -14951,7 +15087,7 @@
                     dir: dir + getRandomOffset(weapon.spread),
                     isAlly: isAlly,
                     color: "./images/bullets/bullet.png",
-                    avoidBuildings: shape.abilitySpeedMulti == 3 ? true : false,
+                    avoidBuildings: shape.avoidBuildings,
                     owner: shape,
                     weaponOwner: {
                         name: weapon.name,
@@ -14986,7 +15122,7 @@
                     dir: dir + getRandomOffset(weapon.spread),
                     isAlly: isAlly,
                     color: `./images/bullets/${weapon.firedTime / 1e3 == 1 ? "red_bullet" : "bullet"}.png`,
-                    avoidBuildings: shape.abilitySpeedMulti == 3 ? true : false,
+                    avoidBuildings: shape.avoidBuildings,
                     owner: shape,
                     weaponOwner: {
                         name: weapon.name,
@@ -15014,7 +15150,7 @@
                     dir: dir + getRandomOffset(weapon.spread),
                     isAlly: isAlly,
                     color: "./images/bullets/bullet.png",
-                    avoidBuildings: shape.abilitySpeedMulti == 3 ? true : false,
+                    avoidBuildings: shape.avoidBuildings,
                     owner: shape,
                     weaponOwner: {
                         name: weapon.name,
@@ -15044,7 +15180,7 @@
                     },
                     defensePointsBypass: (1 - weapon.defenseBypass),
                     color: "./images/bullets/orange_bullet.png",
-                    avoidBuildings: shape.abilitySpeedMulti == 3 ? true : false,
+                    avoidBuildings: shape.avoidBuildings,
                     owner: shape,
                     weaponOwner: {
                         name: weapon.name,
@@ -15066,7 +15202,7 @@
                     range: weapon.range,
                     dir: dir + getRandomOffset(weapon.spread),
                     isAlly: isAlly,
-                    avoidBuildings: shape.abilitySpeedMulti == 3 ? true : false,
+                    avoidBuildings: shape.avoidBuildings,
                     dotEffect: {
                         name: "dot",
                         last: 15e3,
@@ -15097,7 +15233,7 @@
                     dir: dir,
                     isAlly: isAlly,
                     color: "./images/bullets/white_bullet.png",
-                    avoidBuildings: shape.abilitySpeedMulti == 3 ? true : false,
+                    avoidBuildings: shape.avoidBuildings,
                     aoeRange: weapon.aoeRange,
                     owner: shape,
                     freezeEffect: {
@@ -15127,7 +15263,7 @@
                     dir: dir,
                     isAlly: isAlly,
                     color: "./images/bullets/rocket.png",
-                    avoidBuildings: shape.abilitySpeedMulti == 3 ? true : false,
+                    avoidBuildings: shape.avoidBuildings,
                     aoeRange: weapon.aoeRange,
                     owner: shape,
                     weaponOwner: {
@@ -15151,7 +15287,7 @@
                     dir: dir,
                     isAlly: isAlly,
                     color: "./images/bullets/red_bullet.png",
-                    avoidBuildings: shape.abilitySpeedMulti == 3 ? true : false,
+                    avoidBuildings: shape.avoidBuildings,
                     blastEffect: {
                         name: "blast",
                         last: 5e3,
@@ -15174,7 +15310,7 @@
                     velx: 0,
                     vely: 0,
                     scale: scale,
-                    avoidBuildings: shape.abilitySpeedMulti == 3 ? true : false,
+                    avoidBuildings: shape.avoidBuildings,
                     speed: 0.3,
                     dmg: weapon.dmg,
                     range: weapon.range,
@@ -15199,7 +15335,7 @@
                     x: x,
                     y: y,
                     oldX: x,
-                    avoidBuildings: shape.abilitySpeedMulti == 3 ? true : false,
+                    avoidBuildings: shape.avoidBuildings,
                     oldY: y,
                     velx: 0,
                     vely: 0,
@@ -15239,7 +15375,7 @@
                     x: x,
                     y: y,
                     oldX: x,
-                    avoidBuildings: shape.abilitySpeedMulti == 3 ? true : false,
+                    avoidBuildings: shape.avoidBuildings,
                     oldY: y,
                     velx: 0,
                     vely: 0,
@@ -15262,7 +15398,7 @@
                     x: x,
                     y: y,
                     oldX: x,
-                    avoidBuildings: shape.abilitySpeedMulti == 3 ? true : false,
+                    avoidBuildings: shape.avoidBuildings,
                     oldY: y,
                     velx: 0,
                     vely: 0,
@@ -15291,7 +15427,7 @@
                     velx: 0,
                     vely: 0,
                     scale: scale,
-                    avoidBuildings: shape.abilitySpeedMulti == 3 ? true : false,
+                    avoidBuildings: shape.avoidBuildings,
                     speed: 0.2,
                     dmg: weapon.dmg,
                     range: weapon.range,
@@ -15320,7 +15456,7 @@
                     velx: 0,
                     vely: 0,
                     scale: scale,
-                    avoidBuildings: shape.abilitySpeedMulti == 3 ? true : false,
+                    avoidBuildings: shape.avoidBuildings,
                     speed: 0.065,
                     dmg: weapon.dmg,
                     range: weapon.range,
@@ -15335,7 +15471,7 @@
                     }
                 });
             } else if (weapon.name == "Maha Vajra" || weapon.name == "Vajra") {
-                for(let i = 0; i < 7; i++) projectiles.push({
+                for (let i = 0; i < 7; i++) projectiles.push({
                     projType: weapon.projType,
                     x: x,
                     y: y,
@@ -15344,7 +15480,7 @@
                     velx: 0,
                     vely: 0,
                     scale: scale,
-                    avoidBuildings: shape.abilitySpeedMulti == 3 ? true : false,
+                    avoidBuildings: shape.avoidBuildings,
                     speed: 0.35,
                     dmg: weapon.dmg / 7,
                     range: weapon.range,
@@ -15373,7 +15509,7 @@
                     velx: 0,
                     vely: 0,
                     scale: scale,
-                    avoidBuildings: shape.abilitySpeedMulti == 3 ? true : false,
+                    avoidBuildings: shape.avoidBuildings,
                     speed: 0.3,
                     dmg: weapon.dmg,
                     range: weapon.range,
@@ -15397,7 +15533,7 @@
                     velx: 0,
                     vely: 0,
                     scale: scale,
-                    avoidBuildings: shape.abilitySpeedMulti == 3 ? true : false,
+                    avoidBuildings: shape.avoidBuildings,
                     speed: 0.25,
                     dmg: weapon.dmg,
                     range: weapon.range,
@@ -15421,7 +15557,7 @@
                     scale: scale,
                     speed: 0.25,
                     dmg: weapon.dmg,
-                    avoidBuildings: shape.abilitySpeedMulti == 3 ? true : false,
+                    avoidBuildings: shape.avoidBuildings,
                     range: weapon.range,
                     dir: dir - getRandomOffset(weapon.spread),
                     isAlly: isAlly,
@@ -15448,7 +15584,7 @@
                     range: weapon.range,
                     dir: dir + getRandomOffset(spread),
                     isAlly: isAlly,
-                    avoidBuildings: shape.abilitySpeedMulti == 3 ? true : false,
+                    avoidBuildings: shape.avoidBuildings,
                     color: "./images/bullets/sonic_blast.png",
                     owner: shape,
                     defensePointsBypass: (1 - weapon.defenseBypass),
@@ -15474,7 +15610,7 @@
                         range: weapon.range,
                         dir: dir + getRandomOffset(weapon.spread),
                         isAlly: isAlly,
-                        avoidBuildings: shape.abilitySpeedMulti == 3 ? true : false,
+                        avoidBuildings: shape.avoidBuildings,
                         color: "./images/bullets/sonic_blast.png",
                         owner: shape,
                         knockback: 0.046875,
@@ -15500,7 +15636,7 @@
                         range: weapon.range,
                         dir: dir + getRandomOffset(weapon.spread),
                         isAlly: isAlly,
-                        avoidBuildings: shape.abilitySpeedMulti == 3 ? true : false,
+                        avoidBuildings: shape.avoidBuildings,
                         color: "./images/bullets/bullet.png",
                         owner: shape,
                         weaponOwner: {
@@ -15524,7 +15660,7 @@
                     range: weapon.range,
                     dir: dir + getRandomOffset(weapon.spread),
                     isAlly: isAlly,
-                    avoidBuildings: shape.abilitySpeedMulti == 3 ? true : false,
+                    avoidBuildings: shape.avoidBuildings,
                     dotEffect: {
                         name: "dot",
                         last: 5e3,
@@ -15552,7 +15688,7 @@
                     speed: 0.25,
                     dmg: weapon.dmg,
                     range: weapon.range,
-                    avoidBuildings: shape.abilitySpeedMulti == 3 ? true : false,
+                    avoidBuildings: shape.avoidBuildings,
                     dir: dir + getRandomOffset(spread),
                     isAlly: isAlly,
                     color: "./images/bullets/energy_bullet.png",
@@ -15576,7 +15712,7 @@
                     dmg: weapon.dmg,
                     range: weapon.range,
                     antiTier4_5: true,
-                    avoidBuildings: shape.abilitySpeedMulti == 3 ? true : false,
+                    avoidBuildings: shape.avoidBuildings,
                     dir: dir + getRandomOffset(weapon.spread),
                     isAlly: isAlly,
                     color: "./images/bullets/energy_bullet.png",
@@ -15992,13 +16128,13 @@
         setGlobalStats(enemies, isWin, player.league);
         allies = allies.sort((a, b) => {
             if (a.isMe && a.honor === 0) {
-              return 1;
+                return 1;
             } else if (b.isMe && b.honor === 0) {
-              return -1;
+                return -1;
             } else {
-              return b.honor - a.honor;
+                return b.honor - a.honor;
             }
-          });
+        });
         enemies = enemies.sort((a, b) => b.honor - a.honor);
         let leagueReward = getLegauePointReward(player.league, allies.findIndex(e => e.isMe), isWin, gameMode);
         if (gameMode == 2) {
@@ -16699,10 +16835,13 @@
         let hasColdPulse = robot.effects.find(e => e.name == "cold pulse");
         for (let t = 0; t < touchBullets.length; t++) {
             let bullet = touchBullets[t];
-            if (bullet.antiTier4_5) {
+            if (bullet.dmg > 0 && bullet.antiTier4_5) {
                 bullet.dmg = antiTier4_5(bullet, robot);
             }
             if (bullet.dmg > 0) {
+                if (bullet.dmgPercentage) {
+                    bullet.dmg = robot.maxhealth * bullet.dmgPercentage;
+                }
                 let hadHealth = robot.health > 0;
                 if (bullet.knockback) {
                     robot.velx += Math.cos(bullet.dir) * bullet.knockback;
@@ -17048,6 +17187,9 @@
                     } else if (effect.name == "phase shift") {
                         if (!effect.isActiveModuleEffect) speedMulti += 1.5;
                     } else if (effect.name == "dash") {
+                        if (effect.dmg) {
+                            robot.avoidBuildings = true;
+                        }
                         let moveSpeed = (0.015 * (effect.POWER ? effect.POWER : 1));// * robot.reloadMoveMulti * slowdownMulti * speedMulti;
                         robot.velx += Math.cos(effect.dir) * (moveSpeed * delta);
                         robot.vely += Math.sin(effect.dir) * (moveSpeed * delta);
@@ -17109,6 +17251,7 @@
                         robot.reflector = .75;
                         effect.delta += delta;
                         if (effect.delta <= 1000 && !effect.pressed) {
+                            robot.avoidBuildings = true;
                             let moveSpeed = 0.03;
                             robot.velx += Math.cos(effect.dir) * (moveSpeed * delta);
                             robot.vely += Math.sin(effect.dir) * (moveSpeed * delta);
@@ -17170,6 +17313,7 @@
                                 effect.stage++;
                             }
                         } else if (effect.stage == 2) {
+                            robot.avoidBuildings = true;
                             robot.ability.iconSource = "./images/abilities/dash.png";
                             let moveSpeed = 0.011 * robot.reloadMoveMulti;
                             robot.velx += Math.cos(effect.dir) * (moveSpeed * delta);
@@ -17326,7 +17470,7 @@
                             e.velx += Math.cos(angle) * 8;
                             e.vely += Math.sin(angle) * 8;
                             changeHealth(e, {
-                                amount: -robot.ability.dmg*5
+                                amount: -robot.ability.dmg * 5
                             }, false, robot);
                             e.effects.push({
                                 neg: true,
@@ -17545,7 +17689,7 @@
             return "./images/abilities/castling.png";
         } else if (index == "Immune Amplifier") {
             return "./images/modules/immune_amplifier.png";
-        } else if(index == "Matrix") {
+        } else if (index == "Matrix") {
             return "./images/abilities/matrix.png";
         } else if (index == "nuclear amps" || index == "attack") {
             return {
@@ -17667,7 +17811,7 @@
                             }, false, robot);
                             return;
                         }
-                    } else {
+                    } else if (weapon.name != "Fulgur" && weapon.name != "Tonans") {
                         shieldEffects.push({
                             location: taker,
                             scale: taker.scale + 20,
@@ -17683,8 +17827,12 @@
             }
         }
         let hasHealth = taker.health > 0;
+        let dmgIncrease = 1;
+        if ((weapon.name == "Fulgur" || weapon.name == "Tonans") && taker.tier == 4) {
+            dmgIncrease = 2.5;
+        }
         changeHealth(taker, {
-            amount: -weapon.dmg,
+            amount: -(weapon.dmg * dmgIncrease),
             defensePointsBypass: (1 - weapon.defenseBypass),
             onDamageHealBack: weapon.healBackOnDamage
         }, false, robot);
@@ -17700,27 +17848,59 @@
         }
     }
     function doLaserStuff(robot, weapon, isAlly) {
-        let direction = robot.dir;
-        let angle = 0.72;
-        if (hasPlayers()) {
-            for (let i = 0; i < players.length; i++) {
-                let player = players[i].robots[players[i].robotIndex];
-                if (player && players[i].isAlly != isAlly) {
-                    let dir = Math.atan2(player.y - robot.y, player.x - robot.x);
-                    if (!player.invis && Math.getAngleDist(direction, dir) <= angle && dist(player, robot) <= weapon.range + player.scale) {
-                        doLaserDamage(robot, weapon, player);
-                    }
+        if (weapon.name == "Fulgur" || weapon.name == "Tonans") {
+            if (weapon.target || robot.target) {
+                let target = weapon.target || robot.target;
+                if (target && dist(target, robot) <= weapon.range) {
+                    doLaserDamage(robot, weapon, target);
                 }
             }
         } else {
-            for (let i = 0; i < enemies.length; i++) {
-                let player = enemies[i];
-                if (player) {
-                    let dir = Math.atan2(player.y - robot.y, player.x - robot.x);
-                    if (Math.getAngleDist(direction, dir) <= angle && dist(player, robot) <= weapon.range + player.scale) {
-                        doLaserDamage(robot, weapon, player);
+            let direction = robot.dir;
+            let angle = 0.72;
+            if (hasPlayers()) {
+                for (let i = 0; i < players.length; i++) {
+                    let player = players[i].robots[players[i].robotIndex];
+                    if (player && players[i].isAlly != isAlly) {
+                        let dir = Math.atan2(player.y - robot.y, player.x - robot.x);
+                        if (!player.invis && Math.getAngleDist(direction, dir) <= angle && dist(player, robot) <= weapon.range + player.scale) {
+                            doLaserDamage(robot, weapon, player);
+                        }
                     }
                 }
+            } else {
+                for (let i = 0; i < enemies.length; i++) {
+                    let player = enemies[i];
+                    if (player) {
+                        let dir = Math.atan2(player.y - robot.y, player.x - robot.x);
+                        if (Math.getAngleDist(direction, dir) <= angle && dist(player, robot) <= weapon.range + player.scale) {
+                            doLaserDamage(robot, weapon, player);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    function doWeaponTargetStuff(weapon, robot, isAlly) {
+        if (!robot.isMe) return;
+        let enemies = getNearest(robot, weapon.range, isAlly);
+        if (enemies.length) {
+            enemies = enemies.filter(e => !e.invis);
+            let x1 = mouseX / window.innerWidth;
+            let y1 = mouseY / window.innerHeight;
+            let x2 = x1 * maxScreen.x;
+            let y2 = y1 * maxScreen.y;
+            let x3 = maxScreen.x / 2;
+            let y3 = maxScreen.y / 2;
+            let ang = Math.atan2(y2 - y3, x2 - x3);
+            let Dist = Math.hypot(y2 - y3, x2 - x3);
+            let cursorLocation = {
+                x: robot.x + Math.cos(ang) * Dist,
+                y: robot.y + Math.sin(ang) * Dist
+            };
+            let enemy = enemies.sort((a, b) => dist(cursorLocation, a) - dist(cursorLocation, b))[0];
+            if (enemy) {
+                weapon.target = enemy;
             }
         }
     }
@@ -17814,6 +17994,9 @@
                         weapon.firedTime = Math.max((weapon.firedTime - delta), 0);
                     }
                 }
+                if (weapon.name == "Fulgur" || weapon.name == "Tonans") {
+                    doWeaponTargetStuff(weapon, robot, isAlly);
+                }
                 if (weapon.canFire && !weapon.notActive) {
                     weapon.ammo = Math.floor(weapon.ammo);
                     if (weapon.lastFire == null) weapon.lastFire = 0;
@@ -17834,6 +18017,9 @@
                                 weapon.ammo--;
                             }
                         } else if (Date.now() - weapon.lastFire >= weapon.fireRate * (weapon.name == "Atomizer" || weapon.name == "Nucleon" ? 1 + fireRateMulti : weapon.name == "Evora" || weapon.name == "Veyron" ? fireRateMulti : 1)) {
+                            if (weapon.name == "Fulgur" || weapon.name == "Tonans") {
+                                weapon.continueToFire = true;
+                            }
                             weapon.lastFire = Date.now();
                             if (weapon.name == "Hawk" || weapon.name == "Eagle") {
                                 let nearestEnemies = [];
@@ -17861,6 +18047,9 @@
                                 if (nearestEnemies.length) {
                                     weapon.ammo--;
                                 }
+                            } else if (weapon.name == "Fulgur" || weapon.name == "Tonans") {
+                                doLaserStuff(robot, weapon, isAlly);
+                                weapon.ammo--;
                             } else {
                                 fireWeapon(weapon, robot, isAlly);
                                 weapon.ammo--;
@@ -17876,6 +18065,9 @@
                     } else {
                         robot.reloadMoveMulti = 1;
                     }
+                    if (weapon.name == "Fulgur" || weapon.name == "Tonans") {
+                        weapon.continueToFire = false;
+                    }
                     weapon.ammo += ((weapon.maxammo / weapon.reload) * delta) * (robot.isMe && keysPressed[82] ? 2 : 1);
                     if (weapon.ammo >= weapon.maxammo) {
                         weapon.ammo = weapon.maxammo;
@@ -17886,12 +18078,11 @@
         }
     }
     function collideWithBuildings(robot, delta, isAlly) {
-        if (robot.abilitySpeedMulti != 3 && !robot.effects.find(e => (e.name == "dash" && e.dmg) || (e.name == "Castling" && (e.stage == null || e.stage < 3)))) {
-        }
         for (let i = 0; i < ACTUALBUILDINGSTOTOUCH.length; i++) {
             let obj = ACTUALBUILDINGSTOTOUCH[i];
             if (obj) {
-                if (obj.name == "beacon" && obj.layer == robot.layer) {
+                if (robot.avoidBuildings && !obj.antiAvoid) continue;
+                if (obj.name == "beacon") {
                     if (!robot.isFREEZE && Math.hypot(obj.y - robot.y, obj.x - robot.x) <= 400) {
                         obj.isHAVEON = true;
                         if (isAlly) {
@@ -17920,7 +18111,7 @@
                             }
                         }
                     }
-                } else if (obj.layer > robot.layer && (obj.name == "wall rect" || obj.name == "border rect")) {
+                } else if (obj.name == "wall rect" || obj.name == "border rect") {
                     if (circleSquareCollision(robot, obj, true)) {
                         let Px = Math.max(obj.x, Math.min(robot.x, obj.x + obj.width));
                         let Py = Math.max(obj.y, Math.min(robot.y, obj.y + obj.height));
@@ -17929,7 +18120,7 @@
                         robot.velx += Math.cos(Math.atan2(robot.y - Py, robot.x - Px)) * (.75 + robot.speed);
                         robot.vely += Math.sin(Math.atan2(robot.y - Py, robot.x - Px)) * (.75 + robot.speed);
                     }
-                } else if (obj.layer <= robot.layer && obj.name == "water") {
+                } else if (obj.name == "water") {
                     let Px = Math.max(obj.x, Math.min(robot.x, obj.x + obj.width));
                     let Py = Math.max(obj.y, Math.min(robot.y, obj.y + obj.height));
                     let distance = Math.hypot(robot.x - Px, robot.y - Py);
@@ -18142,7 +18333,7 @@
                     robot.vely = 0;
                 }
             }
-        } else if (robot.ability.name == "Support" || robot.ability.name == "Matrix" || robot.ability.name == "Reflector" || robot.ability.name == "Clear Sky" || robot.ability.name == "Reinforce Hull" || robot.ability.name == "Ultimate Mending" || robot.ability.name == "Divine Judgement" || robot.ability.name == "Grand Fortitude" || robot.ability.name == "Paladin" || robot.ability.name == "Overload" || robot.ability.name == "Stampede" || robot.ability.name == "Stealth" || robot.ability.name == "Retribution" || robot.ability.name == "Ultimate Defense" || robot.ability.name == "Self Heal" || robot.ability.name == "Dragon Flight" || robot.ability.name == "Shield Regeneration" || robot.ability.name == "Full Action") {
+        } else if (robot.ability.name == "Long Shot" || robot.ability.name == "Support" || robot.ability.name == "Matrix" || robot.ability.name == "Reflector" || robot.ability.name == "Clear Sky" || robot.ability.name == "Reinforce Hull" || robot.ability.name == "Ultimate Mending" || robot.ability.name == "Divine Judgement" || robot.ability.name == "Grand Fortitude" || robot.ability.name == "Paladin" || robot.ability.name == "Overload" || robot.ability.name == "Stampede" || robot.ability.name == "Stealth" || robot.ability.name == "Retribution" || robot.ability.name == "Ultimate Defense" || robot.ability.name == "Self Heal" || robot.ability.name == "Dragon Flight" || robot.ability.name == "Shield Regeneration" || robot.ability.name == "Full Action") {
             if (robot.abilityReload == 0 && robot.abilityLast == 0) {
                 robot.abilityLast = robot.ability.lastingTime;
                 doWonderworkerSkill(robot);
@@ -18272,6 +18463,32 @@
                         name: "Support",
                         abilityEffect: "Support",
                         lastTime: robot.ability.lastingTime,
+                    });
+                } else if (robot.ability.name == "Long Shot") {
+                    projectiles.push({
+                        projType: "normal",
+                        x: robot.x,
+                        y: robot.y,
+                        oldX: robot.x,
+                        avoidBuildings: true,
+                        oldY: robot.y,
+                        velx: 0,
+                        vely: 0,
+                        dmg: 100,
+                        dmgPercentage: .1 + (robot.dmgPercentage || 0),
+                        scale: 40,
+                        speed: .35,
+                        range: 3800,
+                        dir: robot.dir,
+                        isAlly: isAlly,
+                        color: "./images/bullets/bullet.png",
+                        owner: robot,
+                        bypassReflector: true,
+                        defensePointsBypass: 0,
+                        weaponOwner: {
+                            name: "Long Shot",
+                            level: robot.level
+                        }
                     });
                 }
             }
@@ -18582,6 +18799,7 @@
                 (!robot.isMe ? robot.deltaTimer = 500 : deltaTimer = 500);
             }
         } else if (robot.ability.name == "Dragon Flight") {
+            robot.avoidBuildings = true;
             robot.builtInDefensePoints = 9000;
             robot.abilitySpeedMulti = 3;
             (!robot.isMe ? robot.deltaTimer -= delta : deltaTimer -= delta);
@@ -18624,6 +18842,7 @@
                 robot.abilitySpeedMulti = 1.5;
             }
         } else if (robot.ability.name == "Clear Sky") {
+            robot.avoidBuildings = true;
             if (robot.shields.length == 0) {
                 robot.shields.push({
                     type: "purple",
@@ -18849,7 +19068,16 @@
         robot.fireWeapon = false;
         robot.useAbility = false;
         if (possibleTargets.length) {
-            let closest = possibleTargets.sort((a, b) => dist(a, robot) - dist(b, robot))[0];
+            let closest = null;
+            if (robot.isBluebell) {
+                closest = possibleTargets.filter(e => !e.effects.find(e => e.name == "last stand")).sort((a, b) => dist(a, robot) - dist(b, robot))[0];
+            } else {
+                closest = possibleTargets.sort((a, b) => dist(a, robot) - dist(b, robot))[0];
+            }
+            if (robot.isBluebell && robot.name == "Purple Heptagon") {
+                let threat = possibleTargets.find(e => e.weapons.find(e => ["Tonans", "Fulgur"].includes(e.name)));
+                if (threat) closest = threat;
+            }
             if (closest) {
                 robot.target = closest;
                 robot.dir = Math.atan2(closest.y - robot.y, closest.x - robot.x);
@@ -18873,6 +19101,7 @@
                 robot.useAbility = true;
             } else if (["Overload", "Dash", "Fortify"].includes(abilityName)) {
                 robot.useAbility = true;
+            } else if (abilityName == "Long Shot" && robot.target && dist(robot.target, robot) <= 3800) {
             } else if (["Stealth Dash"].includes(abilityName)) {
                 if (robot.ability.charges > 1) {
                     robot.useAbility = true;
@@ -18918,6 +19147,7 @@
                 if (robot.ability.mode == 0) {
                     robot.builtInDefensePoints += 100;
                 } else {
+                    robot.avoidBuildings = true;
                     robot.abilitySpeedMulti = 3;
                     let shield = robot.shields.find(e => e.type == "purple");
                     if (shield) {
@@ -19155,6 +19385,7 @@
         robot.shieldRegen = 1;
         robot.reloadMoveMulti = 1;
         robot.abilitySpeedMulti = 1;
+        robot.avoidBuildings = false;
         if (robot.oldFOV == null) robot.oldFOV = robot.fieldOfViewMulti;
         robot.invis = false;
         robot.isFREEZE = robot.freeze ? true : false;
@@ -19173,7 +19404,7 @@
                 }
             } else {
                 let effect = robot.effects.find(e => e.name == "cooldown_timer" && e.autoStealthHA__);
-                if ((effect && effect.lastTime - delta <= 0 )|| !effect) {
+                if ((effect && effect.lastTime - delta <= 0) || !effect) {
                     robot.invis = true;
                     if (robot.cyanHeptagonAutoHeal == null) robot.cyanHeptagonAutoHeal = 0;
                     robot.cyanHeptagonAutoHeal -= delta;
@@ -19727,7 +19958,7 @@
             }
             let bypassedDefensePoints = false;
             if (defensePointsBypass + 1 >= 1 && resistance > 0) {
-                let execute = function() {
+                let execute = function () {
                     bypassedDefensePoints = true;
                     resistance *= defensePointsBypass;
                 };
@@ -19953,7 +20184,7 @@
                         }, object.isMe, object);
                     }
                     if (object.effects && object.effects.find(e => e.name == "Ultimate Reflecting Dash") && !isDotDamage) {
-                        if (doer.effects.filter(e => e.name == "suppression" && e.uhEz == "Ultimate Reflecting Dash").length < 2) {
+                        if (doer.effects.filter(e => e.name == "suppression" && e.uhEz == "Ultimate Reflecting Dash").length < 5) {
                             doer.effects.push({
                                 name: "suppression",
                                 neg: true,
@@ -20771,8 +21002,11 @@
                 let touchBullets = projectiles.filter(e => e.isAlly && checkIfHit(e, enemy));
                 for (let t = 0; t < touchBullets.length; t++) {
                     let bullet = touchBullets[t];
-                    if (bullet.antiTier4_5) {
+                    if (bullet.dmg > 0 && bullet.antiTier4_5) {
                         bullet.dmg = antiTier4_5(bullet, enemy);
+                    }
+                    if (bullet.dmg > 0 && bullet.dmgPercentage) {
+                        bullet.dmg = enemy.maxhealth * bullet.dmgPercentage;
                     }
                     if (!bullet.aoeRange) changeHealth(enemy, {
                         amount: -bullet.dmg,
@@ -21125,7 +21359,7 @@
                     tmpCtx.shadowColor = obj.shadow.color;
                 }
                 let size = (obj.shadow ? obj.shadow.spriteSize * 160 : 160);
-                tmpCtx.drawImage(image, -size/2, -size/2, size, size);
+                tmpCtx.drawImage(image, -size / 2, -size / 2, size, size);
                 bulletImages[obj.color + JSON.stringify(obj.shadow)] = tmp = tmpCanvas;
             }
         }
@@ -21143,7 +21377,7 @@
                 if (image) {
                     ctx.rotate(bullet.dir);
                     let size = bullet.shadow ? 40 * bullet.shadow.spriteSize : 40;
-                    ctx.drawImage(image, -size/2, -size/2, size, size);
+                    ctx.drawImage(image, -size / 2, -size / 2, size, size);
                 } else {
                     renderCircle(0, 0, bullet.scale, ctx, false, false, bullet.color.includes("#") || bullet.color.includes("rgb") ? bullet.color : "#808080", "#000", 1);
                 }
@@ -21333,7 +21567,7 @@
             TARGET = null;
         }
         if (TARGET) {
-            if (robot.abilitySpeedMulti != 3 && !robot.effects.find(e => e.name == "phase shift")) {
+            if ((robot.isBluebell ? robot.name == "Purple Heptagon" ? false : true : true) && !robot.avoidBuildings) {
                 for (let i = 0; i < buildings.length; i++) {
                     let obj = buildings[i];
                     if (obj.name == "coll rect") {
@@ -21360,6 +21594,42 @@
                                 }
                             }
                         }
+                    }
+                }
+            } else if (robot.isBluebell && robot.name == "Purple Heptagon") {
+                if (nearestEnemy) {
+                    for (let i = 0; i < buildings.length; i++) {
+                        let obj = buildings[i];
+                        if (obj.name == "coll rect") {
+                            if (circleSquareCollision(robot, obj)) {
+                                if (obj.middleX) {
+                                    let y = obj.y + obj.height;
+                                    if ((TARGET.y <= obj.y && robot.y >= obj.y) || (TARGET.y >= y && robot.y <= y)) {
+                                        if (obj.onlyDir != null) return obj.onlyDir;
+                                        if (TARGET.x > obj.middleX) {
+                                            return 0;
+                                        } else {
+                                            return Math.PI;
+                                        }
+                                    }
+                                } else {
+                                    let x = obj.x + obj.width;
+                                    if ((TARGET.x >= obj.x && obj.x >= robot.x) || (TARGET.x <= x && robot.x >= x)) {
+                                        if (obj.onlyDir != null) return obj.onlyDir;
+                                        if (TARGET.y > obj.middleY) {
+                                            return Math.PI / 2;
+                                        } else {
+                                            return -Math.PI / 2;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if (dist(nearestEnemy, robot) <= 2e3) {
+                        return Math.atan2(nearestEnemy.y - robot.y, nearestEnemy.x - robot.x) + Math.PI;
+                    } else {
+                        return Math.atan2(nearestEnemy.y - robot.y, nearestEnemy.x - robot.x);
                     }
                 }
             }
@@ -21723,11 +21993,11 @@
         ${text}
         </div>
         <div style="display: ${BEACONS.length ? "block" : "none"}; position: absolute; height: 25px; left: ${(window.innerWidth / 2) - ((maxwidth * 1.5) - 10)}px; top: 25px; width: 125px; border-radius: 2px; overflow: hidden; background-color: ${player.mapID == 0 ? "rgb(255, 255, 255, .6)" : "rgb(0, 0, 0, .6)"};">
-        <div style="position: absolute; height: 100%; left: 0px; top: 0px; width: ${(beaconPoints.ally / 3500)*100}%; background-color: #00e3e3;">
+        <div style="position: absolute; height: 100%; left: 0px; top: 0px; width: ${(beaconPoints.ally / 3500) * 100}%; background-color: #00e3e3;">
         </div>
         </div>
         <div style="display: ${BEACONS.length ? "block" : "none"}; position: absolute; height: 25px; left: ${(window.innerWidth / 2) + ((maxwidth * .5) + 10)}px; top: 25px; width: 125px; border-radius: 2px; overflow: hidden; background-color: ${player.mapID == 0 ? "rgb(255, 255, 255, .6)" : "rgb(0, 0, 0, .6)"};">
-        <div style="position: absolute; height: 100%; right: 0px; top: 0px; width: ${(beaconPoints.enemy / 3500)*100}%; background-color: #f00;">
+        <div style="position: absolute; height: 100%; right: 0px; top: 0px; width: ${(beaconPoints.enemy / 3500) * 100}%; background-color: #f00;">
         </div>
         </div>
         `;
@@ -22050,7 +22320,7 @@
             let player = players[i].robots[players[i].robotIndex];
             if (player && !player.isFREEZE && (player.isMe ? keysPressed[32] : player.fireWeapon)) {
                 player.weapons.forEach(weapon => {
-                    if (weapon.canFire || (weapon.continuousReload && weapon.ammo > 0)) {
+                    if (weapon.continueToFire || weapon.canFire || (weapon.continuousReload && weapon.ammo > 0)) {
                         let Offset = getWeaponOffsets(weapon, player);
                         if (["Eagle", "Hawk"].includes(weapon.name)) {
                             let nearestEnemies = [];
@@ -22142,6 +22412,36 @@
                                 ctx.stroke();
                                 ctx.restore();
                             });
+                        } else if (["Fulgur", "Tonans"].includes(weapon.name) && (player.target || weapon.target)) {
+                            let target = player.target || weapon.target;
+                            ctx.save();
+                            let tmp = {
+                                x: target.x,
+                                y: target.y
+                            }
+                            if (target.shields) {
+                                for (let i = 0; i < target.shields.length; i++) {
+                                    let shield = target.shields[i];
+                                    if (shield && !shield.notActive && shield.type == "normal") {
+                                        let dir = Math.atan2(target.y - player.y, target.x - player.x);
+                                        tmp = {
+                                            x: player.x + Math.cos(dir) * (dist(target, player) - (target.scale + 20)),
+                                            y: player.y + Math.sin(dir) * (dist(target, player) - (target.scale + 20)),
+                                        };
+                                        break;
+                                    }
+                                }
+                            }
+                            ctx.shadowBlur = 30;
+                            ctx.shadowColor = "#fff";
+                            ctx.lineWidth = 16;
+                            ctx.strokeStyle = players[i].isAlly ? "#fff" : "#f00";
+                            ctx.lineCap = "round";
+                            ctx.beginPath();
+                            ctx.moveTo(Offset.x - offset.x, Offset.y - offset.y);
+                            ctx.lineTo(tmp.x - offset.x, tmp.y - offset.y);
+                            ctx.stroke();
+                            ctx.restore();
                         }
                     }
                 });
