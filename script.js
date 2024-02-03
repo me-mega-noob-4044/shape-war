@@ -1,5 +1,4 @@
 (function () {
-    window.isDev = true;
     var slotData = [{
         unlocked: true,
         used: true,
@@ -279,12 +278,32 @@
             `)}
         `)}
     `);
-    updateLogger.newLog("V51 UPDATE NOTES", `
+    updateLogger.newLog("V51 UPDATE NOTES (Feb 2, 2024)", `
         ${updateLogger.marginBlock(10, `
-            ${updateLogger.lineBlock(["New Weapon(s): Tonans and Fulgur", "Balance Changes"])}
+            ${updateLogger.lineBlock(["New Shape(s): Purple Heptagon and Light Blue Heptagon", "New Pilot(s): Eleanor Thorne, Elijah Forge, Caleb Sterling, and Sebastian Wren", "Changes to some lootboxes", "Reduced total amount of OXP to reach max level", "Increased Player XP rewards", "New Weapon(s): Tonans and Fulgur", "Balance Changes"])}
+            ${updateLogger.title("h2", `NEW SHAPES(S): PURPLE HEPTAGON and LIGHT BLUE HEPTAGON`)}
+            ${updateLogger.marginBlock(10, `
+                ${updateLogger.title("h3", `Purple Heptagon:`)}
+                A long ranged sniper that has the ability to deal percentage based damage.
+                ${updateLogger.title("h3", `Light Blue Heptagon:`)}
+                Next generation of flying shapes, it can teleport extra armor for defense and weapons for offense. The extra armor is removed once it is destroyed or the shape lands.
+            `)} 
+            ${updateLogger.title("h2", `NEW PILOTS`)}
+            ${updateLogger.marginBlock(10, `
+                Eleanor Thorne pilots Purple Pentagon<br>
+                Elijah Forge pilots Cyan Hexagon<br>
+                Caleb Sterling pilots Orange Circle<br>
+                Sebastian Wren pilots Light Blue Heptagon<br><br>
+                Their stories are currently work in progress.
+            `)}
+            ${updateLogger.title("h2", `NEW WEAPONS(S): TONANS and FULGUR`)}
+            ${updateLogger.marginBlock(10, `
+                ${updateLogger.title("h3", `Tonans and Fulgur:`)}
+                Long ranged laser weapons that deal increased damage to tier 5 shapes.
+            `)}
             ${updateLogger.title("h2", `BALANCE CHANGES`)}
             ${updateLogger.marginBlock(10, `
-                ${updateLogger.lineBlock(["White Heptagon: Suppression Limit: 2 -> 5"])}
+                ${updateLogger.lineBlock(["Pantagruel and Gangantua: Increased lifesteal power", "Pascal: On Threshold Heal: Cooldown: 10 -> 5 seconds", "Pascal: Gray Damage Healing: 50 -> 25%", "White Heptagon: Suppression Limit: 2 -> 5", "Many other minor changes."])}
             `)}
         `)}
     `);
@@ -358,7 +377,7 @@
         modules: [0, 1e9, 1e9, 2e9, 2e9, 2e9],
         shapes: [0, 5.625e6, 28.125e6, 56.25e6, 112.5e6, 225e6, 450e6, 675e6, 675e6, 843.75e6, 1012.5e6, 1406.25e6],
         weapons: [0, 3375e3, 16875e3, 3375e4, 675e5, 135e6, 27e6, 405e6, 405e6, 50625e4, 6075e5, 84375e4]
-    }];//                T1 T2  T3  T4  T5
+    }];
     var unlockedAtTier = [1, 6, 13, 21, 30];
     var shapeSids = 0;
     class shape {
@@ -442,7 +461,10 @@
                     iconSource: data.ability.iconSource,
                     oldIconSource: data.ability.iconSource
                 };
-                if (data.ability.name == "Support" || data.ability.name == "Long Shot") {
+                if (data.ability.name == "Cannonier") {
+                    this.ability.lastingTime = data.ability.lastingTime;
+                    this.ability.additionalHealth = data.ability.additionalHealthData ? data.ability.additionalHealthData.base : data.ability.additionalHealth;
+                } else if (data.ability.name == "Support" || data.ability.name == "Long Shot") {
                     this.ability.lastingTime = data.ability.lastingTime;
                     if (data.ability.name == "Support") this.ability.healingPower = data.ability.healingPowerData ? data.ability.healingPowerData.base : data.ability.healingPower;
                 } else if (data.ability.name == "Matrix") {
@@ -2367,6 +2389,50 @@
         color: "#800080",
         moduleHardpoints: 4,
         costParts: true
+    }, {
+        dontSell: true,
+        tier: 4,
+        name: "Light Blue Heptagon",
+        speed: 0.0012,
+        speedLevel: [0, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0002, 0.0002, 0.0002, 0.0002],
+        scale: 95,
+        fieldOfViewMulti: 1.5,
+        desc: `
+        Another flying sniper. This shape takes firepower to the next level, it "teleports" in new weapons everytime it flies up. Gaining additional damage during the flight, it can snipe all enemies and not take any long term damage.<br><br>
+        Recommended Equipment: x2 Discordia + x3 Tumultus / x2 Fulgur + x3 Tonans
+        `,
+        healthData: {
+            base: 250e3,
+            level: [0, 13e3, 13e3, 13e3, 13e3, 13e3, 13e3, 13e3, 13e3, 13e3, 13e3, 13e3],
+        },
+        builtInDefensePoints: 50,
+        ability: {
+            name: "Cannonier",
+            desc: `
+            <span style="font-width: bolder; color: #fff;">Cannonier</span> The shape takes flight and activates its disabled two heavy weapons. It gains temporary fixed health, increased movement speed, and deals increased damage.<br><br>
+            You can press the ability while it is active to dash. After all dashes are used up, activating the ability again will force end it. You will need to wait at least .5 second to use the first dash, and an .25 second delay for the rest.<br><br>
+            Dash Amount: 2<br> 
+            Damage Increase: 50%<br>
+            Speed Increase: 100%<br>
+            Additional Weapons Unlocked: 2<br>
+            Duration: 10 seconds<br>
+            Cooldown: 12 seconds
+            `,
+            additionalHealthData: {
+                base: 250e3,
+                level: [0, 25e3, 25e3, 25e3, 25e3, 25e3, 25e3, 25e3, 50e3, 50e3, 50e3, 50e3]
+            },
+            iconSource: "./images/abilities/shapeshift.png",
+            lastingTime: 10e3,
+            reload: 12e3
+        },
+        hardpoints: {
+            light: 2,
+            heavy: 3
+        },
+        color: "#add8e6",
+        moduleHardpoints: 4,
+        costParts: true
     }];
     function defensePointsToResistance(defense) {
         return (100) / (100 + defense);
@@ -3388,8 +3454,8 @@
             level: [0, 0.03, 0.03, 0.06, 0.07, 0.07, 0.07, 0.07, 0.07, 0.07, 0.07, 0.09],
         },
         healBackOnDamageData: {
-            base: .1,
-            level: [0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.1, 0.15],
+            base: .2,
+            level: [0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.1, 0.15, 0.15],
         },
         imageSource: "./images/modules/self_fix_unit.png",
         continuousReload: true,
@@ -3422,8 +3488,8 @@
             level: [0, 0.03, 0.03, 0.06, 0.07, 0.07, 0.07, 0.07, 0.07, 0.07, 0.07, 0.09],
         },
         healBackOnDamageData: {
-            base: .1,
-            level: [0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.1, 0.15],
+            base: .3,
+            level: [0, 0.05, 0.05, 0.05, 0.1, 0.1, 0.1, 0.1, 0.15, 0.15, 0.15, 0.2],
         },
         imageSource: "./images/weapons/gangantua.png",
         continuousReload: true,
@@ -3884,7 +3950,7 @@
         projType: "energy",
         desc: `
         Next generation of laser weapons, Fulgur is a light laser weapon that deals quick bursts of damage.
-        It is ideal weapon to use aganist T5 shapes since it deals extra 150% more damage.
+        It is ideal weapon to use aganist T5 shapes since it deals extra 125% more damage.
         `,
         damageData: {
             base: 796,
@@ -3897,7 +3963,7 @@
         imageSource: "./images/weapons/fulgur.png",
         fireRate: 100,
         ammo: 10,
-        reload: 8e3,
+        reload: 7e3,
         range: 3800,
         cost: {
             sliver: 15e9,
@@ -3912,7 +3978,7 @@
         projType: "energy",
         desc: `
         Next generation of laser weapons, Tonans is a heavy laser weapon that deals quick bursts of damage.
-        It is ideal weapon to use aganist T5 shapes since it deals extra 150% more damage.
+        It is ideal weapon to use aganist T5 shapes since it deals extra 125% more damage.
         `,
         damageData: {
             base: 1194,
@@ -3925,14 +3991,14 @@
         imageSource: "./images/weapons/tonans.png",
         fireRate: 100,
         ammo: 10,
-        reload: 8e3,
+        reload: 7e3,
         range: 3800,
         cost: {
             sliver: 15e9,
             gold: 200e3,
             workshopPoints: 100e3
         }
-    }];//Fulgur
+    }];
     class module {
         constructor(data, ownerSID = null, slot = null) {
             this.name = data.name;
@@ -4442,6 +4508,15 @@
         },
         borderColor: "#ffff00"
     }, "shape", "Ultimate");
+    makeNewSpecialAddiction("Tan Circle", {
+        health: 1.2324,
+        tier: 4,
+        topDesc: `
+        Special limited version of Tan Circle. This version has increased health and defense points.
+        `,
+        builtInDefensePoints: 25,
+        borderColor: "#00f"
+    }, "shape", "Blue-Outlined");
     var activeModuleData = [{
         tier: 0,
         name: "Repair Unit",
@@ -4496,7 +4571,7 @@
         name: "Nuclear Intensifier",
         desc: "Increases the shape's damage output for a period of time.",
         imageSource: "./images/modules/nuclear_reactor.png",
-        dmgIncrease: .6,
+        dmgIncrease: .4,
         lastTime: 6e3,
         cost: 800,
         reload: 14e3
@@ -4578,6 +4653,14 @@
         fight in an arena. The goal is to be the
         last one standing by defeating everyone else!
         `
+    }, {
+        name: "Skirmish",
+        id: 7,
+        level: 3,
+        backgroundImage: "",
+        desc: `
+        Play with prebuilt hangers made by the developer.
+        `,
     }, {
         name: "Extermination",
         id: 0,
@@ -4846,6 +4929,33 @@
                     `;
                 });
                 rating += (robot.tier + 1) * robot.level;
+                let pilot = player.pilots.find(e => e.owner == robot.sid);
+                if (pilot) {
+                    rating += (pilot.tier + 1) * 5;
+                    for (let it = 0; it < pilot.skills.length; it++) {
+                        let skill = pilot.skills[it];
+                        if (skill) {
+                            if (skill.legendary) {
+                                rating += 8;
+                            } else {
+                                rating += skill.level;
+                            }
+                        }
+                    }
+                }
+                let drone = player.drones.find(e => e.owner == robot.sid);
+                if (drone) {
+                    rating += (drone.tier + 1) * 5;
+                    rating += drone.level * 5;
+                    for (let it = 0; it < drone.abilities.length; it++) {
+                        let skill = drone.abilities[it];
+                        if (skill) {
+                            if (skill.unlockAtLevel <= drone.level || !skill.unlockAtLevel) {
+                                rating += 2;
+                            }
+                        }
+                    }
+                }
                 let image = getShapeSprite(robot, true);
                 image.style = "width: 225px; height: 225px;";
                 document.getElementById(`thingy${i}`).append(image);
@@ -8236,11 +8346,17 @@
     }
     function setWeaponData(robot, weapons) {
         robot.weapons = [];
+        let checked = 0;
+        weapons = weapons.sort((a, b) => a.slot - b.slot);
         for (let t = 0; t < weapons.length; t++) {
             let newWeapon = new weapon(weapons[t]);
             newWeapon.level = weapons[t].level;
             newWeapon.slot = (weapons[t].slot != undefined ? weapons[t].slot : t);
             if (robot.name == "Brown Pentagon" && newWeapon.type == "Heavy") {
+                newWeapon.notActive = true;
+            } else if (robot.name == "Light Blue Heptagon" && newWeapon.type == "Heavy" && checked < 2) {
+                checked++;
+                newWeapon.targetedWeaponsToUse = true;
                 newWeapon.notActive = true;
             } else if (newWeapon.name == "Cinder" && robot.name == "Orange Pentagon") {
                 newWeapon.dmg *= 1.5;
@@ -8347,6 +8463,16 @@
         if (skill.healthIncrease) {
             statAdjustments.health += skill.healthIncrease;
         }
+        if (skill.chargeIncrease) {
+            if (skill.name == "Forge's Breakthrough") {
+                robot.ability.reload *= .8;
+            }
+            robot.ability.maxcharge += skill.chargeIncrease;
+            robot.ability.charges += skill.chargeIncrease;
+        }
+        if (skill.additionalHealth && robot.ability.additionalHealth) {
+            robot.ability.additionalHealth += skill.additionalHealth;
+        }
         if (skill.stampedeV2) {
             robot.stampedeV2 = true;
         }
@@ -8368,7 +8494,8 @@
             statAdjustments.dmg += skill.dmgIncrease;
         }
         if (skill.mechanicHeal) {
-            robot.mechanicHeal = skill.mechanicHeal;
+            if (robot.mechanicHeal == null) robot.mechanicHeal = 0;
+            robot.mechanicHeal += skill.mechanicHeal;
         }
         if (skill.speedIncrease) {
             statAdjustments.speed += skill.speedIncrease;
@@ -8463,12 +8590,14 @@
         robot.level = orginalRobot.level;
         robot.USED = false;
         let leagueIndex = (player.league / 4700) * 100;
-        if (leagueIndex >= 100 && isBluebell) {
-            robot.activeModuleIndex = activeModuleData.findIndex(e => e.name == "Unstable Conduit");
-        } else if (leagueIndex >= 50) {
-            robot.activeModuleIndex = activeModuleData.findIndex(e => e.name == "Advanced Repair Unit");
-        } else {
-            robot.activeModuleIndex = activeModuleData.findIndex(e => e.name == "Repair Unit");
+        if (orginalRobot.activeModuleIndex == null || orginalRobot.activeModuleIndex == undefined) {
+            if (leagueIndex >= 100 && isBluebell) {
+                robot.activeModuleIndex = activeModuleData.findIndex(e => e.name == "Unstable Conduit");
+            } else if (leagueIndex >= 50) {
+                robot.activeModuleIndex = activeModuleData.findIndex(e => e.name == "Advanced Repair Unit");
+            } else {
+                robot.activeModuleIndex = activeModuleData.findIndex(e => e.name == "Repair Unit");
+            }
         }
         setRobotSids(robot);
         setRobotLocation(robot, isAlly, gameMode, spawnLocations);
@@ -8482,12 +8611,126 @@
             negSpeed: 1,
             negHealth: 1
         };
+        robot.isMe = orginalRobot.isMe;
         setStatAdjustments(statAdjustments, robot, microchips, drone);
         setShieldsData(robot);
         adjustStats(robot, statAdjustments);
         if (isBluebell) robot.isBluebell = true;
         return robot;
     }
+    var skirmishHanger = [{
+        "name": "Tan Circle",
+        "weapons": {
+            "heavy": "Veyron",
+            "light": "Evora"
+        },
+        "modules": [
+            "Immune Amplifier",
+            "Last Stand",
+            "Repair Amplifier",
+            "Nuclear Amplifier"
+        ],
+        "drone": "Hiruko",
+        "activeModuleIndex": 3
+    }, {
+        "name": "Tan Circle",
+        "weapons": {
+            "heavy": "Brisant",
+            "light": "Shatter"
+        },
+        "modules": [
+            "Immune Amplifier",
+            "Last Stand",
+            "Repair Amplifier",
+            "Nuclear Amplifier"
+        ],
+        "drone": "Pascal",
+        "activeModuleIndex": 3
+    }, {
+        "name": "Tan Circle",
+        "weapons": {
+            "heavy": "Glaive",
+            "light": "Lance"
+        },
+        "modules": [
+            "Immune Amplifier",
+            "Last Stand",
+            "Repair Amplifier",
+            "Nuclear Amplifier"
+        ],
+        "drone": "Hiruko",
+        "activeModuleIndex": 2
+    }, {
+        "name": "Tan Circle",
+        "weapons": {
+            "heavy": "Tonans",
+            "light": "Fulgur"
+        },
+        "modules": [
+            "Immune Amplifier",
+            "Last Stand",
+            "Repair Amplifier",
+            "Nuclear Amplifier"
+        ],
+        "drone": "Pascal",
+        "activeModuleIndex": 2
+    }, {
+        "name": "Tan Circle",
+        "weapons": {
+            "heavy": "Destroyer",
+            "light": "Punisher"
+        },
+        "modules": [
+            "Immune Amplifier",
+            "Last Stand",
+            "Repair Amplifier",
+            "Nuclear Amplifier"
+        ],
+        "drone": "Hiruko",
+        "activeModuleIndex": 3
+    }, {
+        "name": "Tan Circle",
+        "weapons": {
+            "heavy": "Maha Vajra",
+            "light": "Vajra"
+        },
+        "modules": [
+            "Immune Amplifier",
+            "Last Stand",
+            "Repair Amplifier",
+            "Nuclear Amplifier"
+        ],
+        "drone": "Beak",
+        "activeModuleIndex": 3
+    }, {
+        "name": "Tan Circle",
+        "weapons": {
+            "heavy": "Devastator",
+            "light": "Scatter"
+        },
+        "modules": [
+            "Immune Amplifier",
+            "Last Stand",
+            "Repair Amplifier",
+            "Nuclear Amplifier"
+        ],
+        "drone": "Hiruko",
+        "activeModuleIndex": 3
+    }, {
+        "name": "Tan Circle",
+        "weapons": {
+            "heavy": "Thunder",
+            "light": "Storm"
+        },
+        "modules": [
+            "Immune Amplifier",
+            "Last Stand",
+            "Repair Amplifier",
+            "Nuclear Amplifier"
+        ],
+        "drone": "Pascal",
+        "activeModuleIndex": 1
+    }];
     function setUpPlayersData(gameMode, spawnLocations) {
         inGameSids = -1;
         document.getElementById("money3Display").style.display = "none";
@@ -8499,226 +8742,308 @@
             robotIndex: -1,
             robots: []
         };
-        for (let i = 0; i < 8; i++) {
-            let orginalRobot = shapes.find(e => e.slot == i);
-            if (orginalRobot) {
-                let robot = new shape(orginalRobot, null, true);
-                robot.effects = [];
-                robot.level = orginalRobot.level;
-                robot.isMe = true;
-                robot.USED = false;
-                setRobotSids(robot);
-                setRobotLocation(robot, true, gameMode, spawnLocations);
-                let weapons = player.weapons.filter(e => e.owner == orginalRobot.sid);
-                setWeaponData(robot, weapons);
-                let modules = player.modules.filter(e => e.owner == orginalRobot.sid);
-                setModuleData(robot, modules);
-                let statAdjustments = {
-                    dmg: 1,
-                    speed: 1,
-                    health: 1,
-                    negDmg: 1,
-                    negSpeed: 1,
-                    negHealth: 1
-                };
-                setStatAdjustments(statAdjustments, robot, player.pilots.find(e => e.owner == orginalRobot.sid), player.drones.find(e => e.owner == orginalRobot.sid));
-                setShieldsData(robot);
-                adjustStats(robot, statAdjustments);
-                players[0].robots.push(robot);
-            } else {
-                players[0].robots.push(null);
-            }
-        }
-        if (hasPlayers()) {
-            let moduleIndex = Math.round((player.league / 5e3) * 100);
-            let amount = gameMode == 4 ? 9 : 11;
-            let did = false;
-            let allBluebell = false;
-            if (gameMode != 4 && player.league >= 5e3 && Math.random() < .35) {
-                allBluebell = true;
-            }
-            let index = 1;
-            for (let i = 0; i < amount; i++) {
-                let isAlly = gameMode == 4 ? false : i < 5 ? true : false;
+        if (gameMode == 7) {
+            for (let i = 0; i < 10; i++) {
+                let isAlly = i < 5 ? true : false;
                 let name = generateRandomName();
-                let isBluebell = false;
-                if (allBluebell && (i == 0 || i == 1)) {
-                    isBluebell = true;
-                    name = "Redbell " + (i + 1);
+                if (i > 0) {
+                    players[i] = {
+                        name: name,
+                        isAlly: isAlly,
+                        robotIndex: 0,
+                        robots: []
+                    };
                 }
-                if (!did && !isAlly) {
-                    name = "Bluebell" + (allBluebell ? ` ${index}` : "");
-                    isBluebell = true;
-                    index++;
-                    if (!allBluebell) did = true;
-                }
-                if (player.league < 5e3 && name.includes("Bluebell")) {
-                    isBluebell = false;
-                    name = generateRandomName();
-                }
-                players[1 + i] = {
-                    name: name,
-                    isBluebell: isBluebell,
-                    isAlly: gameMode == 4 ? name : isAlly,
-                    robotIndex: 0,
-                    robots: []
-                };
             }
-            for (let tt = 0; tt < amount; tt++) {
-                let isAlly = gameMode == 4 ? false : tt < 5 ? true : false;
-                let robotAmount = (players[0].robots.filter(e => e).length * (gameMode == 3 ? 1.5 : 1));
-                for (let i = 0; i < robotAmount; i++) {
-                    if (players[tt + 1].isBluebell) {
-                        let level = players[tt + 1].name.includes("Redbell") ? 11 : 13;
-                        let data = blueBell[i];
-                        let ShapeData = shapeData.find(e => e.name == data.name);
-                        let orginalRobot = new shape(ShapeData, null, true);
-                        for (let i = 0; i < level; i++) {
-                            upgradeShape(orginalRobot, true);
+            for (let tt = 0; tt < 10; tt++) {
+                let isAlly = tt < 5 ? true : false;
+                for (let i = 0; i < skirmishHanger.length; i++) {
+                    let level = 13;
+                    let data = skirmishHanger[i];
+                    let ShapeData = shapeData.find(e => e.name == data.name);
+                    let orginalRobot = new shape(ShapeData, null, true);
+                    for (let i = 0; i < level; i++) {
+                        upgradeShape(orginalRobot, true);
+                    }
+                    let weapons = [];
+                    if (orginalRobot.hardpoints.heavy) {
+                        let possibleWeapon = weaponData.find(e => e.name == data.weapons.heavy);
+                        let tmpWeapon = new weapon(possibleWeapon);
+                        for (let t = 0; t < level; t++) {
+                            upgradeWeapon(tmpWeapon, null, null, true);
                         }
-                        let weapons = [];
-                        if (orginalRobot.hardpoints.heavy) {
-                            let possibleWeapon = weaponData.find(e => e.name == data.weapons.heavy);
-                            let tmpWeapon = new weapon(possibleWeapon);
-                            for (let t = 0; t < level; t++) {
-                                upgradeWeapon(tmpWeapon, null, null, true);
-                            }
-                            tmpWeapon.fireRateDecrease = 0;
-                            for (let i = 0; i < orginalRobot.hardpoints.heavy; i++) {
-                                let newWeapon = new weapon(tmpWeapon);
-                                newWeapon.level = tmpWeapon.level;
-                                newWeapon.fireRateDecrease = 0;
-                                newWeapon.reload *= .5;
-                                weapons.push(newWeapon);
-                            }
+                        tmpWeapon.fireRateDecrease = 0;
+                        for (let i = 0; i < orginalRobot.hardpoints.heavy; i++) {
+                            let newWeapon = new weapon(tmpWeapon);
+                            newWeapon.level = tmpWeapon.level;
+                            newWeapon.fireRateDecrease = 0;
+                            newWeapon.reload *= .5;
+                            weapons.push(newWeapon);
                         }
-                        if (orginalRobot.hardpoints.light) {
-                            let possibleWeapon = weaponData.find(e => e.name == data.weapons.light);
-                            let tmpWeapon = new weapon(possibleWeapon);
-                            for (let t = 0; t < level; t++) {
-                                upgradeWeapon(tmpWeapon, null, null, true);
-                            }
-                            for (let i = 0; i < orginalRobot.hardpoints.light; i++) {
-                                let newWeapon = new weapon(tmpWeapon);
-                                newWeapon.level = tmpWeapon.level;
-                                newWeapon.fireRateDecrease = 0;
-                                newWeapon.reload *= .5;
-                                weapons.push(newWeapon);
-                            }
+                    }
+                    if (orginalRobot.hardpoints.light) {
+                        let possibleWeapon = weaponData.find(e => e.name == data.weapons.light);
+                        let tmpWeapon = new weapon(possibleWeapon);
+                        for (let t = 0; t < level; t++) {
+                            upgradeWeapon(tmpWeapon, null, null, true);
                         }
-                        let modules = [];
-                        let moduleHardpoints = orginalRobot.moduleHardpoints;
-                        for (let i = 0; i < moduleHardpoints; i++) {
-                            let Module = new module(moduleData.find(e => e.name == (data.modules[i] || "Balance Unit")), null, null);
-                            for (let t = 0; t < 5; t++) {
-                                upgradeModule(Module, null, null, true);
-                            }
-                            modules.push(Module);
+                        for (let i = 0; i < orginalRobot.hardpoints.light; i++) {
+                            let newWeapon = new weapon(tmpWeapon);
+                            newWeapon.level = tmpWeapon.level;
+                            newWeapon.fireRateDecrease = 0;
+                            newWeapon.reload *= .5;
+                            weapons.push(newWeapon);
                         }
-                        let DDrone = null;
-                        if (data.drone) {
-                            let droneData = dronesData.find(e => e.name == data.drone);
-                            let Drone = new drone(droneData);
-                            let mainSkill = droneData.abilities[0];
-                            let e = typeof mainSkill.main == "object" ? mainSkill.main[0] : mainSkill.main;
-                            if (e == "dmg") e = "damage";
-                            let levels = mainSkill[e + "Data"].level.length;
-                            for (let i = 0; i < levels - 1; i++) {
-                                upgradeDrone(Drone, null, null, true);
-                            }
-                            DDrone = Drone;
+                    }
+                    let modules = [];
+                    let moduleHardpoints = orginalRobot.moduleHardpoints;
+                    for (let i = 0; i < moduleHardpoints; i++) {
+                        let Module = new module(moduleData.find(e => e.name == (data.modules[i] || "Balance Unit")), null, null);
+                        for (let t = 0; t < 5; t++) {
+                            upgradeModule(Module, null, null, true);
                         }
-                        players[1 + tt].robots.push(setUpBotData(orginalRobot, weapons, modules, [], isAlly, gameMode, spawnLocations, true, DDrone));
-                    } else {
-                        let tier = leagueToTier() - 1;
-                        let weapont = leagueToTier("weapon") - 1;
-                        let level = leagueToLevel() - 1;
-                        let possibleShapes = shapeData.filter(e => tier < 4 ? true : !["Gray Pentagon"].includes(e.name)).filter(e => e.tier == tier);
-                        possibleShapes = possibleShapes[Math.floor(possibleShapes.length * Math.random())];
-                        let orginalRobot = new shape(possibleShapes, null, true);
-                        for (let i = 0; i < level; i++) {
-                            upgradeShape(orginalRobot, true);
+                        modules.push(Module);
+                    }
+                    let DDrone = null;
+                    if (data.drone) {
+                        let droneData = dronesData.find(e => e.name == data.drone);
+                        let Drone = new drone(droneData);
+                        let mainSkill = droneData.abilities[0];
+                        let e = typeof mainSkill.main == "object" ? mainSkill.main[0] : mainSkill.main;
+                        if (e == "dmg") e = "damage";
+                        let levels = mainSkill[e + "Data"].level.length;
+                        for (let i = 0; i < levels - 1; i++) {
+                            upgradeDrone(Drone, null, null, true);
                         }
-                        let weapons = [];
-                        let possibleWeapons = weaponData.filter(e => e.tier == weapont);
-                        let allHeavy = possibleWeapons.filter(e => e.type == "Heavy");
-                        let allLight = possibleWeapons.filter(e => e.type == "Light");
-                        if (orginalRobot.hardpoints.heavy) {
-                            let possibleWeapon = allHeavy[Math.floor(Math.random() * allHeavy.length)];
-                            let tmpWeapon = new weapon(possibleWeapon);
-                            for (let t = 0; t < level; t++) {
-                                upgradeWeapon(tmpWeapon, null, null, true);
+                        DDrone = Drone;
+                    }
+                    if (tt == 0) orginalRobot.isMe = true;
+                    orginalRobot.activeModuleIndex = data.activeModuleIndex;
+                    players[tt].robots.push(setUpBotData(orginalRobot, weapons, modules, [], isAlly, gameMode, spawnLocations, false, DDrone));
+                }
+            }
+        } else {
+            for (let i = 0; i < 8; i++) {
+                let orginalRobot = shapes.find(e => e.slot == i);
+                if (orginalRobot) {
+                    let robot = new shape(orginalRobot, null, true);
+                    robot.effects = [];
+                    robot.level = orginalRobot.level;
+                    robot.isMe = true;
+                    robot.USED = false;
+                    setRobotSids(robot);
+                    setRobotLocation(robot, true, gameMode, spawnLocations);
+                    let weapons = player.weapons.filter(e => e.owner == orginalRobot.sid);
+                    setWeaponData(robot, weapons);
+                    let modules = player.modules.filter(e => e.owner == orginalRobot.sid);
+                    setModuleData(robot, modules);
+                    let statAdjustments = {
+                        dmg: 1,
+                        speed: 1,
+                        health: 1,
+                        negDmg: 1,
+                        negSpeed: 1,
+                        negHealth: 1
+                    };
+                    setStatAdjustments(statAdjustments, robot, player.pilots.find(e => e.owner == orginalRobot.sid), player.drones.find(e => e.owner == orginalRobot.sid));
+                    setShieldsData(robot);
+                    adjustStats(robot, statAdjustments);
+                    players[0].robots.push(robot);
+                } else {
+                    players[0].robots.push(null);
+                }
+            }
+            if (hasPlayers()) {
+                let moduleIndex = Math.round((player.league / 5e3) * 100);
+                let amount = gameMode == 4 ? 9 : 11;
+                let did = false;
+                let allBluebell = false;
+                if (gameMode != 4 && player.league >= 5e3 && Math.random() < .35) {
+                    allBluebell = true;
+                }
+                let index = 1;
+                for (let i = 0; i < amount; i++) {
+                    let isAlly = gameMode == 4 ? false : i < 5 ? true : false;
+                    let name = generateRandomName();
+                    let isBluebell = false;
+                    if (allBluebell && (i == 0 || i == 1)) {
+                        isBluebell = true;
+                        name = "Redbell " + (i + 1);
+                    }
+                    if (!did && !isAlly) {
+                        name = "Bluebell" + (allBluebell ? ` ${index}` : "");
+                        isBluebell = true;
+                        index++;
+                        if (!allBluebell) did = true;
+                    }
+                    if (player.league < 5e3 && name.includes("Bluebell")) {
+                        isBluebell = false;
+                        name = generateRandomName();
+                    }
+                    players[1 + i] = {
+                        name: name,
+                        isBluebell: isBluebell,
+                        isAlly: gameMode == 4 ? name : isAlly,
+                        robotIndex: 0,
+                        robots: []
+                    };
+                }
+                for (let tt = 0; tt < amount; tt++) {
+                    let isAlly = gameMode == 4 ? false : tt < 5 ? true : false;
+                    let robotAmount = (players[0].robots.filter(e => e).length * (gameMode == 3 ? 1.5 : 1));
+                    for (let i = 0; i < robotAmount; i++) {
+                        if (players[tt + 1].isBluebell) {
+                            let level = players[tt + 1].name.includes("Redbell") ? 11 : 13;
+                            let data = blueBell[i];
+                            let ShapeData = shapeData.find(e => e.name == data.name);
+                            let orginalRobot = new shape(ShapeData, null, true);
+                            for (let i = 0; i < level; i++) {
+                                upgradeShape(orginalRobot, true);
                             }
-                            for (let i = 0; i < orginalRobot.hardpoints.heavy; i++) {
-                                let newWeapon = new weapon(tmpWeapon);
-                                newWeapon.level = tmpWeapon.level;
-                                newWeapon.fireRateDecrease = 0;
-                                weapons.push(newWeapon);
+                            let weapons = [];
+                            if (orginalRobot.hardpoints.heavy) {
+                                let possibleWeapon = weaponData.find(e => e.name == data.weapons.heavy);
+                                let tmpWeapon = new weapon(possibleWeapon);
+                                for (let t = 0; t < level; t++) {
+                                    upgradeWeapon(tmpWeapon, null, null, true);
+                                }
+                                tmpWeapon.fireRateDecrease = 0;
+                                for (let i = 0; i < orginalRobot.hardpoints.heavy; i++) {
+                                    let newWeapon = new weapon(tmpWeapon);
+                                    newWeapon.level = tmpWeapon.level;
+                                    newWeapon.fireRateDecrease = 0;
+                                    newWeapon.reload *= .5;
+                                    weapons.push(newWeapon);
+                                }
                             }
-                        }
-                        if (orginalRobot.hardpoints.light) {
-                            let possibleWeapon = allLight[Math.floor(Math.random() * allLight.length)];
-                            let tmpWeapon = new weapon(possibleWeapon);
-                            for (let t = 0; t < level; t++) {
-                                upgradeWeapon(tmpWeapon, null, null, true);
+                            if (orginalRobot.hardpoints.light) {
+                                let possibleWeapon = weaponData.find(e => e.name == data.weapons.light);
+                                let tmpWeapon = new weapon(possibleWeapon);
+                                for (let t = 0; t < level; t++) {
+                                    upgradeWeapon(tmpWeapon, null, null, true);
+                                }
+                                for (let i = 0; i < orginalRobot.hardpoints.light; i++) {
+                                    let newWeapon = new weapon(tmpWeapon);
+                                    newWeapon.level = tmpWeapon.level;
+                                    newWeapon.fireRateDecrease = 0;
+                                    newWeapon.reload *= .5;
+                                    weapons.push(newWeapon);
+                                }
                             }
-                            for (let i = 0; i < orginalRobot.hardpoints.light; i++) {
-                                let newWeapon = new weapon(tmpWeapon);
-                                newWeapon.level = tmpWeapon.level;
-                                newWeapon.fireRateDecrease = 0;
-                                weapons.push(newWeapon);
-                            }
-                        }
-                        let modules = [];
-                        let moduleHardpoints = orginalRobot.moduleHardpoints;
-                        if (moduleIndex >= 75) {
-                            if (moduleIndex >= 100) moduleHardpoints -= 2;
+                            let modules = [];
+                            let moduleHardpoints = orginalRobot.moduleHardpoints;
                             for (let i = 0; i < moduleHardpoints; i++) {
-                                let Module = new module(moduleData.find(e => e.name == "Balance Unit"), null, null);
+                                let Module = new module(moduleData.find(e => e.name == (data.modules[i] || "Balance Unit")), null, null);
                                 for (let t = 0; t < 5; t++) {
                                     upgradeModule(Module, null, null, true);
                                 }
                                 modules.push(Module);
                             }
-                            if (moduleIndex >= 100) {
-                                let name = (Math.random() < .5 ? "Repair Amplifier" : "Last Stand")
-                                let Module = new module(moduleData.find(e => e.name == name), null, null);
-                                for (let t = 0; t < 5; t++) {
-                                    upgradeModule(Module, null, null, true);
+                            let DDrone = null;
+                            if (data.drone) {
+                                let droneData = dronesData.find(e => e.name == data.drone);
+                                let Drone = new drone(droneData);
+                                let mainSkill = droneData.abilities[0];
+                                let e = typeof mainSkill.main == "object" ? mainSkill.main[0] : mainSkill.main;
+                                if (e == "dmg") e = "damage";
+                                let levels = mainSkill[e + "Data"].level.length;
+                                for (let i = 0; i < levels - 1; i++) {
+                                    upgradeDrone(Drone, null, null, true);
                                 }
-                                modules.push(Module);
-                                Module = new module(moduleData.find(e => e.name == "Nuclear Amplifier"), null, null);
-                                for (let t = 0; t < 5; t++) {
-                                    upgradeModule(Module, null, null, true);
-                                }
-                                modules.push(Module);
+                                DDrone = Drone;
                             }
-                        } else if (moduleIndex >= 50) {
-                            for (let i = 0; i < moduleHardpoints; i++) {
-                                let Module = new module(moduleData.find(e => e.name == "Balance Unit"), null, null);
-                                for (let t = 0; t < 2; t++) {
-                                    upgradeModule(Module, null, null, true);
-                                }
-                                modules.push(Module);
+                            players[1 + tt].robots.push(setUpBotData(orginalRobot, weapons, modules, [], isAlly, gameMode, spawnLocations, true, DDrone));
+                        } else {
+                            let tier = leagueToTier() - 1;
+                            let weapont = leagueToTier("weapon") - 1;
+                            let level = leagueToLevel() - 1;
+                            let possibleShapes = shapeData.filter(e => tier < 4 ? true : !["Gray Pentagon"].includes(e.name)).filter(e => e.tier == tier);
+                            possibleShapes = possibleShapes[Math.floor(possibleShapes.length * Math.random())];
+                            let orginalRobot = new shape(possibleShapes, null, true);
+                            for (let i = 0; i < level; i++) {
+                                upgradeShape(orginalRobot, true);
                             }
-                        } else if (moduleIndex >= 25) {
-                            for (let i = 0; i < moduleHardpoints; i++) {
-                                let Module = new module(moduleData.find(e => e.name == "Heavy Armor Plating"), null, null);
-                                for (let t = 0; t < 5; t++) {
-                                    upgradeModule(Module, null, null, true);
+                            let weapons = [];
+                            let possibleWeapons = weaponData.filter(e => e.tier == weapont);
+                            let allHeavy = possibleWeapons.filter(e => e.type == "Heavy");
+                            let allLight = possibleWeapons.filter(e => e.type == "Light");
+                            if (orginalRobot.hardpoints.heavy) {
+                                let possibleWeapon = allHeavy[Math.floor(Math.random() * allHeavy.length)];
+                                let tmpWeapon = new weapon(possibleWeapon);
+                                for (let t = 0; t < level; t++) {
+                                    upgradeWeapon(tmpWeapon, null, null, true);
                                 }
-                                modules.push(Module);
-                            }
-                        } else if (moduleIndex >= 13) {
-                            for (let i = 0; i < moduleHardpoints; i++) {
-                                let Module = new module(moduleData.find(e => e.name == "Armor Plating"), null, null);
-                                for (let t = 0; t < 5; t++) {
-                                    upgradeModule(Module, null, null, true);
+                                for (let i = 0; i < orginalRobot.hardpoints.heavy; i++) {
+                                    let newWeapon = new weapon(tmpWeapon);
+                                    newWeapon.level = tmpWeapon.level;
+                                    newWeapon.fireRateDecrease = 0;
+                                    weapons.push(newWeapon);
                                 }
-                                modules.push(Module);
                             }
+                            if (orginalRobot.hardpoints.light) {
+                                let possibleWeapon = allLight[Math.floor(Math.random() * allLight.length)];
+                                let tmpWeapon = new weapon(possibleWeapon);
+                                for (let t = 0; t < level; t++) {
+                                    upgradeWeapon(tmpWeapon, null, null, true);
+                                }
+                                for (let i = 0; i < orginalRobot.hardpoints.light; i++) {
+                                    let newWeapon = new weapon(tmpWeapon);
+                                    newWeapon.level = tmpWeapon.level;
+                                    newWeapon.fireRateDecrease = 0;
+                                    weapons.push(newWeapon);
+                                }
+                            }
+                            let modules = [];
+                            let moduleHardpoints = orginalRobot.moduleHardpoints;
+                            if (moduleIndex >= 75) {
+                                if (moduleIndex >= 100) moduleHardpoints -= 2;
+                                for (let i = 0; i < moduleHardpoints; i++) {
+                                    let Module = new module(moduleData.find(e => e.name == "Balance Unit"), null, null);
+                                    for (let t = 0; t < 5; t++) {
+                                        upgradeModule(Module, null, null, true);
+                                    }
+                                    modules.push(Module);
+                                }
+                                if (moduleIndex >= 100) {
+                                    let name = (Math.random() < .5 ? "Repair Amplifier" : "Last Stand")
+                                    let Module = new module(moduleData.find(e => e.name == name), null, null);
+                                    for (let t = 0; t < 5; t++) {
+                                        upgradeModule(Module, null, null, true);
+                                    }
+                                    modules.push(Module);
+                                    Module = new module(moduleData.find(e => e.name == "Nuclear Amplifier"), null, null);
+                                    for (let t = 0; t < 5; t++) {
+                                        upgradeModule(Module, null, null, true);
+                                    }
+                                    modules.push(Module);
+                                }
+                            } else if (moduleIndex >= 50) {
+                                for (let i = 0; i < moduleHardpoints; i++) {
+                                    let Module = new module(moduleData.find(e => e.name == "Balance Unit"), null, null);
+                                    for (let t = 0; t < 2; t++) {
+                                        upgradeModule(Module, null, null, true);
+                                    }
+                                    modules.push(Module);
+                                }
+                            } else if (moduleIndex >= 25) {
+                                for (let i = 0; i < moduleHardpoints; i++) {
+                                    let Module = new module(moduleData.find(e => e.name == "Heavy Armor Plating"), null, null);
+                                    for (let t = 0; t < 5; t++) {
+                                        upgradeModule(Module, null, null, true);
+                                    }
+                                    modules.push(Module);
+                                }
+                            } else if (moduleIndex >= 13) {
+                                for (let i = 0; i < moduleHardpoints; i++) {
+                                    let Module = new module(moduleData.find(e => e.name == "Armor Plating"), null, null);
+                                    for (let t = 0; t < 5; t++) {
+                                        upgradeModule(Module, null, null, true);
+                                    }
+                                    modules.push(Module);
+                                }
+                            }
+                            players[1 + tt].robots.push(setUpBotData(orginalRobot, weapons, modules, [], isAlly, gameMode, spawnLocations));
                         }
-                        players[1 + tt].robots.push(setUpBotData(orginalRobot, weapons, modules, [], isAlly, gameMode, spawnLocations));
                     }
                 }
             }
@@ -9006,7 +9331,7 @@
             arena.bossIndex = 0;
             mapInfo.x = mapInfo.y = 3e3;
             enemies.push(new enemy(arena.bosses[0], true));
-        } else if (gameMode == 2 || gameMode == 4) {
+        } else if (gameMode == 2 || gameMode == 4 || gameMode == 7) {
             document.getElementById("mapName").style.display = "block";
             spawnLocations = buildMap();
             beaconPoints = {
@@ -9504,6 +9829,27 @@
             </div>
             </div>
             `;
+        } else if (type == "additionalHealthData" && Shape.ability && Shape.ability.additionalHealthData) {
+            let maxhealth = Shape.ability.additionalHealthData.base;
+            for (let i = 0; i < Shape.ability.additionalHealthData.level.length; i++) {
+                maxhealth += Shape.ability.additionalHealthData.level[i];
+            }
+            let indexAdjust = ((shape.ability.additionalHealth / maxhealth) * maxwidth) / maxwidth;
+            let indexAdjusted = (((shape.ability.additionalHealth + (Shape.ability.additionalHealthData.level[shape.level])) / maxhealth) * maxwidth) / maxwidth;
+            text = `
+            <div style="position: relative; width: ${maxwidth}px;">
+            Ability Additional Health: ${abbreviateNumber(shape.ability.additionalHealth)}
+            <div style="display: ${Shape.ability.additionalHealthData.level[shape.level] ? "block" : "none"};position: absolute; top: 0px; right: 0px; color: #00ff00;">
+            +${abbreviateNumber(Shape.ability.additionalHealthData.level[shape.level])}
+            </div>
+            </div>
+            <div style="position: relative; width: ${maxwidth}px; height: 3px; background-color: #fff;">
+            <div style="position: absolute; top: 0px; left: 0px; height: 3px; width: ${indexAdjusted * 100}%; background-color: #02de02;">
+            </div>
+            <div style="position: absolute; top: 0px; left: 0px; height: 3px; width: ${indexAdjust * 100}%; background-color: #00fcec;">
+            </div>
+            </div>
+            `;
         }
         return text;
     }
@@ -9544,6 +9890,10 @@
                 } else {
                     shape.ability.shieldHp *= shape.level == 13 ? 1.05 : 1.2;
                 }
+            }
+            if (Shape.ability.additionalHealthData && shape.level < 12) {
+                let increase = Shape.ability.additionalHealthData.level[shape.level];
+                shape.ability.additionalHealth += increase;
             }
             if (Shape.ability.healingPowerData && shape.level < 12) {
                 let increase = Shape.ability.healingPowerData.level[shape.level];
@@ -9706,6 +10056,45 @@
             imageSource: "./images/modules/nuclear_reactor.png",
             desc: "Purple Heptagon's ability deals additional damage percentage.",
             dmgPercentage: .2
+        }
+    }, {
+        tier: 3,
+        name: "Elijah Forge",
+        story: [],
+        industryName: "Hexagon",
+        legendarySkill: {
+            name: "Forge's Breakthrough",
+            main: "chargeIncrease",
+            onlyFor: "Cyan Hexagon",
+            imageSource: "./images/abilities/shapeshift.png",
+            desc: "Cyan Hexagon has increased ability charges and ability cooldown is decreased by 20%.",
+            chargeIncrease: 1
+        }
+    }, {
+        tier: 3,
+        name: "Caleb Sterling",
+        industryName: "Circle",
+        story: [],
+        legendarySkill: {
+            name: "Caleb's Knowledge",
+            main: "mechanicHeal",
+            onlyFor: "Orange Circle",
+            imageSource: "./images/modules/self_fix_unit.png",
+            desc: "Orange Circle repairs a large portion of its durability every second.",
+            mechanicHeal: .05
+        }
+    }, {
+        tier: 3,
+        name: "Sebastian Wren",
+        industryName: "Pentagon",
+        story: [],
+        legendarySkill: {
+            name: "Sebastian's Fortitude",
+            main: "additionalHealth",
+            onlyFor: "Light Blue Heptagon",
+            imageSource: "./images/abilities/full_action.png",
+            desc: "Light Blue Heptagon gains additional health during flight.",
+            additionalHealth: 175e3
         }
     }];
     class skill {
@@ -9907,6 +10296,8 @@
                 return `3.5%`;
             }
             return (skill[skill.main] * 100) + "%";
+        } else if (["additionalHealth"].includes(skill.main)) {
+            return abbreviateNumber(skill[skill.main]);
         } else {
             return skill[skill.main];
         }
@@ -10988,7 +11379,7 @@
             icon: "./images/modules/fortifier.png",
             main: "defenseIncrease",
             reload: 10e3,
-            defenseIncrease: 5
+            defenseIncrease: 15
         }, {
             name: "On Kill: Defense",
             desc: "The shape gains extra defense points per kill.",
@@ -10996,7 +11387,7 @@
             icon: "./images/modules/fortifier.png",
             main: "defenseIncrease",
             reload: 10e3,
-            defenseIncrease: 5
+            defenseIncrease: 15
         }]
     }, {
         tier: 3,
@@ -11060,14 +11451,14 @@
             desc: "The shape restores a percentage of its durability and gray damage once, upon reaching a threshold of 70%/50%/30% durability.",
             icon: "./images/modules/self_fix_unit.png",
             main: ["healPower", "grayDamageHeal_p"],
-            reload: 10e3,
+            reload: 5e3,
             healPowerData: {
                 base: .05,
                 level: [0, .01, .01, .01, .01, .01, .01, .01, .01, .01, .01, .01, .02, .02, .02]
             },
             grayDamageHeal_pData: {
-                base: .02,
-                level: [0, .01, .01, .01, .01, .02, .03, .03, .03, .03, .05, .05, .06, .06, .08]
+                base: .01,
+                level: [0, .005, .005, .005, .005, .01, .015, .015, .015, .015, .025, .025, .03, .03, .04]
             }
         }, {
             name: "On Deployment: Damage",
@@ -11095,7 +11486,7 @@
             name: "On Threshold: Resist",
             desc: "The power of the shape's defense system is increased upon reaching a threshold of 70%/50%/30% durability.",
             unlockAtLevel: 15,
-            reload: 10e3,
+            reload: 5e3,
             icon: "./images/modules/heavy_armor_plating.png",
             main: "defenseIncrease",
             defenseIncrease: 100
@@ -11768,6 +12159,7 @@
         ${shape.ability && shape.ability.effectIncrease ? `Effect Accumulation: ${shape.ability.effectIncrease} (${removeDecimals((shape.ability.effectIncrease / effectThresholds[shape.ability.effectIncreaseName]) * (shape.ability.projPerShot * (shape.ability.lastingTime / shape.ability.fireRate)) * 100)}% Max Acc.)<br>` : ""}
         ${shape.ability && shape.ability.suppressionPower ? `Ability Suppression Power: ${(shape.ability.suppressionPower * 100).toFixed(0)}%<br>` : ""}
         ${shape.ability && shape.ability.healingPower ? `Ability Healing Power: ${abbreviateNumber(shape.ability.healingPower)}<br>` : ""}
+        ${shape.ability && shape.ability.additionalHealth ? `Ability Additional Health: ${abbreviateNumber(shape.ability.additionalHealth)}<br>` : ""}
         `;
         document.getElementById("sideDisplay").innerHTML = `
         <div style="position: absolute; top: 0px; left: 0px; width: 100%; height: 100%; background-image: linear-gradient(rgb(0, 0, 0, 0), ${tierColor(shape)});">
@@ -12126,6 +12518,7 @@
             ${enterBarForShape("ability effect acc", shape)}
             ${enterBarForShape("ability suppression", shape)}
             ${enterBarForShape("ability healing power", shape)}
+            ${enterBarForShape("additionalHealthData", shape)}
             </div>
             <div id="leaveUpgrade" style="position: absolute; cursor: pointer; right: 10px; top: 10px;">
             X
@@ -12218,6 +12611,7 @@
         ${shape.ability && shape.ability.effectIncrease ? `Effect Accumulation: ${shape.ability.effectIncrease} (${removeDecimals((shape.ability.effectIncrease / effectThresholds[shape.ability.effectIncreaseName]) * (shape.ability.projPerShot * (shape.ability.lastingTime / shape.ability.fireRate)) * 100)}% Max Acc.)<br>` : ""}
         ${shape.ability && shape.ability.suppressionPower ? `Ability Suppression Power: ${(shape.ability.suppressionPower * 100).toFixed(0)}%<br>` : ""}
         ${shape.ability && shape.ability.healingPower ? `Ability Healing Power: ${abbreviateNumber(shape.ability.healingPower)}<br>` : ""}
+        ${shape.ability && shape.ability.additionalHealth ? `Ability Additional Health: ${abbreviateNumber(shape.ability.additionalHealth)}<br>` : ""}
         `;
         document.getElementById("WEAPONdisplay").innerHTML = `
         <div style="position: absolute; top: 0px; left: 0px; width: 100%; height: 100%; background-image: linear-gradient(rgb(0, 0, 0, 0), ${tierColor(shape)});">
@@ -12728,6 +13122,7 @@
             ${enterBarForShape("ability effect acc", shape)}
             ${enterBarForShape("ability suppression", shape)}
             ${enterBarForShape("ability healing power", shape)}
+            ${enterBarForShape("additionalHealthData", shape)}
             </div>
             <div id="leaveUpgrade" style="position: absolute; cursor: pointer; right: 10px; top: 10px;">
             X
@@ -12801,7 +13196,7 @@
         }
     }
     var rarityToChance = {
-        "Common": .8,
+        "Common": .9,
         "Rare": .5,
         "Epic": .3,
         "Legendary": .15,
@@ -13309,6 +13704,8 @@
             type: "shape", rarity: "Epic", name: "White Heptagon",
         }, {
             type: "shape", rarity: "Epic", name: "Purple Heptagon",
+        }, {
+            type: "shape", rarity: "Epic", name: "Blue-Outlined Tan Circle"
         }],
         tokenCost: "token 3"
     }];
@@ -13505,7 +13902,7 @@
             let randomnum = randomNums2[Math.floor(Math.random() * randomNums2.length)];
             return possible[Math.floor(randomnum * possible.length)];
         } else {
-            return rewards.sort((a, b) => rarityToChance[b.rarity] - rarityToChance[a.rarity])[0];
+            return rewards[Math.floor(Math.random() * rewards.length)];
         }
     }
     function hexToRgb(hexCode, a) {
@@ -16528,6 +16925,11 @@
         }
         if (shape.grayDamage < 0) shape.grayDamage = 0;
         shape.grayDamage += Math.abs(amount * grayDmg * grayDamageMulti);
+        if (shape.effects && shape.effects.find(e => e.name == "Cannonier" && e.health > 0)) {
+            let effect = shape.effects.find(e => e.name == "Cannonier" && e.health > 0);
+            if (effect.grayDamage == null) effect.grayDamage = 0;
+            effect.grayDamage += Math.abs(amount * grayDmg * grayDamageMulti);
+        }
     }
     var domains = [];
     function doPaldinStuff(robot, isAlly) {
@@ -16949,7 +17351,7 @@
         }
     }
     function hasPlayers() {
-        return player.gameMode == 2 || player.gameMode == 4;
+        return player.gameMode == 2 || player.gameMode == 4 || player.gameMode == 7;
     }
     function doDamageToPhysicalShields(shields, dmg, doer) {
         for (let i = 0; i < shields.length; i++) {
@@ -17450,9 +17852,37 @@
                                 }, false, robot);
                             });
                         }
+                    } else if (effect.name == "Cannonier") {
+                        speedMulti += 1;
+                        robot.avoidBuildings = true;
+                        if (effect.stage == 1 || effect.stage == 2) {
+                            if (effect.dashLast == null) effect.dashLast = Date.now();
+                            if (Date.now() - effect.dashLast <= 250) {
+                                let moveSpeed = 0.03;
+                                robot.velx += Math.cos(effect.dir) * (moveSpeed * delta);
+                                robot.vely += Math.sin(effect.dir) * (moveSpeed * delta);
+                            }
+                        }
                     }
                 }
                 if (effect.lastTime <= 0) {
+                    if (effect.name == "Cannonier") {
+                        if (effect.health > 0) {
+                            robot.maxhealth -= effect.maxhealth;
+                            robot.grayDamage -= (effect.grayDamage || 0);
+                            effect.health = 0;
+                        }
+                        if (robot.isMe) {
+                            transitionProgress = 0;
+                        }
+                        robot.flightVisualData = 0.0001;
+                        for (let i = 0; i < robot.weapons.length; i++) {
+                            let weapon = robot.weapons[i];
+                            if (weapon.targetedWeaponsToUse && !weapon.weaponIsBroken) {
+                                weapon.notActive = true;
+                            }
+                        }
+                    }
                     if (effect.reflector || effect.name == "Ultimate Reflecting Dash") {
                         robot.reflector = 0;
                     }
@@ -17711,7 +18141,7 @@
             return "./images/icons/freeze_immune.png";
         } else if (index == "rust immune") {
             return "./images/icons/rust_immune.png";
-        } else if (index == "Blink Support") {
+        } else if (index == "Blink Support" || index == "Cannonier") {
             return "./images/abilities/shield_t.png";
         } else if (index == "anti defense mig") {
             return "./images/icons/anti_defense_mitigation.png";
@@ -17800,6 +18230,8 @@
         return angleDifference > Math.PI ? (2 * Math.PI) - angleDifference : angleDifference;
     };
     function doLaserDamage(robot, weapon, taker) {
+        if (weapon.weaponIsBroken) return;
+        if (taker.invis) return;
         if (taker.shields) {
             for (let i = 0; i < taker.shields.length; i++) {
                 let shield = taker.shields[i];
@@ -17829,7 +18261,7 @@
         let hasHealth = taker.health > 0;
         let dmgIncrease = 1;
         if ((weapon.name == "Fulgur" || weapon.name == "Tonans") && taker.tier == 4) {
-            dmgIncrease = 2.5;
+            dmgIncrease = 2.25;
         }
         changeHealth(taker, {
             amount: -(weapon.dmg * dmgIncrease),
@@ -18333,7 +18765,24 @@
                     robot.vely = 0;
                 }
             }
-        } else if (robot.ability.name == "Long Shot" || robot.ability.name == "Support" || robot.ability.name == "Matrix" || robot.ability.name == "Reflector" || robot.ability.name == "Clear Sky" || robot.ability.name == "Reinforce Hull" || robot.ability.name == "Ultimate Mending" || robot.ability.name == "Divine Judgement" || robot.ability.name == "Grand Fortitude" || robot.ability.name == "Paladin" || robot.ability.name == "Overload" || robot.ability.name == "Stampede" || robot.ability.name == "Stealth" || robot.ability.name == "Retribution" || robot.ability.name == "Ultimate Defense" || robot.ability.name == "Self Heal" || robot.ability.name == "Dragon Flight" || robot.ability.name == "Shield Regeneration" || robot.ability.name == "Full Action") {
+        } else if (robot.effects.find(e => e.name == "Cannonier")) {
+            let effect = robot.effects.find(e => e.name == "Cannonier");
+            if (effect.stage == null) effect.stage = 0;
+            if (effect.lastChange == null) effect.lastChange = 0;
+            if (Date.now() - effect.lastChange >= 250) {
+                effect.lastChange = Date.now();
+                effect.dir = robot.dir;
+                if (effect.stage == 0) {
+                    effect.stage++;
+                } else if (effect.stage == 1) {
+                    effect.stage++;
+                    effect.dashLast = null;
+                } else {
+                    effect.lastTime = 1;
+                    robot.abilityLast = 1;
+                }
+            }
+        } else if (robot.ability.name == "Cannonier" || robot.ability.name == "Long Shot" || robot.ability.name == "Support" || robot.ability.name == "Matrix" || robot.ability.name == "Reflector" || robot.ability.name == "Clear Sky" || robot.ability.name == "Reinforce Hull" || robot.ability.name == "Ultimate Mending" || robot.ability.name == "Divine Judgement" || robot.ability.name == "Grand Fortitude" || robot.ability.name == "Paladin" || robot.ability.name == "Overload" || robot.ability.name == "Stampede" || robot.ability.name == "Stealth" || robot.ability.name == "Retribution" || robot.ability.name == "Ultimate Defense" || robot.ability.name == "Self Heal" || robot.ability.name == "Dragon Flight" || robot.ability.name == "Shield Regeneration" || robot.ability.name == "Full Action") {
             if (robot.abilityReload == 0 && robot.abilityLast == 0) {
                 robot.abilityLast = robot.ability.lastingTime;
                 doWonderworkerSkill(robot);
@@ -18490,6 +18939,32 @@
                             level: robot.level
                         }
                     });
+                } else if (robot.ability.name == "Cannonier") {
+                    if (robot.isMe) transitionProgress = 0;
+                    robot.flightVisualData = {
+                        scale: robot.oldScale * 1.5,
+                        speed: 0.1,
+                        fov: {
+                            x: 1980 * robot.fieldOfViewMulti * 1.75,
+                            y: 1080 * robot.fieldOfViewMulti * 1.75
+                        }
+                    };
+                    robot.health += robot.ability.additionalHealth;
+                    robot.maxhealth += robot.ability.additionalHealth;
+                    robot.effects.push({
+                        name: "Cannonier",
+                        abilityEffect: "Cannonier",
+                        health: robot.ability.additionalHealth,
+                        maxhealth: robot.ability.additionalHealth,
+                        lastTime: robot.ability.lastingTime,
+                        lastChange: Date.now() + 500
+                    });
+                    for (let i = 0; i < robot.weapons.length; i++) {
+                        let weapon = robot.weapons[i];
+                        if (weapon.targetedWeaponsToUse && !weapon.weaponIsBroken) {
+                            weapon.notActive = false;
+                        }
+                    }
                 }
             }
         } else if (robot.ability.name == "Cold Pulse") {
@@ -19070,13 +19545,12 @@
         if (possibleTargets.length) {
             let closest = null;
             if (robot.isBluebell) {
-                closest = possibleTargets.filter(e => !e.effects.find(e => e.name == "last stand")).sort((a, b) => dist(a, robot) - dist(b, robot))[0];
-            } else {
-                closest = possibleTargets.sort((a, b) => dist(a, robot) - dist(b, robot))[0];
+                possibleTargets = possibleTargets.filter(e => !e.effects.find(e => ["phase shift", "last stand", robot.isBluebell ? "stampede" : "lalalal love lalallala"].includes(e.name)));
             }
+            closest = possibleTargets.sort((a, b) => dist(a, robot) - dist(b, robot))[0];
             if (robot.isBluebell && robot.name == "Purple Heptagon") {
-                let threat = possibleTargets.find(e => e.weapons.find(e => ["Tonans", "Fulgur"].includes(e.name)));
-                if (threat) closest = threat;
+                let threat = possibleTargets.filter(e => dist(e, robot) <= 3800 && e.weapons.find(e => ["Tonans", "Fulgur"].includes(e.name))).sort((a, b) => dist(a, robot) - dist(b, robot))[0];
+                if (threat && dist(closest, robot) >= 600) closest = threat;
             }
             if (closest) {
                 robot.target = closest;
@@ -19102,6 +19576,9 @@
             } else if (["Overload", "Dash", "Fortify"].includes(abilityName)) {
                 robot.useAbility = true;
             } else if (abilityName == "Long Shot" && robot.target && dist(robot.target, robot) <= 3800) {
+                robot.useAbility = true;
+            } else if (abilityName == "Cannonier" && !robot.effects.find(e => e.name == "Cannonier")) {
+                robot.useAbility = true;
             } else if (["Stealth Dash"].includes(abilityName)) {
                 if (robot.ability.charges > 1) {
                     robot.useAbility = true;
@@ -19238,7 +19715,8 @@
                         lastTime: module.lastTime
                     });
                 } else if (module.name == "Unstable Conduit") {
-                    let moreHealth = robot.health * module.healthMulti;
+                    let effect = robot.effects.find(e => e.name == "Cannonier" && e.health > 0);
+                    let moreHealth = (robot.health - (effect ? effect.health : 0)) * module.healthMulti;
                     let moreGrayDamage = moreHealth * (robot.grayDamage / robot.maxhealth);
                     robot.maxhealth += moreHealth;
                     robot.health += moreHealth;
@@ -19544,6 +20022,9 @@
             robot.health = (robot.maxhealth - robot.grayDamage);
         }
         doOnDamageTakeStuff(robot);
+        if (robot.health > robot.maxhealth) {
+            robot.health = robot.maxhealth;
+        }
         if (robot.isMe) {
             document.getElementById("healthBar").innerHTML = `
             <div style="position: absolute; color: ${player.mapID == 0 ? "#fff" : "#000"}; top: -20px; left: 5px; font-size: 12px;">
@@ -19983,6 +20464,8 @@
                     doer.effects.forEach(e => {
                         if (e.name == "attack") {
                             increase += e.power;
+                        } else if (e.name == "Cannonier") {
+                            increase += .5;
                         }
                     });
                     amount *= increase;
@@ -20260,6 +20743,14 @@
                         }
                     }
                     object.health += amount;
+                    if (amount < 0 && object.effects && object.effects.find(e => e.name == "Cannonier" && e.health > 0)) {
+                        let effect = object.effects.find(e => e.name == "Cannonier" && e.health > 0);
+                        effect.health += amount;
+                        if (effect.health <= 0) {
+                            object.maxhealth -= effect.maxhealth;
+                            object.grayDamage -= effect.grayDamage;
+                        }
+                    }
                     if (object.health < 0) object.health = 0;
                 }
                 if (amount < 0 && object.health <= object.maxhealth * .2) {
@@ -21547,93 +22038,126 @@
             document.getElementById("enemyradar" + sid).style.display = "block";
         }
     }
-    function doMoveStuff(robot, isAlly) {
-        let nearestBeacon = buildings.filter(e => e.name == "beacon" && (isAlly ? e.ALLYPOINTS < 5e3 : e.ENEMYPOINTS < 5e3)).sort((a, b) => Math.hypot(a.y - robot.y, a.x - robot.x) - Math.hypot(b.y - robot.y, b.x - robot.x))[0];
-        let nearestEnemy = [];
-        for (let i = 0; i < players.length; i++) {
-            if (players[i].isAlly != isAlly) {
-                if (players[i].robots[players[i].robotIndex]) {
-                    nearestEnemy.push(players[i].robots[players[i].robotIndex]);
-                }
-            }
-        }
-        if (nearestEnemy.length) nearestEnemy = nearestEnemy.sort((a, b) => Math.hypot(a.y - robot.y, a.x - robot.x) - Math.hypot(b.y - robot.y, b.x - robot.x))[0];
-        let TARGET = null;
-        if ((player.gameMode == 3 || player.gameMode == 4 ? true : !nearestBeacon) && Math.hypot(nearestEnemy.y - robot.y, nearestEnemy.x - robot.x) >= (nearestEnemy.scale + robot.scale) * 2) {
-            TARGET = nearestEnemy;
-        } else if (nearestBeacon && Math.hypot(nearestBeacon.y - robot.y, nearestBeacon.x - robot.x) >= 400 - robot.scale * 2) {
-            TARGET = nearestBeacon;
-        } else {
-            TARGET = null;
-        }
-        if (TARGET) {
-            if ((robot.isBluebell ? robot.name == "Purple Heptagon" ? false : true : true) && !robot.avoidBuildings) {
-                for (let i = 0; i < buildings.length; i++) {
-                    let obj = buildings[i];
-                    if (obj.name == "coll rect") {
-                        if (circleSquareCollision(robot, obj)) {
-                            if (obj.middleX) {
-                                let y = obj.y + obj.height;
-                                if ((TARGET.y <= obj.y && robot.y >= obj.y) || (TARGET.y >= y && robot.y <= y)) {
-                                    if (obj.onlyDir != null) return obj.onlyDir;
-                                    if (TARGET.x > obj.middleX) {
-                                        return 0;
-                                    } else {
-                                        return Math.PI;
-                                    }
-                                }
+    function doCollRectMovement(target, robot) {
+        for (let i = 0; i < buildings.length; i++) {
+            let obj = buildings[i];
+            if (obj.name == "coll rect") {
+                if (circleSquareCollision(robot, obj)) {
+                    if (obj.middleX) {
+                        let y = obj.y + obj.height;
+                        if ((target.y <= obj.y && robot.y >= obj.y) || (target.y >= y && robot.y <= y)) {
+                            if (obj.onlyDir != null) return obj.onlyDir;
+                            if (target.x > obj.middleX) {
+                                return 0;
                             } else {
-                                let x = obj.x + obj.width;
-                                if ((TARGET.x >= obj.x && obj.x >= robot.x) || (TARGET.x <= x && robot.x >= x)) {
-                                    if (obj.onlyDir != null) return obj.onlyDir;
-                                    if (TARGET.y > obj.middleY) {
-                                        return Math.PI / 2;
-                                    } else {
-                                        return -Math.PI / 2;
-                                    }
-                                }
+                                return Math.PI;
                             }
                         }
-                    }
-                }
-            } else if (robot.isBluebell && robot.name == "Purple Heptagon") {
-                if (nearestEnemy) {
-                    for (let i = 0; i < buildings.length; i++) {
-                        let obj = buildings[i];
-                        if (obj.name == "coll rect") {
-                            if (circleSquareCollision(robot, obj)) {
-                                if (obj.middleX) {
-                                    let y = obj.y + obj.height;
-                                    if ((TARGET.y <= obj.y && robot.y >= obj.y) || (TARGET.y >= y && robot.y <= y)) {
-                                        if (obj.onlyDir != null) return obj.onlyDir;
-                                        if (TARGET.x > obj.middleX) {
-                                            return 0;
-                                        } else {
-                                            return Math.PI;
-                                        }
-                                    }
-                                } else {
-                                    let x = obj.x + obj.width;
-                                    if ((TARGET.x >= obj.x && obj.x >= robot.x) || (TARGET.x <= x && robot.x >= x)) {
-                                        if (obj.onlyDir != null) return obj.onlyDir;
-                                        if (TARGET.y > obj.middleY) {
-                                            return Math.PI / 2;
-                                        } else {
-                                            return -Math.PI / 2;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    if (dist(nearestEnemy, robot) <= 2e3) {
-                        return Math.atan2(nearestEnemy.y - robot.y, nearestEnemy.x - robot.x) + Math.PI;
                     } else {
-                        return Math.atan2(nearestEnemy.y - robot.y, nearestEnemy.x - robot.x);
+                        let x = obj.x + obj.width;
+                        if ((target.x >= obj.x && obj.x >= robot.x) || (target.x <= x && robot.x >= x)) {
+                            if (obj.onlyDir != null) return obj.onlyDir;
+                            if (target.y > obj.middleY) {
+                                return Math.PI / 2;
+                            } else {
+                                return -Math.PI / 2;
+                            }
+                        }
                     }
                 }
             }
-            return Math.atan2(TARGET.y - robot.y, TARGET.x - robot.x);
+        }
+        return null;
+    }
+    function doMoveStuff(robot, isAlly) {
+        let beacons = buildings.filter(e => e.name == "beacon");
+        let nearestBeaconToGo = null;
+        if (beacons.length) {
+            beacons = beacons.sort((a, b) => dist(a, robot) - dist(b, robot));
+            nearestBeaconToGo = beacons.find(e => isAlly ? e.ALLYPOINTS < 5e3 : e.ENEMYPOINTS < 5e3);
+        }
+        let enemies = [];
+        let allies = [];
+        let nearestEnemy = null;
+        for (let i = 0; i < players.length; i++) {
+            if (players[i].robots[players[i].robotIndex]) {
+                let Robot = players[i].robots[players[i].robotIndex];
+                if (players[i].isAlly != isAlly) {
+                    enemies.push(Robot);
+                } else if (Robot != robot && player.gameMode == 2) {
+                    allies.push(Robot);
+                }
+            }
+        }
+        if (enemies.length) {
+            enemies = enemies.sort((a, b) => dist(a, robot) - dist(b, robot));
+            nearestEnemy = enemies[0];
+            let allyBeacons = beacons.filter(e => isAlly ? e.ALLYPOINTS >= 5e3 : e.ENEMYPOINTS >= 5e3);
+            let bData = [];
+            for (let i = 0; i < allyBeacons.length; i++) {
+                let beacon = allyBeacons[i];
+                if (beacon) {
+                    let tmp = {
+                        enemiesNear: 0,
+                        x: beacon.x,
+                        y: beacon.y
+                    };
+                    for (let i = 0; i < enemies.length; i++) {
+                        let enemy = enemies[i];
+                        if (enemy) {
+                            if (dist(enemy, beacon) <= 500 + enemy.scale * 2) {
+                                tmp.enemiesNear++;
+                            }
+                        }
+                    }
+                    bData.push(tmp);
+                }
+            }
+            let closestBData = bData.filter(e => e.enemiesNear > 0).sort((a, b) => dist(a, robot) - dist(b, robot))[0];
+            if (closestBData) {
+                if (dist(nearestBeaconToGo, robot) > dist(closestBData, robot)) {
+                    nearestBeaconToGo = closestBData;
+                }
+            }
+        }
+        let target = null;
+        if (player.gameMode == 4) {
+            if (nearestEnemy && dist(nearestEnemy, robot) >= robot.scale * 3) {
+                target = nearestEnemy;
+            }
+        } else if (player.gameMode == 2 || player.gameMode == 7) {
+            if (nearestBeaconToGo && dist(nearestBeaconToGo, robot) >= 400 - (robot.scale * 2)) {
+                target = nearestBeaconToGo;
+            } else if (nearestEnemy && dist(nearestEnemy, robot) >= robot.scale * 3) {
+                target = nearestEnemy;
+            }
+        }
+        if (player.gameMode == 2 && ["Ultimate Green Circle", "Green Triangle"].includes(robot.name)) {
+            let theThing = null;
+            for (let i = 0; i < allies.length; i++) {
+                let ally = allies[i];
+                if (ally) {
+                    if (nearestBeaconToGo && dist(nearestBeaconToGo, robot) > dist(ally, robot)) {
+                        theThing = ally;
+                    } else if (!nearestBeaconToGo && dist(nearestEnemy, robot) > dist(ally, robot)) {
+                        theThing = ally;
+                    }
+                }
+            }
+            if (robot.name == "Ultimate Green Circle") {
+                if (theThing && theThing.health < .8 * theThing.maxhealth) {
+                    target = theThing;
+                }
+            } else {
+                if (theThing && theThing.health < .95 * (theThing.maxhealth - theThing.grayDamage)) {
+                    target = theThing;
+                }
+            }
+        }
+        if (target) {
+            let extra = doCollRectMovement(target, robot);
+            if (extra != null && extra != undefined) return extra;
+            return Math.atan2(target.y - robot.y, target.x - robot.x);
         } else {
             return null;
         }
@@ -21647,10 +22171,14 @@
                     let angle = Math.atan2(ROBOT.y - robot.y, ROBOT.x - robot.x) + Math.PI;
                     let tmpInt = distance - (robot.scale + ROBOT.scale) * .75;
                     tmpInt = (tmpInt * -1) / 2;
-                    robot.x += (tmpInt * Math.cos(angle));
-                    robot.y += (tmpInt * Math.sin(angle));
-                    ROBOT.x -= (tmpInt * Math.cos(angle));
-                    ROBOT.y -= (tmpInt * Math.sin(angle));
+                    if (!robot.effects.find(e => e.name == "Ultimate Reflecting Dash")) {
+                        robot.x += (tmpInt * Math.cos(angle));
+                        robot.y += (tmpInt * Math.sin(angle));
+                    }
+                    if (!ROBOT.effects.find(e => e.name == "Ultimate Reflecting Dash")) {
+                        ROBOT.x -= (tmpInt * Math.cos(angle));
+                        ROBOT.y -= (tmpInt * Math.sin(angle));
+                    }
                     if (player) {
                         robot.velx *= 0.9;
                         robot.vely *= 0.9;
@@ -22320,7 +22848,7 @@
             let player = players[i].robots[players[i].robotIndex];
             if (player && !player.isFREEZE && (player.isMe ? keysPressed[32] : player.fireWeapon)) {
                 player.weapons.forEach(weapon => {
-                    if (weapon.continueToFire || weapon.canFire || (weapon.continuousReload && weapon.ammo > 0)) {
+                    if (!weapon.weaponIsBroken && !weapon.notActive && (weapon.continueToFire || weapon.canFire || (weapon.continuousReload && weapon.ammo > 0))) {
                         let Offset = getWeaponOffsets(weapon, player);
                         if (["Eagle", "Hawk"].includes(weapon.name)) {
                             let nearestEnemies = [];
@@ -22414,34 +22942,36 @@
                             });
                         } else if (["Fulgur", "Tonans"].includes(weapon.name) && (player.target || weapon.target)) {
                             let target = player.target || weapon.target;
-                            ctx.save();
-                            let tmp = {
-                                x: target.x,
-                                y: target.y
-                            }
-                            if (target.shields) {
-                                for (let i = 0; i < target.shields.length; i++) {
-                                    let shield = target.shields[i];
-                                    if (shield && !shield.notActive && shield.type == "normal") {
-                                        let dir = Math.atan2(target.y - player.y, target.x - player.x);
-                                        tmp = {
-                                            x: player.x + Math.cos(dir) * (dist(target, player) - (target.scale + 20)),
-                                            y: player.y + Math.sin(dir) * (dist(target, player) - (target.scale + 20)),
-                                        };
-                                        break;
+                            if (!target.invis) {
+                                ctx.save();
+                                let tmp = {
+                                    x: target.x,
+                                    y: target.y
+                                }
+                                if (target.shields) {
+                                    for (let i = 0; i < target.shields.length; i++) {
+                                        let shield = target.shields[i];
+                                        if (shield && !shield.notActive && shield.type == "normal") {
+                                            let dir = Math.atan2(target.y - player.y, target.x - player.x);
+                                            tmp = {
+                                                x: player.x + Math.cos(dir) * (dist(target, player) - (target.scale + 20)),
+                                                y: player.y + Math.sin(dir) * (dist(target, player) - (target.scale + 20)),
+                                            };
+                                            break;
+                                        }
                                     }
                                 }
+                                ctx.shadowBlur = 30;
+                                ctx.shadowColor = "#fff";
+                                ctx.lineWidth = 16;
+                                ctx.strokeStyle = players[i].isAlly ? "#fff" : "#f00";
+                                ctx.lineCap = "round";
+                                ctx.beginPath();
+                                ctx.moveTo(Offset.x - offset.x, Offset.y - offset.y);
+                                ctx.lineTo(tmp.x - offset.x, tmp.y - offset.y);
+                                ctx.stroke();
+                                ctx.restore();
                             }
-                            ctx.shadowBlur = 30;
-                            ctx.shadowColor = "#fff";
-                            ctx.lineWidth = 16;
-                            ctx.strokeStyle = players[i].isAlly ? "#fff" : "#f00";
-                            ctx.lineCap = "round";
-                            ctx.beginPath();
-                            ctx.moveTo(Offset.x - offset.x, Offset.y - offset.y);
-                            ctx.lineTo(tmp.x - offset.x, tmp.y - offset.y);
-                            ctx.stroke();
-                            ctx.restore();
                         }
                     }
                 });
@@ -22602,7 +23132,6 @@
                 renderDomains(delta);
                 if (players[0] && players[0].robotIndex >= 0 || player.gameMode == 2) gameTimePlayed += delta;
                 renderGameDataThing(delta);
-                //Wave: ${extermination.waveIndex + 1}
                 document.getElementById("timePlayed").innerHTML = `
                 ${settingToggles.showFPS ? `FPS: ${fpsInfo.real}` : ""}
                 `;
