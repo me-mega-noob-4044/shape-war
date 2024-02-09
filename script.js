@@ -60,16 +60,6 @@
             ` + this.html;
         }
     }());
-    updateLogger.newLog("V43 UPDATE NOTES", `
-        ${updateLogger.marginBlock(10, `
-            ${updateLogger.lineBlock(["New weapon(s): Deceiver and Damper"])}
-            ${updateLogger.title("h2", `NEW WEAPONS(S): Deceiver and Damper`)}
-            ${updateLogger.marginBlock(10, `
-                ${updateLogger.title("h3", `Deceiver and Damper:`)}
-                Deceiver, the heavy weapon, and its light counterpart, Damper, belong to the category of heavy Damage Over Time (DOT) emitters. Their primary strength lies in inflicting substantial damage over an extended period. This unique feature makes them particularly adept at countering tanks equipped with heavy resistance, as the majority of their damage is based on DOT effects. By utilizing DOT damage, these weapons effectively bypass resistance, providing a strategic advantage against resilient foes. Deceiver and Damper stand out as potent choices for those seeking to overcome formidable tank defenses in the battlefield.
-            `)}
-        `)}
-    `);
     updateLogger.newLog("V44 UPDATE NOTES", `
         ${updateLogger.marginBlock(10, `
             ${updateLogger.lineBlock(["New weapons(s): Brisant and Shatter", "Other Changes + Bug Fixes"])}
@@ -164,11 +154,11 @@
                 <br><br>
                 CURRENT ACTIVE MODULE(S):<br>
                 ${updateLogger.lineBlock([
-        "<strong>Repair Unit</strong>: Repairs X% durability over X seconds. 200 WKSP Cost",
-        "<strong>Advanced Repair Unit</strong>: Repairs X% durability over X seconds. 400 WKSP Cost",
-        "<strong>Phase Shift</strong>: Activates a phase shift for 3 seconds. 800 WKSP Cost",
-        "<strong>Unstable Conduit</strong>: Find out ability at in-game description. 1600 WKSP Cost"
-    ])}
+                    "<strong>Repair Unit</strong>: Repairs X% durability over X seconds. 200 WKSP Cost",
+                    "<strong>Advanced Repair Unit</strong>: Repairs X% durability over X seconds. 400 WKSP Cost",
+                    "<strong>Phase Shift</strong>: Activates a phase shift for 3 seconds. 800 WKSP Cost",
+                    "<strong>Unstable Conduit</strong>: Find out ability at in-game description. 1600 WKSP Cost"
+                ])}
             `)}
             ${updateLogger.title("h2", `BALANCE CHANGES`)}
             ${updateLogger.marginBlock(10, `
@@ -304,6 +294,30 @@
             ${updateLogger.title("h2", `BALANCE CHANGES`)}
             ${updateLogger.marginBlock(10, `
                 ${updateLogger.lineBlock(["Pantagruel and Gangantua: Increased lifesteal power", "Pascal: On Threshold Heal: Cooldown: 10 -> 5 seconds", "Pascal: Gray Damage Healing: 50 -> 25%", "White Heptagon: Suppression Limit: 2 -> 5", "Many other minor changes."])}
+            `)}
+        `)}
+    `);
+    updateLogger.newLog("V52 UPDATE NOTES (Feb 9, 2024)", `
+        ${updateLogger.marginBlock(10, `
+            ${updateLogger.lineBlock(["Updated Bluebell's Hanger", "New Shape(s): Dark Brown Pentagon and Magenta Hexagon", "New Weapon(s): Jaw and Talon", "New Map(s): Void and Rome"])}
+            ${updateLogger.title("h2", `NEW WEAPON(S): DARK BROWN PENTAGON and MAGENTA HEXAGON`)}
+            ${updateLogger.marginBlock(10, `
+                ${updateLogger.title("h3", `Magenta Hexagon:`)}
+                ${updateLogger.marginBlock(10, `
+                    Improved version of yellow hexagon.
+                `)}
+                ${updateLogger.title("h3", `Dark Brown Pentagon:`)}
+                ${updateLogger.marginBlock(10, `
+                    A shape that can place down turrets.
+                `)}
+            `)}
+            ${updateLogger.title("h2", `NEW WEAPON(S): JAW and TALON`)}
+            ${updateLogger.marginBlock(10, `
+                Homing rockets that emit rust and fragility effects.
+            `)}
+            ${updateLogger.title("h2", `BUG FIXES`)}
+            ${updateLogger.marginBlock(10, `
+                ${updateLogger.lineBlock(["Pascal: On Threshold Defense: 100 -> 200", "Tan Circle: Ability Cooldown: 6 -> 7 seconds", "Fixed Blue-Outlined Tan Circle from taking gray damage from DoT sources"])}
             `)}
         `)}
     `);
@@ -461,7 +475,10 @@
                     iconSource: data.ability.iconSource,
                     oldIconSource: data.ability.iconSource
                 };
-                if (data.ability.name == "Cannonier") {
+                if (data.ability.name == "Remote Assault") {
+                    this.ability.dmg = data.ability.damageData ? data.ability.damageData.base : data.ability.dmg;
+                    this.ability.lastingTime = data.ability.lastingTime;
+                } else if (data.ability.name == "Cannonier") {
                     this.ability.lastingTime = data.ability.lastingTime;
                     this.ability.additionalHealth = data.ability.additionalHealthData ? data.ability.additionalHealthData.base : data.ability.additionalHealth;
                 } else if (data.ability.name == "Support" || data.ability.name == "Long Shot") {
@@ -1401,15 +1418,15 @@
             Magnetic Field Range: 400PX<br>
             Speed Increase: +200%<br>
             Duration: 14 seconds<br>
-            Cooldown: 6 seconds
+            Cooldown: 7 seconds
             `,
             iconSource: "./images/abilities/stampede.png",
             damageData: {
                 base: 440,
                 level: [0, 270, 300, 330, 360, 390, 420, 450, 480, 510, 540, 570],
             },
-            lastingTime: 14e3,
-            reload: 6e3
+            lastingTime: 15e3,
+            reload: 8e3
         },
         hardpoints: {
             light: 3,
@@ -2431,6 +2448,99 @@
             heavy: 3
         },
         color: "#add8e6",
+        moduleHardpoints: 4,
+        costParts: true
+    }, {
+        dontSell: true,
+        tier: 3,
+        name: "Dark Brown Pentagon",
+        speed: 0.002,
+        speedLevel: [0, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0002, 0.0002, 0.0002, 0.0002, 0.0004],
+        scale: 65,
+        fieldOfViewMulti: 1.6,
+        desc: `
+        A shape armored with a powerful energy shield and a portable weapon that can be deployed anywhere in its field of view. Dark Brown Pentagon can suppress or demotivate enemies from going into areas.<br><br>
+        Recommended Equipment: x3 Talon / x3 Tumultus
+        `,
+        healthData: {
+            base: 69e3,
+            level: [0, 2e3, 2e3, 3e3, 3e3, 4e3, 4e3, 4e3, 5e3, 6e3, 8e3, 10e3],
+        },
+        ability: {
+            name: "Remote Assault",
+            desc: `
+            <span style="font-width: bolder; color: #fff;">Remote Assault</span> The shape deploys its built-in turret to where the cursor is at.<br><br>
+            When the turret is deployed, it applies slowdown effect to the enemy.<br><br>
+            Turret Fire Rate: 100 ms<br>
+            Turret Fire Rate (undeployed): 150 ms<br>
+            Turret Range: 2300 PX<br>
+            Duration: 15 seconds<br>
+            Movement Speed Increase: 100%<br>
+            Cooldown: 6 seconds
+            `,
+            iconSource: "./images/weapons/landslide.png",
+            damageData: {
+                base: 600,
+                level: [0, 30, 30, 30, 60, 60, 60, 60, 60, 120, 120, 120]
+            },
+            lastingTime: 15e3,
+            reload: 6e3
+        },
+        shieldData: {
+            type: "yellow",
+            base: 45500,
+            level: [0, 650, 650, 1300, 1300, 1300, 1300, 2600, 2600, 3900, 5200, 10400],
+            regen: 0.15
+        },
+        hardpoints: {
+            light: 0,
+            heavy: 3
+        },
+        color: "#452200",
+        moduleHardpoints: 4,
+        costParts: true
+    }, {
+        dontSell: true,
+        tier: 4,
+        name: "Magenta Hexagon",
+        speed: 0.001,
+        speedLevel: [0, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0002, 0.0002],
+        scale: 95,
+        fieldOfViewMulti: 1.6,
+        desc: `
+        Next generation of the Yellow Hexagon. Hexagon Industries has improved their tech once again. This shape does everything Yellow Hexagon can, but even better!<br><br>
+        Recommended Equipment: x2 Vajra + x1 Maha Vajra / x2 Shatter + x1 Brisant
+        `,
+        builtInDefensePoints: 100,
+        healthData: {
+            base: 105e3,
+            level: [0, 5e3, 5e3, 10e3, 10e3, 10e3, 15e3, 20e3, 20e3, 30e3, 40e3, 80e3],
+        },
+        healingMulti: 1.25,
+        ability: {
+            name: "Phase Shift",
+            desc: `
+            <span style="font-width: bolder; color: #fff;">Phase Shift</span> The shape activates a powerful matrix that allows it not to take any damage. Negative effects are all nullfied during the ability.<br><br>
+            Also upon activation, the shape bonds with the nearest enemy, slowing them down. After the bond ends, it does percentage based damage to the enemy.<br><br>
+            Damage Percentage: 10%<br>
+            Bond Duration: 6 seconds<br>
+            Bond Range: 1500 PX<br>
+            Healing: 200% of damage done with bond<br>
+            Duration: 3 seconds<br>
+            Max Charges: 2<br>
+            Speed Increase: 80%<br>
+            Cooldown (per charge): 8 seconds
+            `,
+            iconSource: "./images/abilities/phase_shift.png",
+            charges: 2,
+            lastingTime: 3e3,
+            reload: 8e3
+        },
+        hardpoints: {
+            light: 2,
+            heavy: 1
+        },
+        color: "#ff00ff",
         moduleHardpoints: 4,
         costParts: true
     }];
@@ -3998,6 +4108,60 @@
             gold: 200e3,
             workshopPoints: 100e3
         }
+    }, {
+        tier: 3,
+        industryName: "Heptagon",
+        name: "Talon",
+        type: "Heavy",
+        projType: "rocket",
+        desc: `
+        A heavy rocket weapon that shoots smart homing rockets that deal aoe damage.
+        When enemies are directly hit,
+        it applies rust (2%) and fragility (2%) effects to the enemies.
+        Effects last for 10 seconds.
+        `,
+        damageData: {
+            base: 1e3,
+            level: [0, 200, 200, 200, 300, 350, 500, 550, 550, 550, 667, 888]
+        },
+        aoeRange: 120,
+        imageSource: "./images/weapons/talon.png",
+        fireRate: 300,
+        ammo: 30,
+        reload: 5e3,
+        range: 1800,
+        cost: {
+            sliver: 5e6,
+            gold: 5e3,
+            workshopPoints: 5e3
+        }
+    }, {
+        tier: 3,
+        industryName: "Heptagon",
+        name: "Jaw",
+        type: "Light",
+        projType: "rocket",
+        desc: `
+        A light rocket weapon that shoots smart homing rockets that deal aoe damage.
+        When enemies are directly hit,
+        it applies rust (2%) and fragility (2%) effects to the enemies.
+        Effects last for 10 seconds.
+        `,
+        damageData: {
+            base: 500,
+            level: [0, 100, 100, 100, 150, 175, 250, 275, 275, 275, 334, 444]
+        },
+        aoeRange: 120,
+        imageSource: "./images/weapons/jaw.png",
+        fireRate: 300,
+        ammo: 30,
+        reload: 5e3,
+        range: 1800,
+        cost: {
+            sliver: 5e6,
+            gold: 5e3,
+            workshopPoints: 5e3
+        }
     }];
     class module {
         constructor(data, ownerSID = null, slot = null) {
@@ -4858,7 +5022,6 @@
         let box = width / 3;
         let top = ((window.innerHeight - 220) / 2) - ((box - 40) / 2);
         let size = box - 40;
-        console.log(doLeagueThingyMath(player.league));
         document.getElementById("sideDisplay").innerHTML = `
         <h1 style="width: 100%; text-align: center;">Profile</h1><hr>
         <div id="stats" style="position: absolute; top: ${top}px; left: ${window.innerWidth / 2 - ((box - 40) / 2)}px; width: ${box - 40}px; height: ${box - 40}px; border-radius: 6px; background-color: rgb(0, 0, 0, .25); overflow-x: scroll;">
@@ -5447,8 +5610,10 @@
                                 let theSkill = new skill(Skill, e.slot, {
                                     name: e.robotOwner
                                 });
-                                for (let t = 0; t < e.level - 1; t++) {
-                                    upgradePilotSkill(theSkill);
+                                if (!theSkill.getAbilityBackAtHalfHealth) {
+                                    for (let t = 0; t < e.level - 1; t++) {
+                                        upgradePilotSkill(theSkill);
+                                    }
                                 }
                                 thePilot.skills.push(theSkill);
                             }
@@ -5559,7 +5724,6 @@
         };
         workshopQueue = [];
         tasks = [];
-        microchips = [];
         player = {
             sliver: 200e3,
             gold: 250,
@@ -5728,6 +5892,14 @@
                     document.getElementById(item + "_thingy").style.display = item == tabs[i] ? "block" : "none";
                     document.getElementById(`tab${item}`).style = `${item == tabs[i] ? "" : "cursor: pointer;"} width: 100%; height: 25px; font-size: 17px; color: ${item == tabs[i] ? "#000" : "#fff"}; background-color: ${item == tabs[i] ? "rgb(255, 255, 255, .6)" : index % 2 == 0 ? "rgb(0, 0, 0, .1)" : "rgb(0, 0, 0, .2)"};`;
                 });
+            }
+        }
+        document.getElementById("resetProgress").onclick = function() {
+            if (document.getElementById("verify").checked) {
+                resetAllAccountStats();
+                setTimeout(() => {
+                    location.reload();
+                }, 500);
             }
         }
         document.getElementById("sellItems_").onclick = function () {
@@ -7431,6 +7603,7 @@
         document.getElementById("Upgrade").onclick = function () {
             document.body.appendChild(document.getElementById("moneyDisplay"));
             let weapon = player.modules.find(e => e.name == Weapon.name && (Weapon.amount == "main" ? shape.sid == e.owner && e.slot == slot : !e.owner) && e.level == Weapon.level);
+            if (!weapon) return;
             let adjustwidth = window.innerWidth * .75;
             document.getElementById("upgradeMenu").style.display = "block";
             document.getElementById("upgradeMenu").innerHTML = `
@@ -7994,6 +8167,9 @@
                             x: 1980 * robot.fieldOfViewMulti,
                             y: 1080 * robot.fieldOfViewMulti
                         };
+                        if (players[0].oldIndex > 0 && !players[0].robots[players[0].oldIndex].dead) {
+                            addLogger({ name: "Game" }, null, player);
+                        }
                         players[0].oldIndex = i;
                         players[0].robotIndex = i;
                         robot.USED = true;
@@ -8124,103 +8300,199 @@
         "modules": [
             "Nuclear Amplifier",
             "Nuclear Amplifier",
-            "Last Stand",
-            "Balance Unit"
+            "Repair Amplifier",
+            "Last Stand"
         ],
-        "drone": "Pascal"
+        "drone": "Kestrel",
+        "pilotName": "Eleanor Thorne",
+        "skills": [
+            "Thorne's Precision",
+            "Armor Expert",
+            "Thrill Hunter",
+            "Thrill Seeker",
+            "Master Gunsmith",
+            "Wonderworker",
+            "Stubborn Warrior",
+            "Mechanic"
+        ],
+        "activeModuleIndex": 2
     }, {
-        "name": "Gold Circle",
+        "name": "Light Blue Heptagon",
         "weapons": {
             "heavy": "Tumultus",
             "light": "Discordia"
         },
         "modules": [
             "Repair Amplifier",
-            "Repair Amplifier",
-            "Last Stand",
+            "Nuclear Amplifier",
             "Immune Amplifier",
-            "Damage Controller",
-            "Nuclear Amplifier"
+            "Last Stand"
         ],
-        "drone": "Pascal"
+        "drone": "Pascal",
+        "pilotName": "Sebastian Wren",
+        "skills": [
+            "Sebastian's Fortitude",
+            "Armor Expert",
+            "Road Hog",
+            "Tough Guy",
+            "Stubborn Warrior",
+            "Mechanic",
+            "Cautious Pilot",
+            "Wonderworker"
+        ],
+        "activeModuleIndex": 3
     }, {
-        "name": "Purple Heptagon",
+        "name": "Blue-Outlined Tan Circle",
         "weapons": {
-            "heavy": "Tonans",
+            "heavy": "Gangantua",
+            "light": "Pantagruel"
+        },
+        "modules": [
+            "Repair Amplifier",
+            "Nuclear Amplifier",
+            "Immune Amplifier",
+            "Last Stand"
+        ],
+        "drone": "Kestrel",
+        "pilotName": "Mosi Kristoffer",
+        "skills": [
+            "Mosi's Stampede",
+            "Armor Expert",
+            "Cautious Pilot",
+            "Stubborn Warrior",
+            "Tough Guy",
+            "Deft Survivor",
+            "Wonderworker",
+            "Mechanic"
+        ],
+        "activeModuleIndex": 3
+    }, {
+        "name": "Magenta Hexagon",
+        "weapons": {
+            "heavy": "Maha Vajra",
+            "light": "Vajra"
+        },
+        "modules": [
+            "Repair Amplifier",
+            "Nuclear Amplifier",
+            "Immune Amplifier",
+            "Last Stand"
+        ],
+        "drone": "Kestrel",
+        "pilotName": "Indra",
+        "skills": [
+            "Indra's Prowess",
+            "Deft Survivor",
+            "Cautious Pilot",
+            "Wonderworker",
+            "Armor Expert",
+            "Mechanic",
+            "Stubborn Warrior",
+            "Tough Guy"
+        ],
+        "activeModuleIndex": 3
+    }, {
+        "name": "Blue-Outlined Tan Circle",
+        "weapons": {
+            "heavy": "Gangantua",
+            "light": "Pantagruel"
+        },
+        "modules": [
+            "Repair Amplifier",
+            "Nuclear Amplifier",
+            "Immune Amplifier",
+            "Immune Amplifier"
+        ],
+        "drone": "Hiruko",
+        "pilotName": "Mosi Kristoffer",
+        "skills": [
+            "Mosi's Stampede",
+            "Mechanic",
+            "Deft Survivor",
+            "Armor Expert",
+            "Tough Guy",
+            "Cautious Pilot",
+            "Stubborn Warrior",
+            "Wonderworker"
+        ],
+        "activeModuleIndex": 3
+    }, {
+        "name": "Magenta Circle",
+        "weapons": {
+            "heavy": "Shocker",
             "light": "Fulgur"
         },
         "modules": [
-            "Nuclear Amplifier",
-            "Nuclear Amplifier",
             "Last Stand",
+            "Nuclear Amplifier",
+            "Nuclear Amplifier",
             "Balance Unit"
         ],
-        "drone": "Pascal"
-    }, {
-        "name": "Tan Circle",
-        "weapons": {
-            "heavy": "Brisant",
-            "light": "Shatter"
-        },
-        "modules": [
-            "Repair Amplifier",
-            "Repair Amplifier",
-            "Nuclear Amplifier"
+        "drone": "Kestrel",
+        "pilotName": "Everest Oded",
+        "skills": [
+            "Everest's Knowhow",
+            "Armor Expert",
+            "Mechanic",
+            "Master Gunsmith",
+            "Deft Survivor",
+            "Thrill Hunter",
+            "Thrill Seeker",
+            "Destroyer"
         ],
-        "drone": "Hiruko"
+        "activeModuleIndex": 3
     }, {
-        "name": "Ultimate Green Circle",
+        "name": "White Heptagon",
         "weapons": {
-            "heavy": "Veyron",
-            "light": "null"
+            "heavy": "Maha Vajra",
+            "light": "Vajra"
         },
         "modules": [
-            "Last Stand",
             "Repair Amplifier",
+            "Nuclear Amplifier",
             "Immune Amplifier",
-            "Nuclear Amplifier"
-        ],
-        "drone": "Pascal"
-    }, {
-        "name": "Ultimate Green Circle",
-        "weapons": {
-            "heavy": "Trickster",
-            "light": "null"
-        },
-        "modules": [
-            "Last Stand",
-            "Repair Amplifier",
-            "Nuclear Amplifier"
-        ],
-        "drone": "Beak"
-    }, {
-        "name": "Tan Circle",
-        "weapons": {
-            "heavy": "Brisant",
-            "light": "Shatter"
-        },
-        "modules": [
-            "Immune Amplifier",
-            "Repair Amplifier",
-            "Repair Amplifier",
-            "Nuclear Amplifier"
-        ],
-        "drone": "Hiruko"
-    }, {
-        "name": "Gold Circle",
-        "weapons": {
-            "heavy": "Veyron",
-            "light": "Evora"
-        },
-        "modules": [
-            "Repair Amplifier",
-            "Repair Amplifier",
-            "Last Stand",
             "Immune Amplifier",
             "Damage Controller",
-            "Nuclear Amplifier"
+            "Damage Controller"
         ],
-        "drone": "Pascal"
+        "drone": "Pascal",
+        "pilotName": "Everest Oded",
+        "skills": [
+            "Everest's Knowhow",
+            "Stubborn Warrior",
+            "Cautious Pilot",
+            "Wonderworker",
+            "Armor Expert",
+            "Tough Guy",
+            "Mechanic",
+            "Defense Expert"
+        ],
+        "activeModuleIndex": 3
+    }, {
+        "name": "Cyan Hexagon",
+        "weapons": {
+            "heavy": "Veyron",
+            "light": "Punisher"
+        },
+        "modules": [
+            "Repair Amplifier",
+            "Nuclear Amplifier",
+            "Immune Amplifier",
+            "Last Stand"
+        ],
+        "drone": "Pascal",
+        "pilotName": "Elijah Forge",
+        "skills": [
+            "Forge's Breakthrough",
+            "Road Hog",
+            "Mechanic",
+            "Wonderworker",
+            "Destroyer",
+            "Armor Expert",
+            "Tough Guy",
+            "Deft Survivor"
+        ],
+        "activeModuleIndex": 2
     }];
     function leagueToTier(type) {
         let league = player.league;
@@ -8463,9 +8735,14 @@
         if (skill.healthIncrease) {
             statAdjustments.health += skill.healthIncrease;
         }
+        if (skill.getAbilityBackAtHalfHealth) {
+            robot.canGetAbilityBackAtHalfHealth = true;
+        }
         if (skill.chargeIncrease) {
             if (skill.name == "Forge's Breakthrough") {
                 robot.ability.reload *= .8;
+            } else if (skill.name == "Indra's Prowess") {
+                robot.builtInDefensePoints += 50;
             }
             robot.ability.maxcharge += skill.chargeIncrease;
             robot.ability.charges += skill.chargeIncrease;
@@ -8772,7 +9049,6 @@
                         for (let t = 0; t < level; t++) {
                             upgradeWeapon(tmpWeapon, null, null, true);
                         }
-                        tmpWeapon.fireRateDecrease = 0;
                         for (let i = 0; i < orginalRobot.hardpoints.heavy; i++) {
                             let newWeapon = new weapon(tmpWeapon);
                             newWeapon.level = tmpWeapon.level;
@@ -8858,7 +9134,7 @@
                 let amount = gameMode == 4 ? 9 : 11;
                 let did = false;
                 let allBluebell = false;
-                if (gameMode != 4 && player.league >= 5e3 && Math.random() < .35) {
+                if (gameMode != 4 && player.league >= 5e3 && Math.random() < .25) {
                     allBluebell = true;
                 }
                 let index = 1;
@@ -8907,7 +9183,6 @@
                                 for (let t = 0; t < level; t++) {
                                     upgradeWeapon(tmpWeapon, null, null, true);
                                 }
-                                tmpWeapon.fireRateDecrease = 0;
                                 for (let i = 0; i < orginalRobot.hardpoints.heavy; i++) {
                                     let newWeapon = new weapon(tmpWeapon);
                                     newWeapon.level = tmpWeapon.level;
@@ -8952,7 +9227,26 @@
                                 }
                                 DDrone = Drone;
                             }
-                            players[1 + tt].robots.push(setUpBotData(orginalRobot, weapons, modules, [], isAlly, gameMode, spawnLocations, true, DDrone));
+                            let pilotInfo = [];
+                            if (data.pilotName) {
+                                let Pilot = new pilot(pilotsData.find(e => e.name == data.pilotName));
+                                if (data.skills) {
+                                    for (let ii = 0; ii < data.skills.length; ii++) {
+                                        let skillName = data.skills[ii];
+                                        let skilldata = pilotSkillList.find(e => e.name == skillName);
+                                        if (skilldata) {
+                                            let newSkill = new skill(skilldata, null, orginalRobot);
+                                            for (let f = 0; f < 3; f++) {
+                                                upgradePilotSkill(newSkill);
+                                            }
+                                            Pilot.skills.push(newSkill);
+                                        }
+                                    }
+                                }
+                                pilotInfo = Pilot;
+                            }
+                            orginalRobot.activeModuleIndex = data.activeModuleIndex;
+                            players[1 + tt].robots.push(setUpBotData(orginalRobot, weapons, modules, pilotInfo, isAlly, gameMode, spawnLocations, true, DDrone));
                         } else {
                             let tier = leagueToTier() - 1;
                             let weapont = leagueToTier("weapon") - 1;
@@ -9065,25 +9359,27 @@
                 let middleY = building.y + (building.height / 2);
                 let onlyDir1 = ((building.y + height >= mapInfo.y - 50) ? -(Math.PI / 2) : (building.y <= 50) ? Math.PI / 2 : null);
                 let onlyDir2 = ((building.x + width >= mapInfo.x - 50) ? Math.PI : (building.x <= 50) ? 0 : null);
-                if (building.x - 30 > 0) {
+                //building.onlyDir_up_down: 1 - left, 2 - right
+                //building.onlyDir_left_right: 1 - top, 2 - bottom
+                if (building.x - 30 > 0 && !building.noUpDown) {
                     buildings.push({
                         name: "coll rect",
                         x: building.x - 30,
-                        y: building.y - 50,
-                        onlyDir: building.onlyDir_up_down || onlyDir1,
+                        y: building.y + 15,
+                        onlyDir: building.onlyDir_up_down1 || building.onlyDir_up_down || onlyDir1,
                         middleY: middleY,
-                        height: height + 50,
+                        height: height - 30,
                         width: 30
                     });
                 }
-                if (building.x + width + 30 < mapInfo.x) {
+                if (building.x + width + 30 < mapInfo.x && !building.noUpDown) {
                     buildings.push({
                         name: "coll rect",
                         x: building.x + width,
-                        y: building.y - 50,
+                        y: building.y + 15,
                         middleY: middleY,
-                        onlyDir: building.onlyDir_up_down || onlyDir1,
-                        height: height + 50,
+                        onlyDir: building.onlyDir_up_down2 || building.onlyDir_up_down0 || onlyDir1,
+                        height: height - 30,
                         width: 30
                     });
                 }
@@ -9093,7 +9389,7 @@
                         x: building.x,
                         y: building.y - 30,
                         middleX: middleX,
-                        onlyDir: building.onlyDir_left_right || onlyDir2,
+                        onlyDir: building.onlyDir_left_right1 || building.onlyDir_left_right || onlyDir2,
                         height: 30,
                         width: width
                     });
@@ -9104,7 +9400,7 @@
                         x: building.x,
                         y: building.y + height,
                         middleX: middleX,
-                        onlyDir: building.onlyDir_left_right || onlyDir2,
+                        onlyDir: building.onlyDir_left_right2 || building.onlyDir_left_right || onlyDir2,
                         height: 30,
                         width: width
                     });
@@ -9294,6 +9590,260 @@
                 width: 200,
                 height: 1500
             });
+        } else if (mapID == 1 && !noBeacons.includes(player.gameMode)) {
+            buildings.push({
+                name: "beacon",
+                antiAvoid: true,
+                x: mapInfo.x / 2,
+                y: mapInfo.y / 4
+            });
+            buildings.push({
+                name: "beacon",
+                antiAvoid: true,
+                x: mapInfo.x / 2,
+                y: mapInfo.y / 2
+            });
+            buildings.push({
+                name: "beacon",
+                antiAvoid: true,
+                x: mapInfo.x / 2,
+                y: (mapInfo.y / 4) * 3
+            });
+            buildings.push({
+                name: "beacon",
+                antiAvoid: true,
+                x: mapInfo.x / 4,
+                y: mapInfo.y / 2
+            });
+            buildings.push({
+                name: "beacon",
+                antiAvoid: true,
+                x: (mapInfo.x / 4) * 3,
+                y: mapInfo.y / 2
+            });
+        } else if (mapID == 2) {
+            if (!noBeacons.includes(player.gameMode)) {
+                buildings.push({
+                    name: "beacon",
+                    antiAvoid: true,
+                    x: 6750,
+                    y: 2250
+                });
+                buildings.push({
+                    name: "beacon",
+                    antiAvoid: true,
+                    x: 2e3,
+                    y: mapInfo.y / 2
+                });
+                buildings.push({
+                    name: "beacon",
+                    antiAvoid: true,
+                    x: mapInfo.x / 2,
+                    y: mapInfo.y / 2
+                });
+                buildings.push({
+                    name: "beacon",
+                    antiAvoid: true,
+                    x: (mapInfo.x / 6) * 5,
+                    y: mapInfo.y / 2
+                });
+                buildings.push({
+                    name: "beacon",
+                    antiAvoid: true,
+                    x: 6750,
+                    y: mapInfo.y - 2250
+                });
+            }
+            //left
+            buildings.push({
+                name: "wall rect",
+                width: 1500,
+                height: 400,
+                x: 300,
+                y: mapInfo.y / 2 - 200
+            });
+            buildings.push({
+                name: "wall rect",
+                width: 500,
+                height: 200,
+                x: 2e3 - 250,
+                y: mapInfo.y / 2 - 1e3
+            });
+            buildings.push({
+                name: "wall rect",
+                width: 500,
+                height: 200,
+                x: 2e3 - 250,
+                y: mapInfo.y / 2 + 800
+            });
+            //middle
+            buildings.push({
+                name: "wall rect",
+                width: 2e3,
+                height: 200,
+                noUpDown: true,
+                x: mapInfo.x / 2 - 1e3,
+                y: mapInfo.y / 2 - 800
+            });
+            buildings.push({
+                name: "wall rect",
+                width: 2e3,
+                height: 200,
+                noUpDown: true,
+                x: mapInfo.x / 2 - 1e3,
+                y: mapInfo.y / 2 + 800
+            });
+            buildings.push({
+                name: "wall rect",
+                onlyDir_left_right: Math.PI,
+                onlyDir_up_down2: Math.PI / 2,
+                width: 200,
+                height: 650,
+                x: mapInfo.x / 2 - 1200,
+                y: mapInfo.y / 2 - 800
+            });
+            buildings.push({
+                name: "wall rect",
+                onlyDir_left_right: Math.PI,
+                onlyDir_up_down2: -Math.PI / 2,
+                width: 200,
+                height: 650,
+                x: mapInfo.x / 2 - 1200,
+                y: mapInfo.y / 2 + 350
+            });
+            buildings.push({
+                name: "wall rect",
+                onlyDir_left_right: 0.000000001,
+                onlyDir_up_down1: Math.PI / 2,
+                width: 200,
+                height: 650,
+                x: mapInfo.x / 2 + 1e3,
+                y: mapInfo.y / 2 - 800
+            });
+            buildings.push({
+                name: "wall rect",
+                onlyDir_left_right: 0.000000001,
+                onlyDir_up_down1: -Math.PI / 2,
+                width: 200,
+                height: 650,
+                x: mapInfo.x / 2 + 1e3,
+                y: mapInfo.y / 2 + 350
+            });
+            //city locatino:
+            let x_1 = ((mapInfo.x / 6) * 5) - 1e3;
+            buildings.push({
+                name: "wall rect",
+                width: 300,
+                height: 1500,
+                x: x_1,
+                y: mapInfo.y / 2 - 750
+            });
+            buildings.push({
+                name: "wall rect",
+                width: 600,
+                height: 600,
+                x: x_1,
+                y: mapInfo.y / 2 - 1750
+            });
+            buildings.push({
+                name: "wall rect",
+                width: 600,
+                height: 600,
+                x: x_1,
+                y: mapInfo.y / 2 + 1250
+            });
+            buildings.push({
+                name: "wall rect",
+                width: mapInfo.x - (x_1 + 1e3),
+                height: 600,
+                x: x_1 + 1e3,
+                y: mapInfo.y / 2 + 1250
+            });
+            buildings.push({
+                name: "wall rect",
+                width: mapInfo.x - (x_1 + 1200),
+                height: 600,
+                x: x_1 + 1e3,
+                y: 3600
+            });
+            buildings.push({
+                name: "wall rect",
+                width: 500,
+                height: 500,
+                x: mapInfo.x - 900,
+                y: mapInfo.y / 2 + 350
+            });
+            buildings.push({
+                name: "wall rect",
+                width: 500,
+                height: 500,
+                x: mapInfo.x - 900,
+                y: mapInfo.y / 2 - 550
+            });
+            buildings.push({
+                name: "wall rect",
+                width: 500,
+                height: 500,
+                x: 8600 - 250,
+                y: 5e3 - 250
+            });
+            //a beacon:
+            buildings.push({
+                width: 1500,
+                height: 250,
+                name: "wall rect",
+                x: 6000,
+                y: 1500
+            });
+            buildings.push({
+                width: 250,
+                height: 1e3,
+                name: "wall rect",
+                x: 5800,
+                y: 2150
+            });
+            buildings.push({
+                width: 250,
+                height: 1e3,
+                name: "wall rect",
+                x: 7500,
+                y: 2150
+            });
+            //e beacon:
+            buildings.push({
+                width: 1500,
+                height: 250,
+                name: "wall rect",
+                x: 6000,
+                y: 10250
+            });
+            buildings.push({
+                width: 250,
+                height: 1e3,
+                name: "wall rect",
+                x: 5800,
+                y: 8850
+            });
+            buildings.push({
+                width: 250,
+                height: 1e3,
+                name: "wall rect",
+                x: 7500,
+                y: 8850
+            });
+            buildings.push({
+                width: 2e3,
+                height: 250,
+                name: "wall rect",
+                x: 1200,
+                y: 8e3
+            });
+            buildings.push({
+                name: "pond",
+                x: 0,
+                y: 0,
+                scale: 4e3
+            });
         }
         setUpCollisionBlocks();
     }
@@ -9302,10 +9852,21 @@
         name: "Space Shuttle",
         x: 12500,
         y: 6e3
+    }, {
+        id: 1,
+        name: "Void",
+        x: 6e3,
+        y: 6e3
+    }, {
+        id: 2,
+        name: "Rome",
+        x: 10e3,
+        y: 12e3
     }];
     function buildMap() {
         let map = mapInfoData[Math.floor(Math.random() * mapInfoData.length)];
         let spawnid = Math.randInt(0, 1);
+        document.getElementById("mapName").style.color = map.id == 1 ? "#fff" : "#000";
         document.getElementById("mapName").innerHTML = `Map: ${map.name}${player.gameMode == 3 ? "" : ` (ID: ${spawnid})`}`;
         let spawnLocations = [];
         mapInfo.x = map.x;
@@ -9319,6 +9880,14 @@
                 x: mapInfo.x - 250,
                 y: mapInfo.y / 2
             }]
+        } else {
+            spawnLocations = [{
+                x: mapInfo.x / 2,
+                y: 1e3
+            }, {
+                x: mapInfo.x / 2,
+                y: mapInfo.y - 1e3
+            }];
         }
         return [spawnLocations, spawnid];
     }
@@ -10096,6 +10665,19 @@
             desc: "Light Blue Heptagon gains additional health during flight.",
             additionalHealth: 175e3
         }
+    }, {
+        tier: 3,
+        name: "Indra",
+        story: [],
+        industryName: "Hexagon",
+        legendarySkill: {
+            name: "Indra's Prowess",
+            main: "chargeIncrease",
+            onlyFor: "Magenta Hexagon",
+            imageSource: "./images/abilities/shapeshift.png",
+            desc: "Magenta Hexagon has increased ability charges and gains extra defense points (50).",
+            chargeIncrease: 2
+        }
     }];
     class skill {
         constructor(data, slot, robot) {
@@ -10121,6 +10703,10 @@
             this.increaseDurationOfPositiveEffects = data.increaseDurationOfPositiveEffectsData ? data.increaseDurationOfPositiveEffectsData[0] : data.increaseDurationOfPositiveEffects;
             this.extraAbilityDamage = data.extraAbilityDamageData ? data.extraAbilityDamageData[0] : data.extraAbilityDamage;
             this.extraShieldHealth = data.extraShieldHealthData ? data.extraShieldHealthData[0] : data.extraShieldHealth;
+            this.getAbilityBackAtHalfHealth = data.getAbilityBackAtHalfHealth;
+            if (this.getAbilityBackAtHalfHealth) {
+                this.level = 4;
+            }
         }
     }
     var SKILLLSKDAJIOSDJASJOIDJOISDJ = skill;
@@ -10255,6 +10841,13 @@
         main: "speedIncrease",
         speedIncreaseData: [.025, .05, .1, .15],
         healthIncreaseData: [-.1, -.1, -.1, -.1]
+    }, {
+        name: "Deft Survivor",
+        desc: "The shape gains its ability (or a charge) back when it reaches 50% durability. Can only be used once, and isn't affected when leveled up.",
+        main: "getAbilityBackAtHalfHealth",
+        imageSource: "./images/abilities/shapeshift.png",
+        needAbility: true,
+        getAbilityBackAtHalfHealth: 1
     }];
     function displayActiveSkills(pilot, robot) {
         if (!pilot) return 0;
@@ -11193,12 +11786,18 @@
                         obj.defenseIncrease = _.defenseIncreaseData ? _.defenseIncreaseData.base : _.defenseIncrease;
                     } else if (obj.name == "On Kill: Damage") {
                         obj.onKillDamage = _.onKillDamageData ? _.onKillDamageData.base : _.onKillDamage;
+                    } else if (obj.name == "On Kill: Speed") {
+                        obj.onKillSpeed = _.onKillSpeedData ? _.onKillSpeed.base : _.onKillSpeed;
+                    } else if (obj.name == "On Kill: Fix") {
+                        obj.grayDamageHeal_p = _.grayDamageHeal_pData ? _.grayDamageHeal_pData.base : _.grayDamageHeal_p;
+                        obj.onKillFix = _.onKillFixData ? _.onKillFixData.base : _.onKillFix;
                     } else if (_.weapon) {
                         obj.weapon = true;
                         obj.reload = _.reload;
                         obj.range = _.range;
                         obj.spread = _.spread;
                         obj.dmg = _.damageData ? _.damageData.base : _.dmg;
+                        obj.deathmark = _.deathmarkData ? _.deathmarkData.base : _.deathmark;
                     } else if (obj.name == "On Module Use: More Durability With DOT") {
                         obj.dmg = 1;
                     } else if (obj.name == "Additional Damage Depending DoT") {
@@ -11489,7 +12088,7 @@
             reload: 5e3,
             icon: "./images/modules/heavy_armor_plating.png",
             main: "defenseIncrease",
-            defenseIncrease: 100
+            defenseIncrease: 200
         }]
     }, {
         tier: 4,
@@ -11504,7 +12103,7 @@
         abilities: [{
             weapon: true,
             name: "Imitating Frag Shotgun",
-            desc: "Miniature version.",
+            desc: "Miniature version of the well known cluster shotgun: Brisant.",
             icon: "./images/weapons/shatter.png",
             main: "dmg",
             spread: 15,
@@ -11543,6 +12142,67 @@
             main: "dmgDependingDoT",
             dmgDependingDoT: .005
         }]
+    }, {
+        tier: 4,
+        industryName: "Triangle",
+        name: "Kestrel",
+        desc: "",
+        visualData: {
+            scale: 35,
+            color: "#ffff00",
+            name: "Triangle"
+        },
+        abilities: [{
+            weapon: true,
+            name: "Deathmark Affector",
+            desc: "The drone fires a energy shell that affects enemies with the Deathmark effect for 15 seconds.",
+            icon: "./images/modules/nuclear_amplifier.png",
+            main: ["deathmark", "dmg"],
+            reload: 2e3,
+            range: 2e3,
+            damageData: {
+                base: 200,
+                level: [0, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100]
+            },
+            deathmarkData: {
+                base: .05,
+                level: [0, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.02, 0.02, 0.02, 0.02, 0.03]
+            }
+        }, {
+            name: "On Deployment: Damage",
+            desc: "Increases the shape's weapon damage output by X%.",
+            unlockAtLevel: 4,
+            icon: "./images/modules/nuclear_reactor.png",
+            main: "dmgIncrease",
+            dmgIncrease: .07
+        }, {
+            name: "On Deployment: Damage",
+            desc: "Increases the shape's weapon damage output by X%.",
+            unlockAtLevel: 9,
+            icon: "./images/modules/nuclear_reactor.png",
+            main: "dmgIncrease",
+            dmgIncrease: .07
+        }, {
+            name: "On Kill: Speed",
+            desc: "Upon getting a kill, the shape gets increased movement speed for the rest of the match.",
+            unlockAtLevel: 12,
+            reload: 5e3,
+            limit: 5,
+            icon: {
+                name: "speed"
+            },
+            main: "onKillSpeed",
+            onKillSpeed: .2
+        }, {
+            name: "On Kill: Fix",
+            desc: "Upon getting a kill, the shape repairs a part of its durability and restores some gray damage.",
+            unlockAtLevel: 15,
+            reload: 5e3,
+            icon: "./images/modules/self_fix_unit.png",
+            main: "onKillFix",
+            onKillFix: .17,
+            grayDamageHeal_p: .5
+        }]
     }];
     var DRONEAJDOIASJDISAOJDAOSDJ = drone;
     function upgradeDrone(drone, currentIndex, drones, noEz, isBOT, shape, inInventory) {
@@ -11551,7 +12211,9 @@
             let ab1 = Drone.abilities[0];
             if (typeof ab1.main == "object") {
                 ab1.main.forEach(e => {
-                    let dataLocation = e + "Data";
+                    let main = e;
+                    if (main == "dmg") main = "damage";
+                    let dataLocation = main + "Data";
                     let numbers = ab1[dataLocation];
                     if (numbers && numbers.level[drone.level]) {
                         drone.abilities[0][e] += numbers.level[drone.level];
@@ -11582,18 +12244,18 @@
         if (!noEz) updateSlots();
         if (!noEz) saveGameData();
     }
-    function getStylesForBarD(value, name) {
+    function getStylesForBarD(value, name, name2) {
         if (name == "On Mild Damage: Fix" || name == "On High Damage: Fix") {
             return abbreviateNumber(value);
-        } else if (name == "Additional Damage Depending DoT" || name == "On Deployment: Durability" || name == "On Deployment: Damage" || name == "On Kill: Damage") {
+        } else if (name == "On Kill: Fix" || name == "Additional Damage Depending DoT" || name == "On Deployment: Durability" || name == "On Deployment: Damage" || name == "On Kill: Damage") {
             return (value * 100).toFixed(1) + "%";
         } else if (name.includes("On High Damage: [") || name.includes("On Low Durability: [") || name.includes("On Mild Damage: [")) {
             return abbreviateNumber(value);
         } else if (name == "On First Hit: Stealth") {
             return (value / 1000) + " seconds";
-        } else if (name == "On Threshold: Fix%") {
+        } else if (name == "On Threshold: Fix%" || name2 == "Deathmark Power" || name == "On Kill: Speed") {
             return (value * 100).toFixed(1) + "%";
-        } else if (name == "Imitating Frag Shotgun") {
+        } else if (name == "Imitating Frag Shotgun" || name == "Deathmark Affector") {
             return abbreviateNumber(value);
         } else {
             return value;
@@ -11601,7 +12263,9 @@
     }
     var mainTextToCommonDisplay = {
         "healPower": "Healing Power",
-        "grayDamageHeal_p": "Gray Damage Heal"
+        "grayDamageHeal_p": "Gray Damage Heal",
+        "dmg": "Damage",
+        "deathmark": "Deathmark Power"
     };
     function enterBarForDrone(name, index, data, level) {
         let text = "";
@@ -11609,7 +12273,9 @@
         let Data = Drone.abilities[index];
         if (typeof Data.main == "object") {
             Data.main.forEach(e => {
-                let dataLocation = e + "Data";
+                let main = e;
+                if (main == "dmg") main = "damage";
+                let dataLocation = main + "Data";
                 let numbers = Data[dataLocation];
                 let currentNumber = data[e];
                 let maxwidth = window.innerWidth >= 1442 ? 500 : window.innerWidth >= 1374 ? 450 : window.innerWidth >= 1311 ? 400 : window.innerWidth >= 1245 ? 350 : window.innerWidth >= 1182 ? 300 : 250;
@@ -11621,9 +12287,9 @@
                 let indexAdjusted = (((Math.abs(currentNumber) + Math.abs(numbers.level[level])) / maxdmg) * maxwidth) / maxwidth;
                 text += `
                 <div style="position: relative; width: ${maxwidth}px;">
-                ${data.name} (${mainTextToCommonDisplay[e]}): ${getStylesForBarD(data[e], data.name)}
+                ${data.name} (${mainTextToCommonDisplay[e]}): ${getStylesForBarD(data[e], data.name, mainTextToCommonDisplay[e])}
                 <div style="display: ${numbers.level[level] ? "block" : "none"}; position: absolute; top: 0px; right: 0px; color: #00ff00;">
-                +${getStylesForBarD(numbers.level[level], data.name)}
+                +${getStylesForBarD(numbers.level[level], data.name, mainTextToCommonDisplay[e])}
                 </div>
                 </div>
                 <div style="position: relative; width: ${maxwidth}px; height: 3px; background-color: #fff;">
@@ -11647,7 +12313,6 @@
             }
             let indexAdjust = ((Math.abs(currentNumber) / maxdmg) * maxwidth) / maxwidth;
             let indexAdjusted = (((Math.abs(currentNumber) + Math.abs(numbers.level[level])) / maxdmg) * maxwidth) / maxwidth;
-            console.log(maxdmg, currentNumber);
             text = `
             <div style="position: relative; width: ${maxwidth}px;">
             ${data.name}: ${getStylesForBarD(data[Data.main], data.name)}
@@ -11740,7 +12405,7 @@
                 let text = "", tex2 = "";
                 let main = typeof data.main == "object" ? data.main[0] : data.main;
                 text = abbreviateNumber(data[main]);
-                if (main == "healing") {
+                if (main == "healing" || main == "onKillFix") {
                     tex2 = `
                     <div style="position: absolute; bottom: 0px;">
                     <span class="material-symbols-outlined" style="font-size: 20px;">
@@ -11748,7 +12413,7 @@
                     </span>
                     </div>
                     <div style="position: absolute; left: 20px; bottom: -2.5px;">
-                    ${text}
+                    ${main == "onKillFix" ? (text * 100).toFixed(1) + "%" : text}
                     </div>
                     `;
                 } else if (main == "shielding" || main == "defenseIncrease") {
@@ -11762,15 +12427,15 @@
                     ${text}
                     </div>
                     `;
-                } else if (main == "dmgDependingDoT" || main == "healthIncrease" || main == "dmgIncrease" || main == "onKillDamage") {
+                } else if (main == "onKillSpeed" || main == "deathmark" || main == "dmgDependingDoT" || main == "healthIncrease" || main == "dmgIncrease" || main == "onKillDamage") {
                     tex2 = `
                     <div style="position: absolute; bottom: 0px;">
                     <span class="material-symbols-outlined" style="font-size: 20px;">
-                    ${["dmgDependingDoT", "onKillDamage", "dmgIncrease"].includes(main) ? "destruction" : "health_and_safety"}
+                    ${["deathmark", "dmgDependingDoT", "onKillDamage", "dmgIncrease"].includes(main) ? "destruction" : main == "onKillSpeed" ? "speed" : "health_and_safety"}
                     </span>
                     </div>
                     <div style="position: absolute; left: 20px; bottom: -2.5px;">
-                    ${text * 100}%
+                    ${(text * 100).toFixed(1)}%
                     </div>
                     `;
                 } else if (main == "stealthTime") {
@@ -11797,7 +12462,12 @@
                     `;
                 }
                 element.innerHTML = `
-                <div style="position: absolute; left: 0px; top: 0px; width: 80px; height: 80px; background-size: 80px 80px; background-image: url('${data.icon}');">
+                <div style="position: absolute; left: 0px; top: 0px; width: 80px; height: 80px; background-size: 80px 80px; ${typeof data.icon == "object" ? "" : `background-image: url('${data.icon}');`}">
+                ${typeof data.icon == "object" ? `
+                <span class="material-symbols-outlined" style="color: #fff; font-size: 80px;">
+                ${data.icon.name}
+                </span>
+                ` : ""}
                 ${data.unlockAtLevel > weapon.level ? `
                 <div style="position: absolute; top: 5px; left: 5px; width: 30px; height: 30px; background-color: rgb(255, 255, 255, .6); border-radius: 100%;">
                 <span class="material-symbols-outlined" style="font-size: 30px;">
@@ -11818,6 +12488,7 @@
         }
         document.getElementById("showDescription").onclick = function () { }
         document.getElementById("Upgrade").onclick = function () {
+            if (!inInventory) return;
             document.body.appendChild(document.getElementById("moneyDisplay"));
             document.getElementById("upgradeMenu").style.display = "block";
             document.getElementById("storeButton").style.display = "none";
@@ -11862,7 +12533,12 @@
                     } else {
                         e.innerHTML += `
                         <div style="position: absolute; width: ${maxwidth}px; top: ${((typeof weapon.abilities[0].main == "object" ? weapon.abilities[0].main.length : 1) * 29.5) + ((i - 1) * 55)}; height: 50px; background-color: rgb(255, 255, 255, .4); border-radius: 6px;">
-                        <div style="position: absolute; left: 0px; top: 0px; width: 50px; height: 50px; background-size: 50px 50px; background-image: url('${data.icon}');">
+                        <div style="position: absolute; left: 0px; top: 0px; width: 50px; height: 50px; background-size: 50px 50px; ${typeof data.icon == "object" ? "" : `background-image: url('${data.icon}');`}">
+                        ${typeof data.icon == "object" ? `
+                        <span class="material-symbols-outlined" style="color: #fff; font-size: 50px;">
+                        ${data.icon.name}
+                        </span>
+                        ` : ""}
                         </div>
 
                         <div style="position: absolute; left: 55px; top: 2.5px;">
@@ -13706,6 +14382,8 @@
             type: "shape", rarity: "Epic", name: "Purple Heptagon",
         }, {
             type: "shape", rarity: "Epic", name: "Blue-Outlined Tan Circle"
+        }, {
+            type: "shape", rarity: "Epic", name: "Magenta Hexagon"
         }],
         tokenCost: "token 3"
     }];
@@ -14487,6 +15165,56 @@
                 }
             }
         }
+        let logs = [];
+        /*"modules": [
+            "Nuclear Amplifier",
+            "Nuclear Amplifier",
+            "Last Stand",
+            "Balance Unit"
+        ],
+        "drone": "Pascal",
+        "pilotName": "Eleanor Thorne",
+        "skills": [
+            "Thrill Hunter",
+            "Armor Expert",
+            "Cautious Pilot",
+            "Road Hog",
+            "Master Gunsmith",
+            "Thrill Seeker",
+            "Movement Expert"
+        ]*/
+        player.shapes.filter(e => e.slot != null).forEach(e => {
+            let info = {};
+            info.name = e.name;
+            if (info.weapons == null) info.weapons = {
+                heavy: "Shocker",
+                light: "Punisher"
+            };
+            player.weapons.filter(t => t.owner == e.sid).forEach(ee => {
+                if (ee.type == "Heavy") {
+                    info.weapons.heavy = ee.name;
+                } else {
+                    info.weapons.light = ee.name;
+                }
+            });
+            if (info.modules == null) info.modules = [];
+            player.modules.filter(t => t.owner == e.sid).forEach(ee => {
+                info.modules.push(ee.name);
+            });
+            let drone = player.drones.find(eee => eee.owner == e.sid);
+            if (drone) info.drone = drone.name;
+            let pilots = player.pilots.find(eee => eee.owner == e.sid);
+            if (pilots) {
+                info.pilotName = pilots.name;
+                info.skills = [];
+                pilots.skills.forEach(ete => {
+                    if (ete) info.skills.push(ete.name);
+                });
+            }
+            info.activeModuleIndex = e.activeModuleIndex;
+            logs.push(info);
+        });
+        console.log(logs);
     }
     var operationData = {
         xp: 0,
@@ -15011,8 +15739,10 @@
                                 let theSkill = new skill(Skill, e.slot, {
                                     name: e.robotOwner
                                 });
-                                for (let t = 0; t < e.level - 1; t++) {
-                                    upgradePilotSkill(theSkill);
+                                if (!theSkill.getAbilityBackAtHalfHealth) {
+                                    for (let t = 0; t < e.level - 1; t++) {
+                                        upgradePilotSkill(theSkill);
+                                    }
                                 }
                                 thePilot.skills.push(theSkill);
                             }
@@ -15113,7 +15843,8 @@
         x: 0,
         y: 0
     }
-    function renderBackground() {
+    function renderBackground(delta) {
+        let cam;
         if (players[0].robotIndex == -1) {
             cam = {
                 x: mapInfo.x / 2,
@@ -15129,17 +15860,42 @@
         if (map) {
             if (map.name == "Space Shuttle") {
                 ctx.fillStyle = "#909090";
+            } else if (map.name == "Rome") {
+                ctx.fillStyle = "#0f0";
+            } else {
+                ctx.fillStyle = "#000";
             }
         } else {
             ctx.fillStyle = "#0f0";
         }
         ctx.fillRect(0, 0, maxScreen.x, maxScreen.y);
-        ctx.fillStyle = "#000";
-        if (map) {
-            if (map.name == "Space Shuttle") {
-                ctx.globalAlpha = 1;
+        renderBuildings(delta, true);
+        ctx.lineWidth = 8;
+        ctx.strokeStyle = map && map.name == "Void" ? "#fff" : "#000";
+        ctx.globalAlpha = map && map.name == "Void" ? .5 : 0.06;
+        ctx.beginPath();
+        for (var x = -cam.x; x < maxScreen.x; x += maxScreen.y / 4) {
+            if (x > 0) {
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, maxScreen.y);
             }
+        }
+        for (var y = -cam.y; y < maxScreen.y; y += maxScreen.y / 4) {
+            if (x > 0) {
+                ctx.moveTo(0, y);
+                ctx.lineTo(maxScreen.x, y);
+            }
+        }
+        ctx.stroke();
+        if (map) {
+            if (map.id != 1) {
+                ctx.fillStyle = "#000";
+            } else {
+                ctx.fillStyle = "#fff";
+            }
+            ctx.globalAlpha = 1;
         } else {
+            ctx.fillStyle = "#000";
             ctx.globalAlpha = 0.18;
         }
         if (offset.x <= 0) {
@@ -15288,6 +16044,27 @@
             ctx.rotate(-(dir + Math.PI / 2));
         }
     }
+    function doBondStuff(bond, delta, i, robot) {
+        bond.duration -= delta;
+        if (bond.duration <= 0) {
+            if (bond.name == "Lasso") {
+                let amount = bond.target.maxhealth * .1;
+                changeHealth(bond.target, {
+                    amount: -amount,
+                    defensePointsBypass: 0,
+                    bypassReflector: true,
+                    damageTypeName: "Lasso",
+                    graydmg: 0
+                }, false, robot);
+                let healing = amount * 2;
+                robot.grayDamage = Math.max(0, robot.grayDamage - (healing * .2));
+                changeHealth(robot, {
+                    amount: healing
+                }, false, robot);
+            }
+            robot.bonds.splice(i, 1);
+        }
+    }
     function renderPlayer(delta) {
         let player = players.find(e => e.name == "player");
         let weaponNames = {};
@@ -15354,6 +16131,25 @@
                     renderShapeBody(ctx, robot);
                 }
                 if (settingToggles.renderDrone_player) renderDrone(ctx, robot, robot.drone, delta);
+                if (robot.bonds) {
+                    if (!robot.invis) ctx.globalAlpha = 1;
+                    for (let i = 0; i < robot.bonds.length; i++) {
+                        let bond = robot.bonds[i];
+                        if (bond) {
+                            ctx.save();
+                            ctx.translate(-(robot.x - offset.x), -(robot.y - offset.y));
+                            ctx.lineWidth = 32;
+                            ctx.strokeStyle = bond.isAlly ? "rgb(255, 0, 255, .6)" : "rgb(255, 0, 0, .6)";
+                            ctx.lineCap = "round";
+                            ctx.beginPath();
+                            ctx.moveTo(robot.x - offset.x, robot.y - offset.y);
+                            ctx.lineTo(bond.target.x - offset.x, bond.target.y - offset.y);
+                            ctx.stroke();
+                            ctx.restore();
+                            doBondStuff(bond, delta, i, robot);
+                        }
+                    }
+                }
                 ctx.restore();
             }
         }
@@ -15485,6 +16281,46 @@
                     isAlly: isAlly,
                     color: "./images/bullets/bullet.png",
                     avoidBuildings: shape.avoidBuildings,
+                    owner: shape,
+                    weaponOwner: {
+                        name: weapon.name,
+                        level: weapon.level
+                    }
+                });
+            } else if (weapon.name == "Talon" || weapon.name == "Jaw") {
+                projectiles.push({
+                    x: x,
+                    y: y,
+                    oldX: x,
+                    oldY: y,
+                    projType: weapon.projType,
+                    velx: 0,
+                    vely: 0,
+                    scale: scale,
+                    autoTargetData: {
+                        type: "nearest",
+                        range: shape.scale,
+                        better: true
+                    },
+                    rustEffect: {
+                        name: "rust",
+                        power: 0.009,
+                        last: 10e3
+                    },
+                    fragEffect: {
+                        name: "frag",
+                        power: 0.009,
+                        last: 10e3
+                    },
+                    changeDirSpeed: 0.05,
+                    speed: 0.15,
+                    aoeRange: weapon.aoeRange,
+                    dmg: weapon.dmg,
+                    range: weapon.range,
+                    dir: dir,
+                    isAlly: isAlly,
+                    color: `./images/bullets/rocket.png`,
+                    avoidBuildings: true,
                     owner: shape,
                     weaponOwner: {
                         name: weapon.name,
@@ -16178,9 +17014,9 @@
         });
     }
     function getLeagueName(league) {
-        if (league >= 4701) {
+        if (league > 5e3) {
             return "Champion";
-        } else if (league >= 3801 && league <= 4700) {
+        } else if (league >= 3801 && league <= 5e3) {
             return "Master";
         } else if (league >= 2901 && league <= 3800) {
             return "Expert";
@@ -16916,9 +17752,9 @@
                 }
             });
         }
-        grayDamageMulti = Math.max(grayDamageMulti, 0.01);
+        grayDamageMulti = Math.max(grayDamageMulti, 0);
         let grayDmg = (graydmg + 1 >= 1 ? graydmg : .4);
-        if ((shape.name == "Tan Circle" || shape.name == "Pink Circle") && isDotDamage) {
+        if ((shape.name == "Tan Circle" || shape.name == "Blue-Outlined Tan Circle" || shape.name == "Pink Circle") && isDotDamage) {
             grayDmg *= shape.name == "Pink Circle" ? .2 : 0;
         } else if (shape.hullIntegrity) {
             grayDmg *= (1 - shape.hullIntegrity);
@@ -16982,14 +17818,23 @@
             }
         }
     }
+    function killIfBorder(robot) {
+        if (player.mapID == 1) {
+            let player1 = findPlayerBySid(robot.inGameSid);
+            addLogger({ name: "Game" }, null, player1);
+            robot.kill = true;
+        }
+    }
     function doBorderCollision(robot, delta) {
         if (robot.x + (robot.velx * delta) >= robot.scale && robot.x + (robot.velx * delta) <= mapInfo.x - robot.scale) {
             robot.x += (robot.velx * delta);
         } else {
             if (robot.x + (robot.velx * delta) >= mapInfo.x - robot.scale) {
                 robot.x = mapInfo.x - robot.scale;
+                killIfBorder(robot);
             } else {
                 robot.x = robot.scale;
+                killIfBorder(robot);
             }
         }
         if (robot.y + (robot.vely * delta) >= robot.scale && robot.y + (robot.vely * delta) <= mapInfo.y - robot.scale) {
@@ -16997,8 +17842,10 @@
         } else {
             if (robot.y + (robot.vely * delta) >= mapInfo.y - robot.scale) {
                 robot.y = mapInfo.y - robot.scale;
+                killIfBorder(robot);
             } else {
                 robot.y = robot.scale;
+                killIfBorder(robot);
             }
         }
     }
@@ -17072,6 +17919,9 @@
             moveSpeed *= robot.abilitySpeedMulti;
             moveSpeed *= slowdownMulti;
             moveSpeed *= speedMulti;
+            if (!robot.avoidBuildings && buildings.find(e => e.name == "pond" && dist(e, robot) <= e.tmpScale)) {
+                moveSpeed *= (1 / 3);
+            }
             if (robot.name == "Brown Pentagon" && robot.ability.mode == 1) {
                 moveSpeed *= (1 / 3);
             }
@@ -17249,8 +18099,16 @@
                     robot.velx += Math.cos(bullet.dir) * bullet.knockback;
                     robot.vely += Math.sin(bullet.dir) * bullet.knockback;
                 }
+                if (bullet.fragEffect) {
+                    robot.effects.push({
+                        neg: true,
+                        name: "frag",
+                        power: bullet.fragEffect.power,
+                        lastTime: bullet.fragEffect.last
+                    });
+                }
                 if (bullet.rustEffect) {
-                    if (robot.effects.filter(e => e.name == "rust" && e.effectID == "tamer").length < 30) {
+                    if (bullet.rustEffect.effectID ? robot.effects.filter(e => e.name == "rust" && e.effectID == bullet.rustEffect.effectID).length < 30 : true) {
                         robot.effects.push({
                             neg: true,
                             effectID: bullet.rustEffect.effectID,
@@ -17268,6 +18126,14 @@
                         dmg: bullet.dotEffect.dmg,
                         lastTime: bullet.dotEffect.last,
                         owner: bullet.owner
+                    });
+                }
+                if (bullet.deathmarkEffect) {
+                    robot.effects.push({
+                        neg: true,
+                        name: bullet.deathmarkEffect.name,
+                        power: bullet.deathmarkEffect.power,
+                        lastTime: bullet.deathmarkEffect.last
                     });
                 }
                 if (bullet.slowEffect) {
@@ -17479,7 +18345,7 @@
                             indexName += " " + effect.lastForever + " " + effect.isActiveModuleEffect;
                             if (effectNames[indexName] == null) {
                                 effectNames[indexName] = {
-                                    amount: 1,
+                                    amount: effect.stacks || 1,
                                     duration: effect.lastTime,
                                     orginal: effect.oldLastTime,
                                     neg: effect.neg
@@ -17587,7 +18453,7 @@
                     } else if (effect.name == "speed") {
                         speedMulti += effect.power;
                     } else if (effect.name == "phase shift") {
-                        if (!effect.isActiveModuleEffect) speedMulti += 1.5;
+                        if (!effect.isActiveModuleEffect) speedMulti += (effect.speed || 1.5);
                     } else if (effect.name == "dash") {
                         if (effect.dmg) {
                             robot.avoidBuildings = true;
@@ -18053,9 +18919,9 @@
                 }
             }
         }
-        let repairampps = robot.effects.filter(e => e.name == "repair amp").length;
-        if (repairampps > 0) {
-            let percent = 0.0003 * repairampps;
+        let repairampps = robot.effects.find(e => e.name == "repair amp");
+        if (repairampps) {
+            let percent = 0.0003 * repairampps.stacks;
             if (robot.LASTREPAIRAMPHEALHA == null) robot.LASTREPAIRAMPHEALHA = 0;
             robot.LASTREPAIRAMPHEALHA -= delta;
             if (robot.LASTREPAIRAMPHEALHA <= 0) {
@@ -18135,6 +19001,10 @@
             return {
                 name: "speed"
             };
+        } else if (index == "deathmark") {
+            return {
+                name: "skull"
+            };
         } else if (index == "slowdown immune") {
             return "./images/icons/slowdown_immune.png";
         } else if (index == "freeze immune") {
@@ -18147,6 +19017,8 @@
             return "./images/icons/anti_defense_mitigation.png";
         } else if (index == "Ultimate Reflecting Dash") {
             return "./images/abilities/ultimate_reflecting_dash.png";
+        } else if (index == "frag") {
+            return "./images/fragility.png";
         } else {
             return "./images/abilities/cold_pulse.png";
         }
@@ -18212,9 +19084,19 @@
                 let colorValue = (((weapon.ammoFired % 4) / 3) * 100);
                 rgb = `rgb(${Math.min(255, Math.floor((colorValue) * 255 / 100))}, ${Math.min(235, Math.floor((100 - colorValue) * 235 / 100))}, 0)`;
             }
+            let thingy = undefined;
+            if (weapon.name == "Veyron" || weapon.name == "Evora") {
+                thingy = (weapon.firedTime / 500) * 100;
+            } else if (weapon.name == "Discordia" || weapon.name == "Tumultus") {
+                thingy = (weapon.firedTime / 1e3) * 100;
+            }
             document.getElementById("weaponThing").innerHTML += `
             <div style="opacity: ${weapon.weaponIsBroken ? .1 : weapon.notActive ? .4 : 1}; position: absolute; bottom: ${80 * (index >= 4 ? index - 4 : index)}px; left: ${index >= 4 ? 320 : 0}px; width: 200px; height: 75px; margin-top: 20px;">
             <div id="weaponICON${i}" style="position: absolute; z-index: 2; top: 0px; left: 0px; background-color: #404040; border-radius: 100%; width: 75px; height: 75px;">
+            </div>
+            <div style="display: ${thingy != undefined ? "block" : "none"}; position: absolute; top: 33px; left: 50px; background-color: #404040; border-radius: 12px; width: 210px; height: 30px;">
+            <div style="width: ${thingy}%; height: 100%; border-radius: 12px; background-color: #00ffff;">
+            </div>
             </div>
             <div style="position: absolute; top: 23px; left: 60px; background-color: #404040; border-radius: 12px; width: 250px; height: 30px;">
             <div style="width: ${weapon.name == "Atomizer" || weapon.name == "Nucleon" ? ((weapon.firedTime / 16000) * 100) : ((weapon.ammo / weapon.maxammo) * 100)}%; height: 100%; border-radius: 12px; background-color: ${(weapon.name == "Atomizer" || weapon.name == "Nucleon" || weapon.name == "Lance" || weapon.name == "Glaive") ? rgb : "#fff"};">
@@ -18318,22 +19200,37 @@
         let enemies = getNearest(robot, weapon.range, isAlly);
         if (enemies.length) {
             enemies = enemies.filter(e => !e.invis);
-            let x1 = mouseX / window.innerWidth;
-            let y1 = mouseY / window.innerHeight;
-            let x2 = x1 * maxScreen.x;
-            let y2 = y1 * maxScreen.y;
-            let x3 = maxScreen.x / 2;
-            let y3 = maxScreen.y / 2;
-            let ang = Math.atan2(y2 - y3, x2 - x3);
-            let Dist = Math.hypot(y2 - y3, x2 - x3);
-            let cursorLocation = {
-                x: robot.x + Math.cos(ang) * Dist,
-                y: robot.y + Math.sin(ang) * Dist
-            };
-            let enemy = enemies.sort((a, b) => dist(cursorLocation, a) - dist(cursorLocation, b))[0];
+            let enemy = enemies.sort((a, b) => dist(robot.cursorLocation, a) - dist(robot.cursorLocation, b))[0];
             if (enemy) {
                 weapon.target = enemy;
             }
+        }
+    }
+    function updateCursorLocation(robot) {
+        let x1 = mouseX / window.innerWidth;
+        let y1 = mouseY / window.innerHeight;
+        let x2 = x1 * maxScreen.x;
+        let y2 = y1 * maxScreen.y;
+        let x3 = maxScreen.x / 2;
+        let y3 = maxScreen.y / 2;
+        let ang = Math.atan2(y2 - y3, x2 - x3);
+        let Dist = Math.hypot(y2 - y3, x2 - x3);
+        let cursorLocation = {
+            x: robot.x + Math.cos(ang) * Dist,
+            y: robot.y + Math.sin(ang) * Dist
+        };
+        robot.cursorLocation = cursorLocation;
+    }
+    function increaseFireTime(weapon, amount, max, amount2) {
+        if (typeof amount != "number") return;
+        if (amount > 0) {
+            if (!weapon.notActive && !weapon.weaponIsBroken) {
+                weapon.firedTime = Math.min(weapon.firedTime + amount, max);
+            } else {
+                weapon.firedTime = Math.max(weapon.firedTime - (amount2 || amount), 0);
+            }
+        } else {
+            weapon.firedTime = Math.max((weapon.firedTime + amount), 0);
         }
     }
     function doWeaponStuff(robot, delta, isAlly) {
@@ -18341,6 +19238,7 @@
         let doWeaponss = robot.weapons.sort((a, b) => a.slot - b.slot);
         let spacePressed = keysPressed[32];
         let rPressed = keysPressed[82];
+        if (robot.isMe) updateCursorLocation(robot);
         for (let i = 0; i < doWeaponss.length; i++) {
             let weapon = doWeaponss[i];
             if (robot.isMe && document.getElementById(`weaponICON${i}`)) {
@@ -18352,9 +19250,9 @@
                 if (weapon.lastFire == null) weapon.lastFire = 0;
                 if (weapon.name == "Discordia" || weapon.name == "Tumultus") {
                     if ((robot.isMe ? spacePressed : robot.fireWeapon)) {
-                        weapon.firedTime = Math.min(weapon.firedTime + delta, 1e3);
-                    } else {
-                        weapon.firedTime = Math.max((weapon.firedTime - delta), 0);
+                        increaseFireTime(weapon, delta, 1e3);
+                    } else { 
+                        increaseFireTime(weapon, -delta);
                     }
                 }
                 let fireRateMulti = (weapon.firedTime / 1e3 == 1 ? 0.5 : 1);
@@ -18413,17 +19311,19 @@
                 }
             } else {
                 if (weapon.canFire == null) weapon.canFire = true;
-                if (weapon.name == "Atomizer" || weapon.name == "Nucleon") {
-                    if ((robot.isMe ? spacePressed : robot.fireWeapon)) {
-                        weapon.firedTime = Math.min(weapon.firedTime + delta, 10000);
-                    } else {
-                        weapon.firedTime = Math.max((weapon.firedTime - (delta * 10)), 0);
-                    }
-                } else if (weapon.name == "Evora" || weapon.name == "Veyron") {
-                    if ((robot.isMe ? spacePressed : robot.fireWeapon)) {
-                        weapon.firedTime = Math.min(weapon.firedTime + delta, 500);
-                    } else {
-                        weapon.firedTime = Math.max((weapon.firedTime - delta), 0);
+                if (!weapon.notActive && !weapon.weaponIsBroken) {
+                    if (weapon.name == "Atomizer" || weapon.name == "Nucleon") {
+                        if ((robot.isMe ? spacePressed : robot.fireWeapon)) {
+                            increaseFireTime(weapon, delta, 10e3, -(delta * 10));
+                        } else {
+                            increaseFireTime(weapon, -(delta * 10));
+                        }
+                    } else if (weapon.name == "Evora" || weapon.name == "Veyron") {
+                        if ((robot.isMe ? spacePressed : robot.fireWeapon)) {
+                            increaseFireTime(weapon, delta, 500);
+                        } else {
+                            increaseFireTime(weapon, -delta);
+                        }
                     }
                 }
                 if (weapon.name == "Fulgur" || weapon.name == "Tonans") {
@@ -18508,6 +19408,34 @@
                 }
             }
         }
+        if (robot.name == "Dark Brown Pentagon" && !robot.effects.find(e => e.abilityEffect == robot.ability.name)) {
+            if (robot.remoteAssaultLast == null) robot.remoteAssaultLast = 0;
+            if (Date.now() - robot.remoteAssaultLast >= 150) {
+                robot.remoteAssaultLast = Date.now();
+                projectiles.push({
+                    x: robot.x,
+                    y: robot.y,
+                    oldX: robot.x,
+                    oldY: robot.y,
+                    projType: "rocket",
+                    velx: 0,
+                    vely: 0,
+                    scale: 20,
+                    speed: 0.15,
+                    aoeRange: 120,
+                    dmg: robot.ability.dmg,
+                    range: 2300,
+                    dir: robot.dir,
+                    isAlly: isAlly,
+                    color: "./images/bullets/rocket.png",
+                    owner: robot,
+                    weaponOwner: {
+                        name: robot.ability.name,
+                        level: robot.level
+                    }
+                });
+            }
+        }
     }
     function collideWithBuildings(robot, delta, isAlly) {
         for (let i = 0; i < ACTUALBUILDINGSTOTOUCH.length; i++) {
@@ -18547,10 +19475,14 @@
                     if (circleSquareCollision(robot, obj, true)) {
                         let Px = Math.max(obj.x, Math.min(robot.x, obj.x + obj.width));
                         let Py = Math.max(obj.y, Math.min(robot.y, obj.y + obj.height));
-                        robot.velx *= 0.75;
-                        robot.vely *= 0.75;
-                        robot.velx += Math.cos(Math.atan2(robot.y - Py, robot.x - Px)) * (.75 + robot.speed);
-                        robot.vely += Math.sin(Math.atan2(robot.y - Py, robot.x - Px)) * (.75 + robot.speed);
+                        if (obj.name == "wall rect" && Math.hypot(robot.y - Py, robot.x - Px) <= 0) {
+                            robot.avoidBuildings = true;
+                        } else {
+                            robot.velx *= 0.75;
+                            robot.vely *= 0.75;
+                            robot.velx += Math.cos(Math.atan2(robot.y - Py, robot.x - Px)) * (.75 + robot.speed);
+                            robot.vely += Math.sin(Math.atan2(robot.y - Py, robot.x - Px)) * (.75 + robot.speed);    
+                        }
                     }
                 } else if (obj.name == "water") {
                     let Px = Math.max(obj.x, Math.min(robot.x, obj.x + obj.width));
@@ -18559,7 +19491,7 @@
                     if (distance <= robot.scale / 2) {
                         robot.kill = true;
                         let player1 = findPlayerBySid(robot.inGameSid);
-                        addLogger({ name: "GAME" }, null, player1)
+                        addLogger({ name: "Game" }, null, player1);
                     }
                 }
             }
@@ -18782,7 +19714,7 @@
                     robot.abilityLast = 1;
                 }
             }
-        } else if (robot.ability.name == "Cannonier" || robot.ability.name == "Long Shot" || robot.ability.name == "Support" || robot.ability.name == "Matrix" || robot.ability.name == "Reflector" || robot.ability.name == "Clear Sky" || robot.ability.name == "Reinforce Hull" || robot.ability.name == "Ultimate Mending" || robot.ability.name == "Divine Judgement" || robot.ability.name == "Grand Fortitude" || robot.ability.name == "Paladin" || robot.ability.name == "Overload" || robot.ability.name == "Stampede" || robot.ability.name == "Stealth" || robot.ability.name == "Retribution" || robot.ability.name == "Ultimate Defense" || robot.ability.name == "Self Heal" || robot.ability.name == "Dragon Flight" || robot.ability.name == "Shield Regeneration" || robot.ability.name == "Full Action") {
+        } else if (robot.ability.name == "Remote Assault" || robot.ability.name == "Cannonier" || robot.ability.name == "Long Shot" || robot.ability.name == "Support" || robot.ability.name == "Matrix" || robot.ability.name == "Reflector" || robot.ability.name == "Clear Sky" || robot.ability.name == "Reinforce Hull" || robot.ability.name == "Ultimate Mending" || robot.ability.name == "Divine Judgement" || robot.ability.name == "Grand Fortitude" || robot.ability.name == "Paladin" || robot.ability.name == "Overload" || robot.ability.name == "Stampede" || robot.ability.name == "Stealth" || robot.ability.name == "Retribution" || robot.ability.name == "Ultimate Defense" || robot.ability.name == "Self Heal" || robot.ability.name == "Dragon Flight" || robot.ability.name == "Shield Regeneration" || robot.ability.name == "Full Action") {
             if (robot.abilityReload == 0 && robot.abilityLast == 0) {
                 robot.abilityLast = robot.ability.lastingTime;
                 doWonderworkerSkill(robot);
@@ -18965,6 +19897,25 @@
                             weapon.notActive = false;
                         }
                     }
+                } else if (robot.ability.name == "Remote Assault") {
+                    robot.effects.push({
+                        name: "speed",
+                        power: 1,
+                        abilityEffect: "Remote Assault",
+                        lastTime: robot.ability.lastingTime
+                    });
+                    buildings.push({
+                        dmg: robot.ability.dmg,
+                        range: 2300,
+                        rate: 100,
+                        scale: 40,
+                        name: "Remote Assault",
+                        x: (robot.cursorLocation ? robot.cursorLocation.x : robot.target ? robot.target.x : robot.x),
+                        y: (robot.cursorLocation ? robot.cursorLocation.y : robot.target ? robot.target.y : robot.y),
+                        owner: robot,
+                        duration: robot.ability.lastingTime,
+                        isAlly: isAlly
+                    });
                 }
             }
         } else if (robot.ability.name == "Cold Pulse") {
@@ -19028,8 +19979,35 @@
                     robot.effects.push({
                         name: "phase shift",
                         abilityEffect: "Phase Shift",
+                        speed: robot.name == "Magenta Hexagon" ? .8 : undefined,
                         lastTime: robot.ability.lastingTime
                     });
+                    if (robot.name == "Magenta Hexagon") {
+                        let target = robot.target;
+                        if (robot.isMe) {
+                            let enemies = getNearest(robot, 1500, isAlly);
+                            if (enemies.length) {
+                                enemies = enemies.filter(e => !e.invis);
+                                target = enemies.sort((a, b) => dist(robot.cursorLocation, a) - dist(robot.cursorLocation, b))[0];
+                            }
+                        }
+                        if (target && dist(target, robot) <= 1500 + target.scale) {
+                            if (robot.bonds == null) robot.bonds = [];
+                            target.effects.push({
+                                name: "slowdown",
+                                neg: true,
+                                power: .2,
+                                lastTime: 6e3
+                            });
+                            robot.bonds.push({
+                                target: target,
+                                name: "Lasso",
+                                duration: 6e3,
+                                isAlly: isAlly,
+                                owner: robot
+                            });
+                        }
+                    }
                 } else if (robot.ability.name == "Dash") {
                     robot.effects.push({
                         name: "dash",
@@ -19462,6 +20440,7 @@
         } else if (robot.name == "Ultimate Green Circle") {
             robot.maxhealth *= 1.5;
         }
+        robot.killed = false;
         robot.grayDamage *= (1 - robot.revive);
         robot.abilityReload = 0;
         robot.health += robot.maxhealth * robot.revive;
@@ -19568,17 +20547,47 @@
         robot.useActiveModule = false;
         if (Date.now() - robot.damagedTime <= 50) {
             robot.useActiveModule = true;
+        } else if (robot.isBluebell && robot.drone && robot.drone.name == "Hiruko") {
+            robot.useActiveModule = true;
         }
         if (robot.ability) {
             let abilityName = robot.ability.name;
-            if (["Support", "Ultimate Reflecting Dash", "Ultimate Defense", "Matrix", "Blink Support", "Reflector", "Stampede", "Clear Sky", "Reinforce Hull", "Cold Pulse", "Divine Judgement", "Full Action", "Stealth", "Domain Expansion: Infinite Void", "Paladin", "Dragon Flight", "Phase Shift", "Ultimate Mending", "Self Heal", "Retribution"].includes(abilityName) && Date.now() - robot.damagedTime <= 50) {
+            if (["Support", "Ultimate Defense", "Matrix", "Blink Support", "Reflector", "Stampede", "Clear Sky", "Reinforce Hull", "Cold Pulse", "Divine Judgement", "Full Action", "Stealth", "Domain Expansion: Infinite Void", "Paladin", "Dragon Flight", "Phase Shift", "Ultimate Mending", "Self Heal", "Retribution"].includes(abilityName) && Date.now() - robot.damagedTime <= 50) {
                 robot.useAbility = true;
+            } else if (abilityName == "Ultimate Reflecting Dash") {
+                if (robot.isBluebell) {
+                    let effect = robot.effects.find(e => e.name == "Ultimate Reflecting Dash");
+                    if (!effect) {
+                        if (Date.now() - robot.damagedTime <= 50) {
+                            robot.useAbility = true;
+                        }
+                    } else {
+                        if (!effect.pressed && robot.target && dist(robot.target, robot) > 300) {
+                            robot.useAbility = true;
+                        }
+                    }
+                } else {
+                    if (Date.now() - robot.damagedTime <= 50) {
+                        robot.useAbility = true;
+                    }
+                }
             } else if (["Overload", "Dash", "Fortify"].includes(abilityName)) {
                 robot.useAbility = true;
             } else if (abilityName == "Long Shot" && robot.target && dist(robot.target, robot) <= 3800) {
                 robot.useAbility = true;
-            } else if (abilityName == "Cannonier" && !robot.effects.find(e => e.name == "Cannonier")) {
+            } else if (!robot.isBluebell && abilityName == "Cannonier" && !robot.effects.find(e => e.name == "Cannonier")) {
                 robot.useAbility = true;
+            } else if (abilityName == "Cannonier" && robot.isBluebell) {
+                let effect = robot.effects.find(e => e.name == "Cannonier");
+                if (effect) {
+                    if (robot.target && dist(robot.target, robot) > 300 && effect.stage != 2) {
+                        robot.useAbility = true;
+                    }
+                } else {
+                    if (Date.now() - robot.damagedTime <= 50) {
+                        robot.useAbility = true;
+                    }
+                }
             } else if (["Stealth Dash"].includes(abilityName)) {
                 if (robot.ability.charges > 1) {
                     robot.useAbility = true;
@@ -19681,20 +20690,20 @@
                             amount: 2,
                             lastTime: 7e3
                         });
-                        if (robot.fixedDurabilityIncreaseWithAbility____JustToMakeSure == null) {
-                            robot.fixedDurabilityIncreaseWithAbility____JustToMakeSure = robot.maxhealth * .1;
+                        if (robot.fixedDurabilityIncreaseWithAbility____JustToMakeSure_ == null) {
+                            robot.fixedDurabilityIncreaseWithAbility____JustToMakeSure_ = robot.maxhealth * .2;
                         }
-                        robot.normalMaxHealth += robot.fixedDurabilityIncreaseWithAbility____JustToMakeSure;
-                        robot.maxhealth += robot.fixedDurabilityIncreaseWithAbility____JustToMakeSure;
+                        robot.normalMaxHealth += robot.fixedDurabilityIncreaseWithAbility____JustToMakeSure_;
+                        robot.maxhealth += robot.fixedDurabilityIncreaseWithAbility____JustToMakeSure_;
                         changeHealth(robot, {
-                            amount: robot.fixedDurabilityIncreaseWithAbility____JustToMakeSure
+                            amount: robot.fixedDurabilityIncreaseWithAbility____JustToMakeSure_
                         }, false, robot);
                         robot.effects.push({
                             name: "dot",
                             noGrayDamage: true,
                             noAmp: true,
                             owner: robot,
-                            dmg: robot.fixedDurabilityIncreaseWithAbility____JustToMakeSure / 7,
+                            dmg: robot.fixedDurabilityIncreaseWithAbility____JustToMakeSure_ / 7,
                             lastTime: 7e3
                         });
                     }
@@ -19807,9 +20816,39 @@
         let dx = robot.x + Math.cos(drone.visualData.dir) * r;
         let dy = robot.y + Math.sin(drone.visualData.dir) * r;
         let dir;
-        if (weapon.name == "Imitating Frag Shotgun") {
+        if (weapon.name == "Imitating Frag Shotgun" || weapon.name == "Deathmark Affector") {
             dir = Math.atan2(target.y - dy, target.x - dx);
             drone.visualData.dir2 = dir;
+            if (weapon.name == "Deathmark Affector") {
+                projectiles.push({
+                    x: dx,
+                    y: dy,
+                    oldX: dx,
+                    oldY: dy,
+                    projType: "energy",
+                    velx: 0,
+                    vely: 0,
+                    scale: scale,
+                    speed: 0.25,
+                    dmg: weapon.dmg,
+                    range: weapon.range,
+                    dir: dir,
+                    isAlly: isAlly,
+                    deathmarkEffect: {
+                        name: "deathmark",
+                        last: 15e3,
+                        power: weapon.deathmark
+                    },
+                    color: "./images/bullets/red_bullet.png",
+                    avoidBuildings: robot.avoidBuildings,
+                    owner: robot,
+                    weaponOwner: {
+                        name: "Deathmark Affector",
+                        level: 1
+                    }
+                });
+                return;
+            }
             projectiles.push({
                 x: dx,
                 y: dy,
@@ -19835,7 +20874,7 @@
                     power: 0.05
                 },
                 color: "./images/bullets/bullet.png",
-                avoidBuildings: robot.abilitySpeedMulti == 3 ? true : false,
+                avoidBuildings: robot.avoidBuildings,
                 owner: robot,
                 weaponOwner: {
                     name: "Imitating Frag Shotgun",
@@ -19900,7 +20939,7 @@
         robot.lastX = robot.x;
         robot.lastY = robot.y;
         if (robot.isMe) {
-            document.title = `x${robot.x.toFixed(0)} y${robot.y.toFixed(0)} dir:${robot.dir}`;
+            //document.title = `x${robot.x.toFixed(0)} y${robot.y.toFixed(0)} dir:${robot.dir}`;
         }
         robot.builtInDefensePoints = robot.normalDefensePoints;
         if (robot.isMe) {
@@ -19926,6 +20965,18 @@
         doActiveModuleStuff(robot, robot.weapons.length, MATH1HA___, isAlly, delta);
         if (robot.ability && (robot.ability.name == "Phase Shift" ? true : !robot.isFREEZE)) {
             if (robot.isMe) {
+                let color = "#000";
+                let color2 = "#000";
+                if (player.mapID == 1) {
+                    if (robot.activeModuleReload && !robot.effects.find(e => e.isActiveModuleEffect)) {
+                        color2 = "#fff";
+                    }
+                    if (robot.abilityReload && !robot.abilityLast) {
+                        color = "#fff";
+                    }
+                }
+                document.getElementById("cooldownTextActive").style.color = color2;
+                document.getElementById("cooldownText").style.color = color;
                 document.getElementById("useAbility").style.display = "block";
             }
             if (robot.ability.charges >= robot.ability.maxcharge) {
@@ -20021,6 +21072,20 @@
         if (robot.health > (robot.maxhealth - robot.grayDamage)) {
             robot.health = (robot.maxhealth - robot.grayDamage);
         }
+        if (robot.canGetAbilityBackAtHalfHealth) {
+            let half = robot.maxhealth * .5;
+            if (robot.abLastHealthAB__) {
+                if (robot.abLastHealthAB__ > half && robot.health <= half) {
+                    robot.canGetAbilityBackAtHalfHealth = false;
+                    if (robot.ability.maxcharge) {
+                        robot.ability.charges++;
+                    } else {
+                        robot.abilityReload = 0;
+                    }
+                }
+            }
+            robot.abLastHealthAB__ = robot.health;
+        }
         doOnDamageTakeStuff(robot);
         if (robot.health > robot.maxhealth) {
             robot.health = robot.maxhealth;
@@ -20044,6 +21109,7 @@
             `;
         }
         if (robot.isMe) drawWeaponUI(robot, delta);
+        collideWithBuildings(robot, delta, isAlly);
         doWeaponStuff(robot, delta, isAlly);
         doDroneWeaponStuff(robot, isAlly);
         if (robot.isMe && robot.usedLastStand) {
@@ -20066,7 +21132,6 @@
         });
         doBorderCollision(robot, delta);
         decelerateRobot(robot, delta);
-        collideWithBuildings(robot, delta, isAlly);
         if (robot.health <= 0 || robot.kill) {
             if (!robot.kill && robot.lastStandThreshold && !robot.usedLastStand) {
                 robot.health = robot.maxhealth * robot.lastStandThreshold;
@@ -20080,6 +21145,7 @@
                     doReviveFunction(robot);
                 } else {
                     if (robot.isMe) {
+                        robot.dead = true;
                         players[0].robotIndex = -1;
                         document.getElementById("shields").innerHTML = "";
                         document.getElementById("abilityCharges").innerHTML = "";
@@ -20429,6 +21495,7 @@
     function changeHealth(object, { amount, graydmg, noAmp, onDamageHealBack, isDotDamage, defensePointsBypass, bypassReflector, damageTypeName }, isPlayer, doer, noDefense) {
         try {
             amount = parseInt(removeDecimals(amount));
+            if (object.killed && object.health <= 0) amount = 0;
             if (!object || (object.health <= 0 && object.type != "purple")) return;
             let resistance = 0;
             if (object.builtInDefensePoints) {
@@ -20456,6 +21523,14 @@
                 bypassedDefensePoints = true;
                 resistance = 0;
             }
+            if (resistance > 0 && object.effects) {
+                let e1 = 1;
+                object.effects.filter(e => e.name == "frag").forEach(e => {
+                    e1 -= e.power;
+                });
+                e1 = Math.max(e1, 0);
+                resistance *= e1;
+            }
             let defense = defensePointsToResistance(resistance);
             if (amount < 0) {
                 amount *= defense;
@@ -20469,6 +21544,15 @@
                         }
                     });
                     amount *= increase;
+                }
+                let deathmark = 1;
+                if (object.effects) {
+                    object.effects.forEach(e => {
+                        if (e.name == "deathmark") {
+                            deathmark += e.power;
+                        }
+                    });
+                    amount *= deathmark;
                 }
                 if (object.isFREEZE) {
                     amount *= 2;
@@ -20526,6 +21610,7 @@
                                         document.getElementById("killDisplay").style.display = "none";
                                     }, 1e3);
                                 }
+                                object.killed = true;
                                 doer.battleStats.kills++;
                                 if (players.length > 1) {
                                     clearTimeout(doer.battleStats.killCountTimeout);
@@ -20593,6 +21678,34 @@
                                                         lastTime: 1,
                                                         lastForever: true
                                                     });
+                                                }
+                                            } else if (data.name == "On Kill: Speed") {
+                                                if (doer.effects.filter(e => e.name == "speed" && e.typeOfHAHAHAHAHAHAHA).length < data.limit && !doer.effects.find(e => e.name == "cooldown_timer" && e.reason == data.name)) {
+                                                    doer.effects.push({
+                                                        name: "cooldown_timer",
+                                                        reason: data.name,
+                                                        lastTime: data.reload
+                                                    });
+                                                    doer.effects.push({
+                                                        name: "speed",
+                                                        power: data.onKillSpeed,
+                                                        typeOfHAHAHAHAHAHAHA: true,
+                                                        lastTime: 1,
+                                                        lastForever: true
+                                                    });
+                                                }
+                                            } else if (data.name == "On Kill: Fix") {
+                                                if (!doer.effects.find(e => e.name == "cooldown_timer" && e.reason == data.name)) {
+                                                    doer.effects.push({
+                                                        name: "cooldown_timer",
+                                                        reason: data.name,
+                                                        lastTime: data.reload
+                                                    });
+                                                    let amount = doer.maxhealth * data.onKillFix;
+                                                    doer.grayDamage = Math.max(0, doer.grayDamage - (amount * data.grayDamageHeal_p));
+                                                    changeHealth(doer, {
+                                                        amount: amount
+                                                    }, false, doer);
                                                 }
                                             }
                                         }
@@ -20714,8 +21827,9 @@
                 } else {
                     if (amount < 0 && !object.dummy) object.damagedTime = Date.now();
                     if (object.repairAmp && amount < 0 && !noAmp) {
-                        let maountofstaks = object.effects.filter(e => e.name == "repair amp").length;
-                        if (maountofstaks < 60) {
+                        let repairamp = object.effects.find(e => e.name == "repair amp");
+                        if (!repairamp || repairamp.stacks < 60) {
+                            let maountofstaks = repairamp ? repairamp.stacks : 0;
                             if (object.HAHAHAHAMoUntDMGMMGMGGM == null) object.HAHAHAHAMoUntDMGMMGMGGM = 0;
                             object.HAHAHAHAMoUntDMGMMGMGGM += Math.abs(amount);
                             if (object.HAHAHAHAMoUntDMGMMGMGGM >= object.repairAmp.require) {
@@ -20732,13 +21846,18 @@
                                         lastTime: 1
                                     });
                                 }
-                                for (let i = 0; i < amount; i++) {
+                                let effect = object.effects.find(e => e.name == "repair amp");
+                                if (effect) {
+                                    effect.stacks += amount;
+                                } else {
                                     object.effects.push({
                                         name: "repair amp",
                                         lastForever: true,
+                                        stacks: amount,
                                         lastTime: 1
                                     });
                                 }
+                                
                             }
                         }
                     }
@@ -21509,12 +22628,20 @@
                             enemy.velx += Math.cos(bullet.dir) * bullet.knockback;
                             enemy.vely += Math.sin(bullet.dir) * bullet.knockback;
                         }
+                        if (bullet.fragEffect) {
+                            enemy.effects.push({
+                                neg: true,
+                                name: "frag",
+                                power: bullet.fragEffect.power,
+                                lastTime: bullet.fragEffect.last
+                            });
+                        }
                         if (bullet.rustEffect) {
-                            if (enemy.effects.filter(e => e.name == "rust" && e.effectID == bullet.rustEffect.effectID).length < 30) {
+                            if (bullet.rustEffect.effectID ? enemy.effects.filter(e => e.name == "rust" && e.effectID == bullet.rustEffect.effectID).length < 30 : true) {
                                 enemy.effects.push({
                                     neg: true,
-                                    name: bullet.rustEffect.name,
                                     effectID: bullet.rustEffect.effectID,
+                                    name: bullet.rustEffect.name,
                                     power: bullet.rustEffect.power,
                                     lastTime: bullet.rustEffect.last
                                 });
@@ -21539,6 +22666,14 @@
                                     lastTime: bullet.blastEffect.last
                                 });
                             }
+                        }
+                        if (bullet.deathmarkEffect) {
+                            enemy.effects.push({
+                                neg: true,
+                                name: bullet.deathmarkEffect.name,
+                                power: bullet.deathmarkEffect.power,
+                                lastTime: bullet.deathmarkEffect.last
+                            });
                         }
                         if (bullet.slowEffect) {
                             enemy.effects.unshift({
@@ -22001,6 +23136,25 @@
                     }
                     renderDrone(ctx, robot, robot.drone, delta);
                     drawCanvasHealthBars(robot, player.isAlly, ctx);
+                    if (robot.bonds) {
+                        if (!robot.invis) ctx.globalAlpha = 1;
+                        for (let i = 0; i < robot.bonds.length; i++) {
+                            let bond = robot.bonds[i];
+                            if (bond) {
+                                ctx.save();
+                                ctx.translate(-(robot.x - offset.x), -(robot.y - offset.y));
+                                ctx.lineWidth = 32;
+                                ctx.strokeStyle = bond.isAlly ? "rgb(255, 0, 255, .6)" : "rgb(255, 0, 0, .6)";
+                                ctx.lineCap = "round";
+                                ctx.beginPath();
+                                ctx.moveTo(robot.x - offset.x, robot.y - offset.y);
+                                ctx.lineTo(bond.target.x - offset.x, bond.target.y - offset.y);
+                                ctx.stroke();
+                                ctx.restore();
+                                doBondStuff(bond, delta, i, robot);
+                            }
+                        }
+                    }
                     ctx.restore();
                 }
             }
@@ -22039,6 +23193,7 @@
         }
     }
     function doCollRectMovement(target, robot) {
+        if (robot.avoidBuildings) return null;
         for (let i = 0; i < buildings.length; i++) {
             let obj = buildings[i];
             if (obj.name == "coll rect") {
@@ -22078,6 +23233,7 @@
         }
         let enemies = [];
         let allies = [];
+        let robots = [];
         let nearestEnemy = null;
         for (let i = 0; i < players.length; i++) {
             if (players[i].robots[players[i].robotIndex]) {
@@ -22099,6 +23255,7 @@
                 if (beacon) {
                     let tmp = {
                         enemiesNear: 0,
+                        alliesNear: 0,
                         x: beacon.x,
                         y: beacon.y
                     };
@@ -22110,11 +23267,19 @@
                             }
                         }
                     }
+                    for (let i = 0; i < allies.length; i++) {
+                        let ally = allies[i];
+                        if (ally) {
+                            if (dist(ally, beacon) <= 500 + ally.scale * 2) {
+                                tmp.alliesNear++;
+                            }
+                        }
+                    }
                     bData.push(tmp);
                 }
             }
-            let closestBData = bData.filter(e => e.enemiesNear > 0).sort((a, b) => dist(a, robot) - dist(b, robot))[0];
-            if (closestBData) {
+            let closestBData = bData.filter(e => e.alliesNear < e.enemiesNear && e.enemiesNear > 0).sort((a, b) => dist(a, robot) - dist(b, robot))[0];
+            if (closestBData && nearestBeaconToGo) {
                 if (dist(nearestBeaconToGo, robot) > dist(closestBData, robot)) {
                     nearestBeaconToGo = closestBData;
                 }
@@ -22139,7 +23304,7 @@
                 if (ally) {
                     if (nearestBeaconToGo && dist(nearestBeaconToGo, robot) > dist(ally, robot)) {
                         theThing = ally;
-                    } else if (!nearestBeaconToGo && dist(nearestEnemy, robot) > dist(ally, robot)) {
+                    } else if (!nearestBeaconToGo && nearestEnemy && dist(nearestEnemy, robot) > dist(ally, robot)) {
                         theThing = ally;
                     }
                 }
@@ -22277,7 +23442,7 @@
         }
         if (obj.name == "beacon") {
             if (obj.LASTLAST == null) obj.LASTLAST = 0;
-            if (Date.now() - obj.LASTLAST >= 175) {
+            if (Date.now() - obj.LASTLAST >= (player.mapID == 1 ? 87.5 : 175)) {
                 obj.LASTLAST = Date.now();
                 if (obj.ENEMYPOINTS >= 5e3) {
                     if (obj.LASTENEMYPOINTS < 5e3) {
@@ -22302,7 +23467,7 @@
         if (!obj.name.includes("col")) {
             ACTUALBUILDINGSTOTOUCH.push(obj);
         }
-        if (obj.name.includes("Blink Turret")) {
+        if (obj.name.includes("Blink Turret") || obj.name == "Remote Assault") {
             let nearestEnemies = [];
             if (hasPlayers()) {
                 for (let t = 0; t < players.length; t++) {
@@ -22320,7 +23485,43 @@
             obj.duration -= delta;
             if (nearestEnemies) {
                 if (obj.lastFire == null) obj.lastFire = 0;
-                if (obj.name == "Blink Turret T1") {
+                if (obj.name == "Remote Assault") {
+                    if (!obj.owner.effects.find(e => e.abilityEffect == obj.name)) {
+                        obj.kill = true;
+                    }
+                    if (Date.now() - obj.lastFire >= obj.rate) {
+                        obj.lastFire = Date.now();
+                        let dir = Math.atan2(nearestEnemies.y - obj.y, nearestEnemies.x - obj.x);
+                        projectiles.push({
+                            noInvisWhenOwnerInvis: true,
+                            x: obj.x,
+                            y: obj.y,
+                            oldX: obj.x,
+                            oldY: obj.y,
+                            projType: "rocket",
+                            velx: 0,
+                            vely: 0,
+                            scale: 20,
+                            speed: 0.15,
+                            aoeRange: 120,
+                            dmg: obj.dmg,
+                            range: obj.range,
+                            dir: dir,
+                            isAlly: obj.isAlly,
+                            color: "./images/bullets/rocket.png",
+                            slowEffect: {
+                                name: "slowdown",
+                                power: .1,
+                                last: 5e3
+                            },
+                            owner: obj.owner,
+                            weaponOwner: {
+                                name: obj.name,
+                                level: obj.owner.level
+                            }
+                        });
+                    }
+                } else if (obj.name == "Blink Turret T1") {
                     if (Date.now() - obj.lastFire >= obj.rate) {
                         obj.lastFire = Date.now();
                         let dir = Math.atan2(nearestEnemies.y - obj.y, nearestEnemies.x - obj.x);
@@ -22420,7 +23621,7 @@
     }
     var BEACONS = [];
     var ACTUALBUILDINGSTOTOUCH = [];
-    function renderBuildings(delta) {
+    function renderBuildings(delta, asd) {
         BEACONS = [];
         ACTUALBUILDINGSTOTOUCH = [];
         ctx.globalAlpha = 1;
@@ -22478,12 +23679,12 @@
                     ctx.fillRect(0, 0, obj.width, obj.height);
                     ctx.fillStyle = "#969595";
                     ctx.fillRect(20, 20, obj.width - 40, obj.height - 40);
-                } else if (obj.name.includes("Blink Turret")) {
+                } else if (obj.name.includes("Blink Turret") || obj.name == "Remote Assault") {
                     if (obj.globalAlpha == null) obj.globalAlpha = 0;
                     obj.globalAlpha += 0.003 * delta;
                     if (obj.globalAlpha > 1) obj.globalAlpha = 1;
                     ctx.globalAlpha = obj.globalAlpha;
-                    let color = obj.name == "Blink Turret T2" ? "#00ffff" : "#00f";
+                    let color = obj.name == "Remote Assault" ? "#964b00" : obj.name == "Blink Turret T2" ? "#00ffff" : "#00f";
                     renderCircle(0, 0, obj.scale, ctx, false, false, color, obj.isAlly ? "#000" : "#f00");
                 } else if (obj.name == "border rect") {
                     ctx.globalAlpha = obj.opacity || .18;
@@ -22492,8 +23693,27 @@
                 } else if (obj.name == "rect") {
                     ctx.fillStyle = obj.color;
                     ctx.fillRect(0, 0, obj.width, obj.height);
-                } else {
-                    ctx.fillStyle = "#1ca3ec";
+                } else if (obj.name == "pond" && asd) {
+                    if (obj.tmpScale == null) obj.tmpScale = obj.scale;
+                    if (obj.tmpAdjust == null) obj.tmpAdjust = 1;
+                    let speed = 0.015;
+                    if (obj.tmpAdjust == 1) {
+                        if (obj.tmpScale < obj.scale * 1.05) {
+                            obj.tmpScale = Math.min(obj.scale * 1.05, obj.tmpScale + (speed * delta));
+                        } else {
+                            obj.tmpAdjust = -1;
+                        }
+                    } else {
+                        if (obj.tmpScale > obj.scale) {
+                            obj.tmpScale = Math.max(obj.scale, obj.tmpScale - (speed * delta));
+                        } else {
+                            obj.tmpAdjust = 1;
+                        }
+                    }
+                    renderCircle(0, 0, obj.scale * 1.15, ctx, true, false, "#ffff00");
+                    renderCircle(0, 0, obj.tmpScale, ctx, true, false, "#1ca3ec");
+                } else if (obj.name != "pond") {
+                    ctx.fillStyle = obj.onlyDir != null ? "#000" : obj.onlyDir != undefined ? "#000" : "#1ca3ec";
                     ctx.fillRect(0, 0, obj.width, obj.height);
                 }
                 ctx.restore();
@@ -22517,7 +23737,7 @@
         let beaconIndexx = 0;
         let maxwidth = BEACONS.length * 30 - 5;
         document.getElementById("gameDataThing").innerHTML = `
-        <div style="position: absolute; top: 0px; font-size: 18px; text-align: center; left: 0px; width: 100%;">
+        <div style="position: absolute; top: 0px; color: ${player.mapID == 1 ? "#fff" : "#000"}; font-size: 18px; text-align: center; left: 0px; width: 100%;">
         ${text}
         </div>
         <div style="display: ${BEACONS.length ? "block" : "none"}; position: absolute; height: 25px; left: ${(window.innerWidth / 2) - ((maxwidth * 1.5) - 10)}px; top: 25px; width: 125px; border-radius: 2px; overflow: hidden; background-color: ${player.mapID == 0 ? "rgb(255, 255, 255, .6)" : "rgb(0, 0, 0, .6)"};">
@@ -23058,7 +24278,7 @@
                         y: (players[0].robots[players[0].robotIndex].y) - maxScreen.y / 2
                     };
                 }
-                renderBackground(ctx);
+                renderBackground(delta);
                 renderBuildings(delta);
                 renderBullets(ctx);
                 renderPlayer(delta);
@@ -23132,6 +24352,7 @@
                 renderDomains(delta);
                 if (players[0] && players[0].robotIndex >= 0 || player.gameMode == 2) gameTimePlayed += delta;
                 renderGameDataThing(delta);
+                document.getElementById("timePlayed").style.color = player.mapID == 1 ? "#fff" : "#000";
                 document.getElementById("timePlayed").innerHTML = `
                 ${settingToggles.showFPS ? `FPS: ${fpsInfo.real}` : ""}
                 `;
@@ -23140,7 +24361,7 @@
                 document.getElementById("LOGGER").innerHTML = "";
                 for (let i = 0; i < KILLLOGS.length; i++) {
                     let log = KILLLOGS[i];
-                    if (log.weapon && log.weapon.level) {
+                    if (log) {
                         let nameOne = {
                             color: log.attacker.isAlly == true ? "#00f" : "#f00",
                             name: log.attacker.name
