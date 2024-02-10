@@ -1,4 +1,5 @@
 (function () {
+    //window.isDev = true;
     var slotData = [{
         unlocked: true,
         used: true,
@@ -475,7 +476,10 @@
                     iconSource: data.ability.iconSource,
                     oldIconSource: data.ability.iconSource
                 };
-                if (data.ability.name == "Remote Assault") {
+                if (data.ability.name == "Clain Blink") {
+                    this.ability.lastingTime = data.ability.lastingTime;
+                    this.ability.shieldHp = data.ability.shieldHpData ? data.ability.shieldHpData.base : data.ability.shieldHp;
+                } else if (data.ability.name == "Remote Assault") {
                     this.ability.dmg = data.ability.damageData ? data.ability.damageData.base : data.ability.dmg;
                     this.ability.lastingTime = data.ability.lastingTime;
                 } else if (data.ability.name == "Cannonier") {
@@ -2543,6 +2547,45 @@
         color: "#ff00ff",
         moduleHardpoints: 4,
         costParts: true
+    }, {
+        dontSell: true,
+        tier: 4,
+        name: "Dark Green Pentagon",
+        speed: 0.0018,
+        speedLevel: [0, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0002, 0.0002, 0.0002, 0.0002, 0.0002, 0.0002],
+        scale: 65,
+        fieldOfViewMulti: 1.8,
+        desc: ``,
+        builtInDefensePoints: 100,
+        healthData: {
+            base: 75e3,
+            level: [0, 5e3, 5e3, 5e3, 5e3, 10e3, 10e3, 10e3, 15e3, 15e3, 20e3, 50e3],
+        },
+        ability: {
+            name: "Clain Blink",
+            desc: `
+            <span style="font-width: bolder; color: #fff;">Clain Blink</span> The shape sets a translocator on its current location, it then teleports to the chosen location. It can teleport up to 4 times and it gains a temporary shield for every teleport. After all charges are used up, another activation will teleport you to the translocator. Regardless, after the ability ends, you'll teleport back to the locator.<br><br>
+            Delay per teleportion: 3 seconds<br>
+            Teleportation Charges (not counting initial teleport): 3<br>
+            Max Teleportation Range: 2000PX<br>
+            Duration: 30 seconds<br>
+            Cooldown: 14 seconds
+            `,
+            iconSource: "./images/abilities/clain_blink.png",
+            shieldHpData: {
+                base: 70e3,
+                level: [0, 2e3, 2e3, 2e3, 4e3, 4e3, 4e3, 4e3, 8e3, 8e3, 8e3, 16e3],
+            },
+            lastingTime: 30e3,
+            reload: 14e3
+        },
+        hardpoints: {
+            light: 1,
+            heavy: 3
+        },
+        color: "#009100",
+        moduleHardpoints: 4,
+        costParts: true
     }];
     function defensePointsToResistance(defense) {
         return (100) / (100 + defense);
@@ -4117,7 +4160,7 @@
         desc: `
         A heavy rocket weapon that shoots smart homing rockets that deal aoe damage.
         When enemies are directly hit,
-        it applies rust (2%) and fragility (2%) effects to the enemies.
+        it applies rust (0.8%) and fragility (0.8%) effects to the enemies.
         Effects last for 10 seconds.
         `,
         damageData: {
@@ -4144,7 +4187,7 @@
         desc: `
         A light rocket weapon that shoots smart homing rockets that deal aoe damage.
         When enemies are directly hit,
-        it applies rust (2%) and fragility (2%) effects to the enemies.
+        it applies rust (0.8%) and fragility (0.8%) effects to the enemies.
         Effects last for 10 seconds.
         `,
         damageData: {
@@ -4161,6 +4204,62 @@
             sliver: 5e6,
             gold: 5e3,
             workshopPoints: 5e3
+        }
+    }, {
+        tier: 4,
+        industryName: "Circle",
+        spread: 3,
+        name: "Grief",
+        type: "Light",
+        projType: "normal",
+        desc: `
+        A light fast firing machine gun. After firing for 4 seconds, the weapon accelerates in fire rate and deals 80% gray damage instead of the normal 40%. This weapon also has a slight homing effect.
+        `,
+        damageData: {
+            base: 150,
+            level: [0, 20, 20, 20, 20, 20, 40, 40, 40, 40, 40, 40],
+        },
+        defenseBypassData: {
+            base: .05,
+            level: [0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.1, 0.15],
+        },
+        imageSource: "./images/weapons/grief.png",
+        fireRate: 40,
+        ammo: 800,
+        reload: 8e3,
+        range: 1e3,
+        cost: {
+            sliver: 15e9,
+            gold: 200e3,
+            workshopPoints: 100e3
+        }
+    }, {
+        tier: 4,
+        industryName: "Circle",
+        spread: 3,
+        name: "Sorrow",
+        type: "Heavy",
+        projType: "normal",
+        desc: `
+        A heavy fast firing machine gun. After firing for 4 seconds, the weapon accelerates in fire rate and deals 80% gray damage instead of the normal 40%. This weapon also has a slight homing effect.
+        `,
+        damageData: {
+            base: 300,
+            level: [0, 40, 40, 40, 40, 40, 80, 80, 80, 80, 80, 80],
+        },
+        defenseBypassData: {
+            base: .05,
+            level: [0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.15, 0.15, 0.15, 0.15],
+        },
+        imageSource: "./images/weapons/sorrow.png",
+        fireRate: 40,
+        ammo: 800,
+        reload: 8e3,
+        range: 1e3,
+        cost: {
+            sliver: 15e9,
+            gold: 200e3,
+            workshopPoints: 100e3
         }
     }];
     class module {
@@ -7829,7 +7928,7 @@
             for (let i = 0; i < f.length; i++) {
                 let item = f[i];
                 if ((item.owner == shape.sid && item.slot == slot) || item.isSold) {
-                    console.log(item);
+                    //console.log(item);
                     continue;
                 }
                 if (filteredWeapons.find(e => e.name == item.name && e.level == item.level)) {
@@ -8734,6 +8833,9 @@
     function doPilotSkillInject(skill, statAdjustments, robot) {
         if (skill.healthIncrease) {
             statAdjustments.health += skill.healthIncrease;
+        }
+        if (skill.onAbilityUseStealth) {
+            robot.onAbilityUseStealth = skill.onAbilityUseStealth;
         }
         if (skill.getAbilityBackAtHalfHealth) {
             robot.canGetAbilityBackAtHalfHealth = true;
@@ -9910,7 +10012,7 @@
         } else if (gameMode == 6) {
             mapInfo.x = mapInfo.y = 1e3;
             enemies.push(new enemy({
-                health: 1e10,
+                health: 5e6,
                 scale: 200,
                 name: "Test Dummy",
                 speed: 0,
@@ -10678,6 +10780,19 @@
             desc: "Magenta Hexagon has increased ability charges and gains extra defense points (50).",
             chargeIncrease: 2
         }
+    }, {
+        tier: 3,
+        name: "Alexander Nguyen",
+        story: [],
+        industryName: "Pentagon",
+        legendarySkill: {
+            name: "Alexander's Tactics",
+            main: "onAbilityUseStealth",
+            onlyFor: "Dark Green Pentagon",
+            imageSource: "./images/stealth.png",
+            desc: "Dark Green Pentagon gains stealth for every activation of its ability.",
+            onAbilityUseStealth: 2e3
+        }
     }];
     class skill {
         constructor(data, slot, robot) {
@@ -10891,6 +11006,8 @@
             return (skill[skill.main] * 100) + "%";
         } else if (["additionalHealth"].includes(skill.main)) {
             return abbreviateNumber(skill[skill.main]);
+        } else if (["onAbilityUseStealth"].includes(skill.main)) {
+            return (skill[skill.main] / 1e3) + " sec";
         } else {
             return skill[skill.main];
         }
@@ -15165,8 +15282,8 @@
                 }
             }
         }
-        let logs = [];
-        /*"modules": [
+        /*let logs = [];
+        "modules": [
             "Nuclear Amplifier",
             "Nuclear Amplifier",
             "Last Stand",
@@ -15182,7 +15299,7 @@
             "Master Gunsmith",
             "Thrill Seeker",
             "Movement Expert"
-        ]*/
+        ]
         player.shapes.filter(e => e.slot != null).forEach(e => {
             let info = {};
             info.name = e.name;
@@ -15214,7 +15331,7 @@
             info.activeModuleIndex = e.activeModuleIndex;
             logs.push(info);
         });
-        console.log(logs);
+        console.log(logs);*/
     }
     var operationData = {
         xp: 0,
@@ -16287,6 +16404,37 @@
                         level: weapon.level
                     }
                 });
+            } else if (weapon.name == "Sorrow" || weapon.name == "Grief") {
+                projectiles.push({
+                    x: x,
+                    y: y,
+                    oldX: x,
+                    oldY: y,
+                    projType: weapon.projType,
+                    velx: 0,
+                    vely: 0,
+                    scale: scale,
+                    speed: 0.25,
+                    dmg: weapon.dmg,
+                    range: weapon.range,
+                    dir: dir + getRandomOffset(weapon.spread),
+                    isAlly: isAlly,
+                    color: `./images/bullets/${(weapon.firedTime / 4e3) == 1 ? "red_bullet" : "bullet"}.png`,
+                    avoidBuildings: shape.avoidBuildings,
+                    grayDamageAmount: (weapon.firedTime / 4e3) == 1 ? .8 : undefined,
+                    owner: shape,
+                    autoTargetData: {
+                        type: "nearest",
+                        range: 800,
+                        better: true
+                    },
+                    defensePointsBypass: (1 - weapon.defenseBypass),
+                    changeDirSpeed: 0.045,
+                    weaponOwner: {
+                        name: weapon.name,
+                        level: weapon.level
+                    }
+                });
             } else if (weapon.name == "Talon" || weapon.name == "Jaw") {
                 projectiles.push({
                     x: x,
@@ -17323,8 +17471,8 @@
                 total.workshopPoints += player.rewardBonus.WSP;
             }
         }
-        total.playerXP *= 1.75;
-        if (total.playerXP >= 1e3) {
+        total.playerXP *= 5;
+        if (total.playerXP >= 5e3) {
             let amount = total.playerXP - 1e3;
             total.playerXP = 1e3;
             total.playerXP += amount * .75;
@@ -18732,6 +18880,9 @@
                     }
                 }
                 if (effect.lastTime <= 0) {
+                    if (effect.name == "Clain Blink") {
+                        doAbilityEndFunction(robot, 0, effect);
+                    }
                     if (effect.name == "Cannonier") {
                         if (effect.health > 0) {
                             robot.maxhealth -= effect.maxhealth;
@@ -19019,6 +19170,8 @@
             return "./images/abilities/ultimate_reflecting_dash.png";
         } else if (index == "frag") {
             return "./images/fragility.png";
+        } else if (index == "Clain Blink") {
+            return "./images/abilities/clain_blink.png";
         } else {
             return "./images/abilities/cold_pulse.png";
         }
@@ -19089,6 +19242,8 @@
                 thingy = (weapon.firedTime / 500) * 100;
             } else if (weapon.name == "Discordia" || weapon.name == "Tumultus") {
                 thingy = (weapon.firedTime / 1e3) * 100;
+            } else if (weapon.name == "Sorrow" || weapon.name == "Grief") {
+                thingy = (weapon.firedTime / 4e3) * 100;
             }
             document.getElementById("weaponThing").innerHTML += `
             <div style="opacity: ${weapon.weaponIsBroken ? .1 : weapon.notActive ? .4 : 1}; position: absolute; bottom: ${80 * (index >= 4 ? index - 4 : index)}px; left: ${index >= 4 ? 320 : 0}px; width: 200px; height: 75px; margin-top: 20px;">
@@ -19324,6 +19479,12 @@
                         } else {
                             increaseFireTime(weapon, -delta);
                         }
+                    } else if (weapon.name == "Sorrow" || weapon.name == "Grief") {
+                        if ((robot.isMe ? spacePressed : robot.fireWeapon)) {
+                            increaseFireTime(weapon, delta, 4e3);
+                        } else {
+                            increaseFireTime(weapon, -delta);
+                        }
                     }
                 }
                 if (weapon.name == "Fulgur" || weapon.name == "Tonans") {
@@ -19333,7 +19494,14 @@
                     weapon.ammo = Math.floor(weapon.ammo);
                     if (weapon.lastFire == null) weapon.lastFire = 0;
                     robot.reloadMoveMulti = 1;
-                    let fireRateMulti = (weapon.name == "Evora" || weapon.name == "Veyron" ? (weapon.firedTime / 500 == 1 ? 0.25 : 1) : (weapon.firedTime / 10000));
+                    let fireRateMulti = 1;
+                    if (weapon.name == "Evora" || weapon.name == "Veyron") {
+                        fireRateMulti = (weapon.firedTime / 500) == 1 ? 0.25 : 1;
+                    } else if (weapon.name == "Atomizer" || weapon.name == "Nucleon") {
+                        fireRateMulti = 1 + (weapon.firedTime / 10000);
+                    } else if (weapon.name == "Sorrow" || weapon.name == "Grief") {
+                        fireRateMulti = (weapon.firedTime / 4e3) == 1 ? .25 : 1;
+                    }
                     if (((robot.isMe ? spacePressed : robot.fireWeapon) || weapon.continueToFire) && !robot.isFREEZE) {
                         if (typeof weapon.fireRate == "object") {
                             if (Date.now() - weapon.lastFire >= weapon.fireRate[weapon.ammoFired % weapon.fireRate.length]) {
@@ -19348,7 +19516,7 @@
                                 weapon.ammoFired++;
                                 weapon.ammo--;
                             }
-                        } else if (Date.now() - weapon.lastFire >= weapon.fireRate * (weapon.name == "Atomizer" || weapon.name == "Nucleon" ? 1 + fireRateMulti : weapon.name == "Evora" || weapon.name == "Veyron" ? fireRateMulti : 1)) {
+                        } else if (Date.now() - weapon.lastFire >= weapon.fireRate * fireRateMulti) {
                             if (weapon.name == "Fulgur" || weapon.name == "Tonans") {
                                 weapon.continueToFire = true;
                             }
@@ -19512,6 +19680,12 @@
                 lastTime: !robot.ability.lastingTime ? 5e3 : ["Blink Support"].includes(robot.ability.name) ? 5e3 : 1
             });
         }
+        if (robot.onAbilityUseStealth) {
+            robot.effects.push({
+                name: "stealth",
+                lastTime: robot.onAbilityUseStealth
+            });
+        }
         if (robot.onAbilityUseAttack) {
             robot.effects.push({
                 name: "attack",
@@ -19611,7 +19785,22 @@
             }
         }
     }
-    function useAbility(robot, isAlly) {
+    function doBlinkAbility(robot, x, y) {
+        let distance = dist(robot, {x, y});
+        if (distance <= 2e3) {
+            robot.x = x;
+            robot.y = y;
+        } else {
+            let angle = Math.atan2(y - robot.y, x - robot.x);
+            let tmp = {
+                x: robot.x + Math.cos(angle) * 2e3,
+                y: robot.y + Math.sin(angle) * 2e3
+            };
+            robot.x = tmp.x;
+            robot.y = tmp.y;
+        }
+    }
+    function useAbility(robot, isAlly, delta) {
         if (robot.abilityLast == null) robot.abilityLast = 0;
         if (robot.abilityReload == null) robot.abilityReload = 0;
         if (robot.ability.name == "Shapeshift") {
@@ -19714,7 +19903,7 @@
                     robot.abilityLast = 1;
                 }
             }
-        } else if (robot.ability.name == "Remote Assault" || robot.ability.name == "Cannonier" || robot.ability.name == "Long Shot" || robot.ability.name == "Support" || robot.ability.name == "Matrix" || robot.ability.name == "Reflector" || robot.ability.name == "Clear Sky" || robot.ability.name == "Reinforce Hull" || robot.ability.name == "Ultimate Mending" || robot.ability.name == "Divine Judgement" || robot.ability.name == "Grand Fortitude" || robot.ability.name == "Paladin" || robot.ability.name == "Overload" || robot.ability.name == "Stampede" || robot.ability.name == "Stealth" || robot.ability.name == "Retribution" || robot.ability.name == "Ultimate Defense" || robot.ability.name == "Self Heal" || robot.ability.name == "Dragon Flight" || robot.ability.name == "Shield Regeneration" || robot.ability.name == "Full Action") {
+        } else if ((robot.ability.name == "Clain Blink" && !robot.ability.maxcharge) || robot.ability.name == "Remote Assault" || robot.ability.name == "Cannonier" || robot.ability.name == "Long Shot" || robot.ability.name == "Support" || robot.ability.name == "Matrix" || robot.ability.name == "Reflector" || robot.ability.name == "Clear Sky" || robot.ability.name == "Reinforce Hull" || robot.ability.name == "Ultimate Mending" || robot.ability.name == "Divine Judgement" || robot.ability.name == "Grand Fortitude" || robot.ability.name == "Paladin" || robot.ability.name == "Overload" || robot.ability.name == "Stampede" || robot.ability.name == "Stealth" || robot.ability.name == "Retribution" || robot.ability.name == "Ultimate Defense" || robot.ability.name == "Self Heal" || robot.ability.name == "Dragon Flight" || robot.ability.name == "Shield Regeneration" || robot.ability.name == "Full Action") {
             if (robot.abilityReload == 0 && robot.abilityLast == 0) {
                 robot.abilityLast = robot.ability.lastingTime;
                 doWonderworkerSkill(robot);
@@ -19916,6 +20105,35 @@
                         duration: robot.ability.lastingTime,
                         isAlly: isAlly
                     });
+                } else if (robot.ability.name == "Clain Blink") {
+                    robot.effects.push({
+                        name: "Clain Blink",
+                        abilityEffect: "Clain Blink",
+                        lastTime: robot.ability.lastingTime,
+                        lastPressed: Date.now(),
+                        translocator: {
+                            x: robot.x,
+                            y: robot.y
+                        },
+                    });
+                    let shield = robot.shields.find(e => e.clainBlink);
+                    if (shield) {
+                        shield.maxhealth += robot.ability.shieldHp;
+                        shield.health += robot.ability.shieldHp;
+                    } else {
+                        robot.shields.push({
+                            type: "yellow",
+                            clainBlink: true,
+                            maxhealth: robot.ability.shieldHp,
+                            health: robot.ability.shieldHp,
+                            regen: 0
+                        });
+                    }
+                    robot.ability.maxcharge = 3;
+                    robot.ability.charges = 3;
+                    let tmpx = robot.isMe ? robot.cursorLocation.x : robot.movementTarget.x;
+                    let tmpy = robot.isMe ? robot.cursorLocation.y : robot.movementTarget.y
+                    doBlinkAbility(robot, tmpx, tmpy);
                 }
             }
         } else if (robot.ability.name == "Cold Pulse") {
@@ -20114,6 +20332,31 @@
                         duration: duration,
                         isAlly: isAlly
                     });
+                }
+            } else if (robot.ability.name == "Clain Blink") {
+                let effect = robot.effects.find(e => e.name == "Clain Blink");
+                if (effect && robot.ability.charges <= 0 && Date.now() - effect.lastPressed >= 3e3) {
+                    doAbilityEndFunction(robot, 0, effect);
+                } else if (effect && Date.now() - effect.lastPressed >= 3e3) {
+                    doWonderworkerSkill(robot);
+                    robot.ability.charges--;
+                    effect.lastPressed = Date.now();
+                    let tmpx = robot.isMe ? robot.cursorLocation.x : robot.movementTarget.x;
+                    let tmpy = robot.isMe ? robot.cursorLocation.y : robot.movementTarget.y
+                    doBlinkAbility(robot, tmpx, tmpy);
+                    let shield = robot.shields.find(e => e.clainBlink);
+                    if (shield) {
+                        shield.maxhealth += robot.ability.shieldHp;
+                        shield.health += robot.ability.shieldHp;
+                    } else {
+                        robot.shields.push({
+                            type: "yellow",
+                            clainBlink: true,
+                            maxhealth: robot.ability.shieldHp,
+                            health: robot.ability.shieldHp,
+                            regen: 0
+                        });
+                    }
                 }
             }
         } else if (robot.ability.name == "Domain Expansion: Infinite Void") {
@@ -20369,7 +20612,7 @@
             }
         }
     }
-    function doAbilityEndFunction(robot, delta) {
+    function doAbilityEndFunction(robot, delta, effect) {
         if (!robot.ability.maxcharge) robot.abilityReload = robot.ability.reload;
         if (robot.ability.name == "Clear Sky" || robot.ability.name == "Retribution" || robot.ability.name == "Paladin") {
             if (robot.ability.name == "Paladin") {
@@ -20420,6 +20663,15 @@
             let multi = robot.health / robot.maxhealth;
             robot.maxhealth -= healthIncreased;
             robot.health = multi * robot.maxhealth;
+        }
+        if (robot.ability.name == "Clain Blink" && effect) {
+            robot.x = effect.translocator.x;
+            robot.y = effect.translocator.y;
+            effect.lastTime = 0;
+            robot.abilityLast = 0;
+            robot.abilityReload = robot.ability.reload;
+            robot.ability.charges = undefined;
+            robot.ability.maxcharge = undefined;
         }
         if (robot.onAbilityEndFix) {
             let amount = (robot.maxhealth - robot.health) - robot.grayDamage;
@@ -20553,6 +20805,8 @@
         if (robot.ability) {
             let abilityName = robot.ability.name;
             if (["Support", "Ultimate Defense", "Matrix", "Blink Support", "Reflector", "Stampede", "Clear Sky", "Reinforce Hull", "Cold Pulse", "Divine Judgement", "Full Action", "Stealth", "Domain Expansion: Infinite Void", "Paladin", "Dragon Flight", "Phase Shift", "Ultimate Mending", "Self Heal", "Retribution"].includes(abilityName) && Date.now() - robot.damagedTime <= 50) {
+                robot.useAbility = true;
+            } else if (abilityName == "Remote Assault" && robot.target && dist(robot.target, robot) <= 1800) {
                 robot.useAbility = true;
             } else if (abilityName == "Ultimate Reflecting Dash") {
                 if (robot.isBluebell) {
@@ -20979,7 +21233,7 @@
                 document.getElementById("cooldownText").style.color = color;
                 document.getElementById("useAbility").style.display = "block";
             }
-            if (robot.ability.charges >= robot.ability.maxcharge) {
+            if (robot.ability.charges >= robot.ability.maxcharge && robot.ability.name != "Clain Blink") {
                 robot.ability.charges = robot.ability.maxcharge;
                 robot.abilityReload = robot.ability.reload;
             }
@@ -21000,7 +21254,7 @@
                 }
             }
             if (robot.isMe ? keysPressed[69] : robot.useAbility) {
-                useAbility(robot, isAlly);
+                useAbility(robot, isAlly, delta);
             }
             if (robot.isMe && robot.abilityReload == null && robot.abilityLast == null) {
                 document.getElementById("cooldownText").innerHTML = "";
@@ -21132,7 +21386,7 @@
         });
         doBorderCollision(robot, delta);
         decelerateRobot(robot, delta);
-        if (robot.health <= 0 || robot.kill) {
+        if (robot.health <= 0 || robot.kill || robot.killed) {
             if (!robot.kill && robot.lastStandThreshold && !robot.usedLastStand) {
                 robot.health = robot.maxhealth * robot.lastStandThreshold;
                 robot.effects.push({
@@ -23319,6 +23573,7 @@
                 }
             }
         }
+        robot.movementTarget = target;
         if (target) {
             let extra = doCollRectMovement(target, robot);
             if (extra != null && extra != undefined) return extra;
