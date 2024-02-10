@@ -2548,7 +2548,6 @@
         moduleHardpoints: 4,
         costParts: true
     }, {
-        dontSell: true,
         tier: 4,
         name: "Dark Green Pentagon",
         speed: 0.0018,
