@@ -331,7 +331,7 @@
             `)}
         `)}
     `);
-    updateLogger.newLog("V54 UPDATE NOTES (Feb 17, 2024)", `
+    updateLogger.newLog("V54 UPDATE NOTES (Feb 26, 2024)", `
         ${updateLogger.marginBlock(10, `
             ${updateLogger.lineBlock(["New Shape(s): Light Blue Triangle and Red Octagon", "New Weapon(s): Vortex and Thermite", "Balance Changes / Other Improvements"])}
             ${updateLogger.title("h2", `CHANGES`)}
