@@ -1,4 +1,5 @@
 (function () {
+    //window.isDev = true;
     var slotData = [{
         unlocked: true,
         used: true,
@@ -327,7 +328,7 @@
     `);
     updateLogger.newLog("V55 UPDATE NOTES (Feb 26, 2024)", `
         ${updateLogger.marginBlock(10, `
-            ${updateLogger.lineBlock(["Less OXP is needed to reach level 200 at the Osperation", "Balance Changes / Other Improvements"])}
+            ${updateLogger.lineBlock(["New Shape: Purple Pentagon", "New Weapon(s): Leiming, Fengbao, Inferno, and Pyro", "Less OXP is needed to reach level 200 at the Osperation", "Balance Changes / Other Improvements"])}
             ${updateLogger.title("h2", `CHANGES`)}
             ${updateLogger.marginBlock(10, `
                 ${updateLogger.lineBlock(["Reduced the effectiveness of all slowdown effects."])}
