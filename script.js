@@ -1,5 +1,4 @@
 (function () {
-    //window.isDev = true;
     var slotData = [{
         unlocked: true,
         used: true,
@@ -61,20 +60,6 @@
             ` + this.html;
         }
     }());
-    updateLogger.newLog("V44 UPDATE NOTES", `
-        ${updateLogger.marginBlock(10, `
-            ${updateLogger.lineBlock(["New weapons(s): Brisant and Shatter", "Other Changes + Bug Fixes"])}
-            ${updateLogger.title("h2", `NEW WEAPONS(S): Smuta and Razor`)}
-            ${updateLogger.marginBlock(10, `
-                ${updateLogger.title("h3", `Brisant and Shatter:`)}
-                Brisant, the heavy weapon, and Shatter, the light counterpart, both fall under the category of cluster shotguns. Upon reaching a certain distance, their projectiles disperse into a remarkable spread, dividing into 30 smaller projectiles. This unique characteristic significantly increases the coverage area, making them especially effective in dealing with multiple targets or widespread enemy formations. The ability to unleash a multitude of projectiles after a certain range ensures that Brisant and Shatter provide a formidable and versatile solution for engaging adversaries in various combat scenarios.
-            `)}
-            ${updateLogger.title("h2", `OTHER IMPROVEMENTS`)}
-            ${updateLogger.marginBlock(10, `
-                ${updateLogger.lineBlock(["Trickster and Tamer (Max Rust Power): 100% -> 90%", "Bug Fixes"])}
-            `)}
-        `)}
-    `);
     updateLogger.newLog("V45 UPDATE NOTES", `
         ${updateLogger.marginBlock(10, `
             ${updateLogger.lineBlock(["New shape(s): Magenta Circle, and Gray Pentagon", "New weapon(s): Smuta and Razor", "New Workshop 2.0", "Massive Rebalances", "Bug Fixes"])}
@@ -281,7 +266,7 @@
             `)} 
             ${updateLogger.title("h2", `NEW PILOTS`)}
             ${updateLogger.marginBlock(10, `
-                Eleanor Thorne pilots Purple Pentagon<br>
+                Eleanor Thorne pilots Purple Heptagon<br>
                 Elijah Forge pilots Cyan Hexagon<br>
                 Caleb Sterling pilots Orange Circle<br>
                 Sebastian Wren pilots Light Blue Heptagon<br><br>
@@ -340,6 +325,15 @@
             `)}
         `)}
     `);
+    updateLogger.newLog("V55 UPDATE NOTES (Feb 26, 2024)", `
+        ${updateLogger.marginBlock(10, `
+            ${updateLogger.lineBlock(["Less OXP is needed to reach level 200 at the Osperation", "Balance Changes / Other Improvements"])}
+            ${updateLogger.title("h2", `CHANGES`)}
+            ${updateLogger.marginBlock(10, `
+                ${updateLogger.lineBlock(["Reduced the effectiveness of all slowdown effects."])}
+            `)}
+        `)}
+    `);
     var mainDisplayText = updateLogger.grabHTML();
     document.getElementById("sideDisplay").innerHTML = "";
     function getValue(id) {
@@ -361,6 +355,7 @@
         modules: [],
         drones: [],
         pilots: [],
+        motherships: [],
         gameMode: -1,
         ULIMATEXP: 0,
         workshopPoints: 0,
@@ -415,6 +410,7 @@
     var shapeSids = 0;
     class shape {
         constructor(data, slot, dontSID) {
+            this.blind = false;
             this.isItem = true;
             this.x = 0;
             this.y = 0;
@@ -494,8 +490,9 @@
                     iconSource: data.ability.iconSource,
                     oldIconSource: data.ability.iconSource
                 };
-                if (data.ability.name == "Clain Blink") {
+                if (data.ability.name == "Clain Blink" || data.ability.name == "Barrier Field") {
                     this.ability.lastingTime = data.ability.lastingTime;
+                    this.ability.durabilityLimit = data.ability.durabilityLimitData ? data.ability.durabilityLimitData.base : data.ability.durabilityLimit;
                     this.ability.shieldHp = data.ability.shieldHpData ? data.ability.shieldHpData.base : data.ability.shieldHp;
                 } else if (data.ability.name == "Remote Assault" || data.ability.name == "Blink Assault") {
                     this.ability.dmg = data.ability.damageData ? data.ability.damageData.base : data.ability.dmg;
@@ -2747,6 +2744,46 @@
         color: "#add8e6",
         moduleHardpoints: 4,
         costParts: true
+    }, {
+        dontSell: true,
+        tier: 4,
+        name: "Purple Pentagon",
+        speed: 0.001,
+        speedLevel: [0, 0.0001, 0.0001, 0.0001, 0.0001, 0, 0.0001, 0.0001, 0, 0.0001, 0.0001, 0.0002],
+        scale: 85,
+        fieldOfViewMulti: 1.65,
+        desc: `
+        The smartest engineering minds at Pentagon have taken the word protection to the next level with this shape. This shape isn't afraid to take on the heavy fire power of enemies. It can place a purple shield that blocks incoming damage and extends its durability.<br><br>
+        Recommended Equipment: x1 Pyro + x2 Inferno
+        `,
+        healthData: {
+            base: 50e3,
+            level: [0, 5e3, 5e3, 10e3, 10e3, 15e3, 15e3, 25e3, 25e3, 25e3, 30e3, 35e3],
+        },
+        builtInDefensePoints: 50,
+        ability: {
+            name: "Barrier Field",
+            desc: `
+            <span style="font-width: bolder; color: #fff;">Barrier Field</span> The shape activates a purple shield that is streamlined to protect the front of the shape. Any and all damage dealt to the shield will increase the durability of the shape.<br><br>
+            Duration: 6 seconds<br>
+            Shield Cover: 225 Degrees<br>
+            Cooldown Time: 14 seconds
+            `,
+            durabilityLimitData: {
+                base: 100e3,
+                level: [0, 10e3, 10e3, 10e3, 10e3, 10e3, 25e3, 25e3, 25e3, 25e3, 25e3, 25e3]
+            },
+            iconSource: "./images/abilities/shield_t.png",
+            lastingTime: 6e3,
+            reload: 14e3
+        },
+        hardpoints: {
+            light: 1,
+            heavy: 2
+        },
+        color: "#800080",
+        moduleHardpoints: 4,
+        costParts: true
     }];
     function defensePointsToResistance(defense) {
         return (100) / (100 + defense);
@@ -2776,6 +2813,7 @@
             this.continuousReload = data.continuousReload;
             this.ammoEachReloadTick = data.ammoEachReloadTick;
             this.aoeRange = data.aoeRange;
+            this.overheatTime = data.overheatTime;
             this.dotDamage = data.dotData ? data.dotData.base : data.dotDamage;
             this.fireRateDecrease = data.fireRateDecreaseData ? data.fireRateDecreaseData.base : data.fireRateDecrease;
             this.defenseBypass = data.defenseBypassData ? data.defenseBypassData.base : data.defenseBypass;
@@ -2838,7 +2876,7 @@
         Rockets deal aoe damage and are effective againist groups of enemies. 
         Improved reloading mechanics makes this weapon reload while firing.
         `,
-        motherShipCharge: 0.046875,
+        motherShipCharge: 0.00046875,
         damageData: {
             base: 560,
             level: [0, 80, 83, 86, 90, 90, 90, 90, 102, 102, 102, 102],
@@ -2918,7 +2956,7 @@
             base: 1e3,
             level: [0, 1e2, 140, 177, 190, 211, 222, 234, 255, 266, 288, 300],
         },
-        motherShipCharge: 0.0023,
+        motherShipCharge: 0.000023,
         ammoEachReloadTick: 6,
         continuousReload: true,
         imageSource: "./images/weapons/avalanche.png",
@@ -3023,6 +3061,7 @@
         Unlimited ammo.
         Longer it fires, the slower and less accurate it becomes.
         `,
+        overheatTime: 10e3,
         motherShipCharge: 0.0005,
         damageData: {
             base: 536,
@@ -3050,6 +3089,7 @@
         Longer it fires, the slower and less accurate it becomes.
         `,
         motherShipCharge: 0.0005,
+        overheatTime: 10e3,
         damageData: {
             base: 1072,
             level: [0, 102, 112, 120, 130, 150, 152, 170, 188, 208, 226, 260]
@@ -3240,7 +3280,7 @@
             base: 408,
             level: [0, 34, 34, 39, 45, 45, 56, 56, 61, 68, 73, 89]
         },
-        motherShipCharge: 0.0018,
+        motherShipCharge: 0.001,
         imageSource: "./images/weapons/slumber.png",
         fireRate: 24,
         ammo: 35,
@@ -3263,7 +3303,7 @@
             base: 818,
             level: [0, 67, 67, 77, 89, 89, 111, 111, 122, 134, 145, 178]
         },
-        motherShipCharge: 0.0018,
+        motherShipCharge: 0.001,
         imageSource: "./images/weapons/delay.png",
         fireRate: 24,
         ammo: 35,
@@ -3946,7 +3986,7 @@
             base: .05,
             level: [0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.15, 0.15, 0.15, 0.15],
         },
-        motherShipCharge: 0.025,
+        motherShipCharge: 0.0025,
         imageSource: "./images/weapons/brisant.png",
         fireRate: 500,
         ammo: 10,
@@ -3982,7 +4022,7 @@
             base: .05,
             level: [0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.1, 0.15],
         },
-        motherShipCharge: 0.025,
+        motherShipCharge: 0.0025,
         imageSource: "./images/weapons/shatter.png",
         fireRate: 500,
         ammo: 10,
@@ -4124,7 +4164,7 @@
             base: .05,
             level: [0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.1, 0.15],
         },
-        motherShipCharge: 0.003125,
+        motherShipCharge: 0.0015625,
         imageSource: "./images/weapons/labrys.png",
         fireRate: [600, 100, 100, 100, 100],
         ammo: 50,
@@ -4159,7 +4199,7 @@
             base: .05,
             level: [0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.15, 0.15, 0.15, 0.15],
         },
-        motherShipCharge: 0.003125,
+        motherShipCharge: 0.0015625,
         imageSource: "./images/weapons/cestus.png",
         fireRate: [250, 50, 50, 50, 50],
         ammo: 100,
@@ -4264,7 +4304,7 @@
             base: .05,
             level: [0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.1, 0.15],
         },
-        motherShipCharge: 0.0036,
+        motherShipCharge: 0.000357,
         imageSource: "./images/weapons/vajra.png",
         fireRate: 750,
         ammo: 15,
@@ -4296,7 +4336,7 @@
             base: .05,
             level: [0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.15, 0.15, 0.15, 0.15],
         },
-        motherShipCharge: 0.0036,
+        motherShipCharge: 0.000357,
         imageSource: "./images/weapons/maha_vajra.png",
         fireRate: 750,
         ammo: 15,
@@ -4440,7 +4480,7 @@
             base: .05,
             level: [0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.1, 0.15],
         },
-        motherShipCharge: 0.00235,
+        motherShipCharge: 0.0001,
         imageSource: "./images/weapons/grief.png",
         fireRate: 40,
         ammo: 800,
@@ -4470,7 +4510,7 @@
             base: .05,
             level: [0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.15, 0.15, 0.15, 0.15],
         },
-        motherShipCharge: 0.00235,
+        motherShipCharge: 0.0001,
         imageSource: "./images/weapons/sorrow.png",
         fireRate: 40,
         ammo: 800,
@@ -4513,7 +4553,6 @@
             workshopPoints: 100e3
         }
     }, {
-        dontSell: true,
         tier: 3,
         spread: 15,
         industryName: "Heptagon",
@@ -4540,7 +4579,6 @@
             workshopPoints: 5e3
         }
     }, {
-        dontSell: true,
         tier: 3,
         spread: 15,
         industryName: "Heptagon",
@@ -4565,6 +4603,118 @@
             sliver: 5e6,
             gold: 5e3,
             workshopPoints: 5e3
+        }
+    }, {
+        dontSell: true,
+        tier: 4,
+        industryName: "Heptagon",
+        name: "Leiming",
+        type: "Light",
+        projType: "energy",
+        desc: `Super close ranged light laser arc weapon that deals a lot of damage in a short time. Every hit accumulates a lockdown effect that disables enemies from moving.`,
+        damageData: {
+            base: 1200,
+            level: [0, 200, 200, 250, 250, 250, 300, 300, 300, 300, 350, 400]
+        },
+        defenseBypassData: {
+            base: .05,
+            level: [0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.1, 0.15],
+        },
+        motherShipCharge: 0.0005,
+        imageSource: "./images/weapons/leiming.png",
+        fireRate: [150, 50, 50, 50, 50],
+        ammo: 100,
+        reload: 8e3,
+        range: 450,
+        cost: {
+            sliver: 60e6,
+            gold: 300e3,
+            workshopPoints: 100e3
+        }
+    }, {
+        dontSell: true,
+        tier: 4,
+        industryName: "Heptagon",
+        name: "Fengbao",
+        type: "Heavy",
+        projType: "energy",
+        desc: `Super close ranged heavy laser arc weapon that deals a lot of damage in a short time. Every hit accumulates a lockdown effect that disables enemies from moving.`,
+        damageData: {
+            base: 3e3,
+            level: [0, 400, 400, 500, 500, 500, 600, 600, 600, 600, 700, 800]
+        },
+        defenseBypassData: {
+            base: .05,
+            level: [0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.15, 0.15, 0.15, 0.15],
+        },
+        motherShipCharge: 0.0005,
+        imageSource: "./images/weapons/fengbao.png",
+        fireRate: [150, 50, 50, 50, 50],
+        ammo: 100,
+        reload: 8e3,
+        range: 450,
+        cost: {
+            sliver: 60e6,
+            gold: 300e3,
+            workshopPoints: 100e3
+        }
+    }, {
+        dontSell: true,
+        tier: 4,
+        industryName: "Pentagon",
+        name: "Inferno",
+        spread: 25,
+        type: "Heavy",
+        projType: "energy",
+        desc: `New heavy flamerthrower that has unlimited ammo. The longer you fire, the inaccurate the weapon becomes and the slower the projectiles travel.`,
+        damageData: {
+            base: 667,
+            level: [0, 67, 74, 98, 108, 133, 133, 145, 175, 188, 208, 220]
+        },
+        defenseBypassData: {
+            base: .05,
+            level: [0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.15, 0.15, 0.15, 0.15],
+        },
+        overheatTime: 8e3,
+        motherShipCharge: 0.00016,
+        imageSource: "./images/weapons/inferno.png",
+        fireRate: 35,
+        ammo: 1e300,
+        reload: 3e3,
+        range: 1e3,
+        cost: {
+            sliver: 60e6,
+            gold: 300e3,
+            workshopPoints: 100e3
+        }
+    }, {
+        dontSell: true,
+        tier: 4,
+        industryName: "Pentagon",
+        name: "Pyro",
+        spread: 7,
+        type: "Light",
+        projType: "energy",
+        desc: `New light flamerthrower that has unlimited ammo. The longer you fire, the inaccurate the weapon becomes and the slower the projectiles travel.`,
+        damageData: {
+            base: 266,
+            level: [0, 27, 30, 39, 43, 53, 53, 58, 70, 75, 83, 88]
+        },
+        defenseBypassData: {
+            base: .05,
+            level: [0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.1, 0.15],
+        },
+        overheatTime: 8e3,
+        motherShipCharge: 0.00016,
+        imageSource: "./images/weapons/pyro.png",
+        fireRate: 35,
+        ammo: 1e300,
+        reload: 3e3,
+        range: 1e3,
+        cost: {
+            sliver: 60e6,
+            gold: 300e3,
+            workshopPoints: 100e3
         }
     }];
     class module {
@@ -4696,10 +4846,6 @@
         desc: `
         Thermonuclear Reactor, increases weapon damage output even more.
         `,
-        buyDesc: `
-        <br><br>
-        Cost: 1.0K Gold
-        `,
         dmgIncreaseData: {
             base: 0.05,
             level: [0, 0.02, 0.02, 0.02, 0.02, 0.02]
@@ -4714,10 +4860,6 @@
         name: "Balance Unit",
         desc: `
         Increases shape's durability and weapon damage output.
-        `,
-        buyDesc: `
-        <br><br>
-        Cost: 5.0K Gold
         `,
         healthIncreaseData: {
             base: 0.05,
@@ -4739,10 +4881,6 @@
         Once the shape enters low durability, it stops the shape from taking damage for X seconds.
         Only can be used once.
         More modules you put, the quicker you would get the immunity.
-        `,
-        buyDesc: `
-        <br><br>
-        Cost: 25.0M Silver + 5.0K Gold
         `,
         immunePercentData: {
             base: 0.05,
@@ -4900,7 +5038,7 @@
             workshopPoints: 50e3
         }
     }];
-    function makeNewSpecialAddiction(name, {
+    function makeNewSpecialEdition(name, {
         health,
         builtInDefensePoints,
         topDesc,
@@ -4916,7 +5054,8 @@
         healingAuraData,
         fieldOfViewMulti,
         speed,
-        hullIntegrity
+        hullIntegrity,
+        moduleHardpoints
     }, type, specialOf, source) {
         if (type == "shape") {
             let shape = shapeData.find(e => e.name == name);
@@ -4943,6 +5082,7 @@
             if (borderColor) newshape.borderColor = borderColor;
             if (moduleSlots) newshape.moduleHardpoints = moduleSlots;
             if (newshape.reflector && reflector) newshape.reflector = reflector;
+            if (moduleHardpoints) newshape.moduleHardpoints = moduleHardpoints;
             for (let i = 0; i < newshape.healthData.level.length; i++) {
                 newshape.healthData.level[i] *= health;
             }
@@ -4954,13 +5094,13 @@
             shapeData.push(newshape);
         }
     }
-    makeNewSpecialAddiction("Orange Circle", {
+    makeNewSpecialEdition("Orange Circle", {
         health: 1.3,
         reflector: .4,
         moduleSlots: 5,
         cantGet: true
     }, "shape", "Pumpkin", "./images/special_addtiction/pumpkin_orange_circle.png");
-    makeNewSpecialAddiction("Green Circle", {
+    makeNewSpecialEdition("Green Circle", {
         cantGet: true,
         health: 2,
         topDesc: `
@@ -5006,7 +5146,7 @@
         tier: 4,
         borderColor: "#ffff00"
     }, "shape", "Ultimate");
-    makeNewSpecialAddiction("Tan Pentagon", {
+    makeNewSpecialEdition("Tan Pentagon", {
         health: 2.25,
         cantGet: true,
         tier: 4,
@@ -5048,7 +5188,7 @@
         },
         borderColor: "#ffff00"
     }, "shape", "Ultimate");
-    makeNewSpecialAddiction("Teal Circle", {
+    makeNewSpecialEdition("Teal Circle", {
         health: 1.4,
         speed: 1.5,
         tier: 4,
@@ -5094,7 +5234,7 @@
         },
         borderColor: "#ffff00"
     }, "shape", "Ultimate");
-    makeNewSpecialAddiction("Tan Circle", {
+    makeNewSpecialEdition("Tan Circle", {
         health: 1.2324,
         tier: 4,
         topDesc: `
@@ -5103,6 +5243,33 @@
         builtInDefensePoints: 25,
         borderColor: "#00f"
     }, "shape", "Blue-Outlined");
+    makeNewSpecialEdition("Gray Circle", {
+        tier: 4,
+        health: 4.5,
+        hardpoints: {
+            light: 0,
+            heavy: 2
+        },
+        topDesc: `
+        ULTIMATE SHAPE VERSION<br>
+        The rarest modification of the Gray Circle.
+        Surpassing the original in all aspects,
+        it is a desirable shape for any player.
+        `,
+        newDesc: `
+        Training shape for mastering the basics of combat.<br><br>
+        <strong style="color: #fff">Forcefield</strong> Another type of defense which reduces damage taken. It cannot be mitigated by defense mitigation effect weapon but may be reduced. Forcefield is based on durability but not considered as a shield.<br><br>
+        Damage Reduction: 90% (MAX) to 0% (MIN)<br>
+        Durability: 150,000<br>
+        Regeneration Time: 5 seconds
+        <br><br>
+        Recommended Equipment: x2 Veyron
+        `,
+        builtInDefensePoints: 25,
+        moduleHardpoints: 4,
+        hullIntegrity: .5,
+        borderColor: "#ffff00"
+    }, "shape", "Ultimate");
     var activeModuleData = [{
         tier: 0,
         name: "Repair Unit",
@@ -5160,20 +5327,6 @@
         dmgIncrease: .4,
         lastTime: 6e3,
         cost: 800,
-        reload: 14e3
-    }, {
-        tier: 4,
-        name: "Life Saver",
-        desc: "When activated, the shape gains a 4-second stealth, minor healing, and temporarily becomes immune to defense mitigation.",
-        imageSource: "./images/icons/anti_defense_mitigation.png",
-        repairUnitPower: {
-            type: "percent",
-            power: 0.025,
-            rate: 1e3
-        },
-        stealthTime: 4e3,
-        lastTime: 14e3,
-        cost: 1600,
         reload: 14e3
     }];
     function checkIfDev() {
@@ -5358,6 +5511,13 @@
         } else {
             document.getElementById("lootBoxToggle").style.opacity = 1;
             document.getElementById("lootBoxToggle").style.pointerEvents = "auto";
+        }
+        if (accountLevel < 25) {
+            document.getElementById("mothershipToggle").style.pointerEvents = "none";
+            document.getElementById("mothershipToggle").style.opacity = .2;
+        } else {
+            document.getElementById("mothershipToggle").style.opacity = 1;
+            document.getElementById("mothershipToggle").style.pointerEvents = "auto";
         }
     }
     function injectRewards(level, rewards, unlocked) {
@@ -5657,6 +5817,9 @@
                         if (last < 10 && player.profile.level >= 10) {
                             unlockedSomething.push("Unlocked Drones");
                         }
+                        if (last < 25 && player.profile.level >= 25) {
+                            unlockedSomething.push("Unlocked Motherships");
+                        }
                     }
                     setUpUIStuffThing();
                     injectRewards(player.profile.level, rewards, unlockedSomething);
@@ -5762,6 +5925,7 @@
             };
             drawGameModesDisplay();
         }
+        setUpUIStuffThing();
         if (index) saveGameData();
     }
     const effectThresholds = {
@@ -5835,6 +5999,15 @@
         if (!dontFill) ctxt.fill();
         if (!dontStroke) ctxt.stroke();
     }
+    function renderOval(x, y, rx, ry, ctx, color, strokeColor, dontStroke, dontFill, w) {
+        ctx.beginPath();
+        ctx.lineWidth = w || 5.5;
+        ctx.fillStyle = color;
+        ctx.strokeColor = strokeColor;
+        ctx.ellipse(x, y, rx, ry, 0, 0, 2 * Math.PI);
+        if (!dontFill) ctx.fill();
+        if (!dontStroke) ctx.stroke();
+    }
     var shapeSprites = {};
     function exportProgress() {
         let content = {};
@@ -5899,6 +6072,23 @@
                 level: MODLUE.level
             });
         }
+        content.motherships = [];
+        for (let i = 0; i < player.motherships.length; i++) {
+            let mothership = player.motherships[i];
+            let turrets = [];
+            mothership.turrets.forEach(e => {
+                turrets.push({
+                    name: e.name,
+                    slot: e.slot
+                });
+            });
+            content.motherships.push({
+                name: mothership.name,
+                using: mothership.using,
+                level: mothership.level,
+                skills: turrets
+            });
+        }
         content.profile = player.profile;
         content.tokens = JSON.stringify(player.tokens);
         content.ULIMATEXP = player.ULIMATEXP;
@@ -5912,7 +6102,6 @@
         content.workshopPoints = player.workshopPoints;
         content.workshopQueue = JSON.stringify(workshopQueue);
         content.operationData = JSON.stringify(operationData);
-        content.tasks = JSON.stringify(tasks);
         content.parts = JSON.stringify(player.parts);
         content = JSON.stringify(content);
         content.profile = player.profile;
@@ -5931,6 +6120,7 @@
             player.modules = [];
             player.drones = [];
             player.pilots = [];
+            player.motherships = [];
             for (let i = 0; i < content.shapes.length; i++) {
                 let data = content.shapes[i];
                 if (data) {
@@ -5942,7 +6132,11 @@
                             slotData[data.slot].unlocked = true;
                             slotData[data.slot].used = true;
                         }
-                        newShape.activeModuleIndex = data.activeModuleIndex || 0;
+                        if (activeModuleData[data.activeModuleIndex]) {
+                            newShape.activeModuleIndex = data.activeModuleIndex;
+                        } else {
+                            newShape.activeModuleIndex = 0;
+                        }
                         newShape.sid = data.sid;
                         if (newShape.sid == undefined || newShape.sid == null) {
                             newShape.sid = "get anew";
@@ -6050,6 +6244,28 @@
                     }
                 }
             }
+            if (!content.motherships) content.motherships = [];
+            for (let i = 0; i < content.motherships.length; i++) {
+                let data = content.motherships[i];
+                if (data) {
+                    let Mothership = mothershipData.find(e => data.name == e.name);
+                    if (Mothership) {
+                        let thePilot = new mothership(Mothership, data.using);
+                        for (let i = 0; i < data.level - 1; i++) {
+                            upgradeMothership(thePilot)
+                        }
+                        data.skills.forEach(e => {
+                            let Skill = turretsData.find(_ => _.name == e.name);
+                            if (Skill) {
+                                let index = thePilot.turrets.length;
+                                thePilot.turrets.push({ ...Skill });
+                                thePilot.turrets[index].slot = e.slot;
+                            }
+                        });
+                        player.motherships.push(thePilot);
+                    }
+                }
+            }
             player.shapes.forEach(item => {
                 let weapons = player.weapons.filter(e => item.sid == e.owner);
                 let heavy = weapons.filter(e => e.type == "Heavy");
@@ -6112,14 +6328,6 @@
             } else {
                 player.league = 0;
             }
-            if (content.tasks) {
-                let data = JSON.parse(content.tasks);
-                for (let i = 0; i < data.length; i++) {
-                    if (data[i].NEW == 3) {
-                        tasks.push(data[i]);
-                    }
-                }
-            }
             if (content.operationData) {
                 operationData = JSON.parse(content.operationData);
             }
@@ -6130,7 +6338,6 @@
             player.sliver = content.sliver;
             player.gold = content.gold;
             updateMoneyDisplay();
-            setUpUIStuffThing();
             updateSlots();
             saveGameData();
         } catch (e) {
@@ -6154,7 +6361,6 @@
             data: []
         };
         workshopQueue = [];
-        tasks = [];
         player = {
             sliver: 200e3,
             gold: 250,
@@ -6164,6 +6370,7 @@
             modules: [],
             drones: [],
             pilots: [],
+            motherships: [],
             gameMode: -1,
             ULIMATEXP: 0,
             workshopPoints: 0,
@@ -6394,166 +6601,6 @@
             }
         };
     }
-    var tasks = [];
-    var tasksTypes = [{
-        type: "gold",
-        howGain: "dmg",
-        XPNEEDED: 1e6,
-        reward: 60,
-        description: "Deal 1.0M Damage"
-    }, {
-        type: "gold",
-        howGain: "kills",
-        XPNEEDED: 50,
-        reward: 30,
-        description: "Get 50 Kills"
-    }, {
-        type: "gold",
-        howGain: "dmg",
-        XPNEEDED: 10e6,
-        reward: 300,
-        description: "Deal 10.0M Damage"
-    }, {
-        type: "gold",
-        howGain: "kills",
-        XPNEEDED: 5e3,
-        reward: 10e3,
-        description: "Get 5.0K Kills"
-    }, {
-        type: "gold",
-        howGain: "dmg",
-        XPNEEDED: 500e6,
-        reward: 10e3,
-        description: "Deal 500.0M Damage"
-    }, {
-        type: "gold",
-        howGain: "beacon",
-        XPNEEDED: 5,
-        reward: 15,
-        description: "Capture 5 Beacons"
-    }, {
-        type: "gold",
-        howGain: "beacon",
-        XPNEEDED: 100,
-        reward: 5e3,
-        description: "Capture 100 Beacons"
-    }, {
-        type: "workshopPoints",
-        howGain: "8 boss",
-        XPNEEDED: 100,
-        reward: 15e3,
-        description: "Kill Level 8 Boss 100 Times"
-    }, {
-        type: "workshopPoints",
-        howGain: "8 boss",
-        XPNEEDED: 10,
-        reward: 250,
-        description: "Kill Level 8 Boss 10 Times"
-    }, {
-        type: "gold",
-        howGain: "beacon",
-        XPNEEDED: 10,
-        reward: 250,
-        description: "Capture 10 Beacons"
-    }];
-    class task {
-        constructor(data) {
-            this.type = data.type;
-            this.howGain = data.howGain;
-            this.xp = 0;
-            this.maxxp = data.XPNEEDED;
-            this.desc = data.description;
-            let multi = Math.max(1, 1 + (.5 * (player.league / 500)));
-            this.reward = Math.round(data.reward * multi);
-        }
-    }
-    function addTaskXP(type, amount) {
-        if (player.profile.level < 2) return;
-        for (let i = 0; i < tasks.length; i++) {
-            let task = tasks[i];
-            if (task.howGain == type) {
-                task.xp += amount;
-            }
-        }
-    }
-    function generateTasks() {
-        return;
-        if (player.profile.level < 2) return;
-        if (tasks.length >= 10) return;
-        for (let i = 0; i < 2; i++) {
-            if (tasks.length >= 10) break;
-            let Task = tasksTypes[Math.floor(tasksTypes.length * Math.random())];
-            tasks.push(new task(Task));
-        }
-    }
-    document.getElementById("offersToggles").onclick = function () {
-        if (tasks.length) {
-            document.getElementById("sideDisplay").innerHTML = `
-            <div style="width: 100%; font-size: 40px; text-align: center;">
-            Tasks
-            </div>
-            <hr>
-            `;
-            for (let i = 0; i < tasks.length; i++) {
-                let task = tasks[i];
-                let url = task.type == "gold" ? auSource : "./images/icons/workshop.png";
-                let width = (window.innerWidth) - 80;
-                document.getElementById("sideDisplay").innerHTML += `
-                <div style="position: absolute; width: ${width}px; height: 100px; top: ${80 + (i * 140)}px; left: 40px; border-radius: 4px; background-color: rgb(0, 0, 0, .2);">
-                <div style="position: absolute; width: 100px; height: 100px; left: 0px; top: 0px; background-size: 100px 100px; background-image: url('${url}')">
-                </div>
-                <div style="position: absolute; font-size: 24px; left: 5px; bottom: 0px;">
-                <strong>${abbreviateNumber(task.reward)}</strong>
-                </div>
-                <div style="position: absolute; height: 11px; width: ${width - 305}px; font-size: 16px; left: 105px; top: ${(100 / 2) - 11}px; background-color: #808080;">
-                <div style="position: absolute; height: 100%; width: ${100 * Math.min(1, task.xp / task.maxxp)}%; font-size: 16px; left: 0px; top: 0px; background-color: #0f0;">
-                </div>
-                <div style="position: absolute; color: #fff; top: -4px; left: 0px; width: 100%; text-align: center; margin: 0px; padding: 0; font-size: 14px;">
-                ${abbreviateNumber(task.xp)}/${abbreviateNumber(task.maxxp)}
-                </div>
-                </div>
-                <div style="position: absolute; font-size: 16px; left: 105px; top: ${(100 / 2) + 11}px;">
-                ${task.desc}
-                </div>
-                <div id="collectTask${i}" style="position: absolute; font-size: 35px; text-align: center; cursor: pointer; top: ${25}px; right: 10px; width: 180px; border-radius: 4px; height: 50px; background-color: #0f0;">
-                Collect
-                </div>
-                </div>
-                `;
-            }
-            document.getElementById("sideDisplay").innerHTML += `
-            <div style="position: absolute; top: ${100 + (tasks.length * 140)}px; opacity: 0; pointer-events: none;">
-            s
-            </div>
-            <div id="backButton" style="position: absolute; cursor: pointer; text-align: center; font-size: 40px; color: #fff; left: 40px; top: ${50 + (tasks.length * 140)}px; width: 150px; height: 60px; background-color: rgb(124, 124, 124, 1); border: solid; border-color: #fff; border-radius: 6px;">
-            BACK
-            </div>
-            `;
-            document.getElementById("hangerUI").style.display = "none";
-            document.getElementById("backButton").onclick = function () {
-                document.getElementById("sideDisplay").innerHTML = "";
-                document.getElementById("hangerUI").style.display = "block";
-            }
-            for (let i = 0; i < tasks.length; i++) {
-                let task = tasks[i];
-                if (task.xp < task.maxxp) {
-                    document.getElementById(`collectTask${i}`).style.cursor = null;
-                    document.getElementById(`collectTask${i}`).style.backgroundColor = "#808080";
-                } else {
-                    document.getElementById(`collectTask${i}`).onclick = function () {
-                        updateMoneyDisplay(task.type, task.reward);
-                        tasks.splice(i, 1);
-                        document.getElementById("offersToggles").click();
-                    }
-                }
-            }
-        } else {
-            /*
-            generateTasks();
-            document.getElementById("offersToggles").click();
-            */
-        }
-    };
     var workshopQueue = [];
     var defaultData = [{
         tier: 696969,
@@ -7017,6 +7064,7 @@
         ${weapon.baseShielding ? `Shield Durability: ${abbreviateNumber(weapon.baseShielding.health)}<br>` : ""}
         ${weapon.defenseBypass ? `Defense Mitigation: ${weapon.defenseBypass * 100}%<br>` : ""}
         ${weapon.healBackOnDamage ? `On Damage Heal Back: ${weapon.healBackOnDamage * 100}%<br>` : ""}
+        ${weapon.overheatTime ? `Overheat Time: ${weapon.overheatTime / 1e3} second(s)` : ""}
         <p></p>
         </div>
         </div>
@@ -8660,6 +8708,9 @@
             if (document.getElementById("pilotDisplay")) {
                 document.getElementById("pilotDisplay").remove();
             }
+            if (document.getElementById("mothershipDisplayyy")) {
+                document.getElementById("mothershipDisplayyy").remove();
+            }
             updateSlots();
         }
         if (e.key == "K" && player.gameMode >= 0) {
@@ -8726,6 +8777,7 @@
             document.getElementById("useAbility").style.display = "none";
             document.getElementById("weaponThing").style.display = "none";
             document.getElementById("healthBar").style.display = "none";
+            document.getElementById("mothershipBar").style.display = "none";
             document.getElementById("mapName").style.display = "none";
             endGame([...players], false, true);
             resetDataStuff();
@@ -9503,6 +9555,20 @@
         for (let i in statAdjustments) {
             statAdjustments[i] = Math.max(statAdjustments[i], 0.001);
         }
+        if (robot.name == "Ultimate Gray Circle") {
+            robot.effects.push({
+                name: "forcefield",
+                data: {
+                    resistance: .9,
+                    maxresistance: .1,
+                    maxhealth: 150e3,
+                    health: 150e3
+                },
+                rechargeTime: 5e3,
+                lastTime: 1,
+                lastForever: true
+            });
+        }
     }
     function adjustStats(robot, statAdjustments) {
         let { health, speed, dmg } = statAdjustments;
@@ -9548,6 +9614,7 @@
             negHealth: 1
         };
         robot.isMe = orginalRobot.isMe;
+        robot.playersIndexSid = orginalRobot.playersIndexSid;
         setStatAdjustments(statAdjustments, robot, microchips, drone);
         setShieldsData(robot);
         adjustStats(robot, statAdjustments);
@@ -9700,7 +9767,6 @@
         }
         return null;
     }
-    //there's no red
     const colors = ["Blue", "Green", "Yellow", "Orange", "Purple", "Pink", "Brown", "Black", "White", "Gray", "Cyan", "Magenta", "Teal", "Maroon", "Navy", "Olive", "Silver", "Gold", "Indigo"];
     function setUpPlayersData(gameMode, spawnLocations) {
         inGameSids = -1;
@@ -9711,7 +9777,11 @@
             name: "player",
             isAlly: true,
             robotIndex: -1,
-            robots: []
+            robots: [],
+            mothership: {
+                current: 0,
+                data: player.motherships.find(e => e.using) ? { ...player.motherships.find(e => e.using) } : null
+            }
         };
         if (gameMode == 7) {
             for (let i = 0; i < 10; i++) {
@@ -9788,6 +9858,7 @@
                         DDrone = Drone;
                     }
                     if (tt == 0) orginalRobot.isMe = true;
+                    orginalRobot.playersIndexSid = tt;
                     orginalRobot.activeModuleIndex = data.activeModuleIndex;
                     players[tt].robots.push(setUpBotData(orginalRobot, weapons, modules, [], isAlly, gameMode, spawnLocations, false, DDrone));
                 }
@@ -9815,6 +9886,7 @@
                         negSpeed: 1,
                         negHealth: 1
                     };
+                    robot.playersIndexSid = 0;
                     setStatAdjustments(statAdjustments, robot, player.pilots.find(e => e.owner == orginalRobot.sid), player.drones.find(e => e.owner == orginalRobot.sid));
                     setShieldsData(robot);
                     adjustStats(robot, statAdjustments);
@@ -9834,7 +9906,7 @@
                 if (player.league >= 5e3 && Math.random() < .25) {
                     onlyPreselect = true;
                 }
-                let amounnnt = Math.randInt(2, 4);
+                let amounnnt = Math.randInt(1, 3);
                 for (let i = 0; i < amount; i++) {
                     let isAlly = gameMode == 4 ? false : i < 5 ? true : false;
                     let name = generateRandomName();
@@ -9851,11 +9923,11 @@
                             name = colors[preselectBots.Bluebell] + "bell";
                             preselectBots.Bluebell++;
                         }
-                    } else if (preselectBots.Bluebell == 0 && !isAlly) {
+                    } else if (player.league >= 5e3 && preselectBots.Bluebell == 0 && !isAlly) {
                         name = "Bluebell";
                         isBluebell = true;
                         preselectBots.Bluebell++;
-                    } else if (preselectBots.Redbell == 0 && !isAlly && gameMode == 4) {
+                    } else if (player.league >= 5e3 && preselectBots.Redbell == 0 && !isAlly && gameMode == 4) {
                         name = "Redbell";
                         isBluebell = true;
                         preselectBots.Redbell++;
@@ -9937,6 +10009,7 @@
                                 }
                                 pilotInfo = Pilot;
                             }
+                            orginalRobot.playersIndexSid = (tt + 1);
                             orginalRobot.activeModuleIndex = data.activeModuleIndex;
                             players[1 + tt].robots.push(setUpBotData(orginalRobot, weapons, modules, pilotInfo, isAlly, gameMode, spawnLocations, (players[tt + 1].name.includes("Redbell") ? true : "true"), DDrone));
                         } else {
@@ -10040,6 +10113,7 @@
                                 droneTier = 2;
                             }
                             let DDrone = doDroneDataForBots(droneTier);
+                            orginalRobot.playersIndexSid = (tt + 1);
                             players[1 + tt].robots.push(setUpBotData(orginalRobot, weapons, modules, [], isAlly, gameMode, spawnLocations, false, DDrone));
                         }
                     }
@@ -10756,7 +10830,7 @@
         } else if (gameMode == 6) {
             mapInfo.x = mapInfo.y = 1e3;
             enemies.push(new enemy({
-                health: 10e6,
+                health: 100e6,
                 scale: 200,
                 name: "Test Dummy",
                 speed: 0,
@@ -11305,6 +11379,10 @@
                 } else {
                     shape.ability.shieldHp *= shape.level == 13 ? 1.05 : 1.2;
                 }
+            }
+            if (Shape.ability.durabilityLimitData && shape.level < 12) {
+                let increase = Shape.ability.durabilityLimitData.level[shape.level];
+                shape.ability.durabilityLimit += increase;
             }
             if (Shape.ability.additionalHealthData && shape.level < 12) {
                 let increase = Shape.ability.additionalHealthData.level[shape.level];
@@ -13728,6 +13806,7 @@
         ${shape.ability && shape.ability.suppressionPower ? `Ability Suppression Power: ${(shape.ability.suppressionPower * 100).toFixed(0)}%<br>` : ""}
         ${shape.ability && shape.ability.healingPower ? `Ability Healing Power: ${abbreviateNumber(shape.ability.healingPower)}<br>` : ""}
         ${shape.ability && shape.ability.additionalHealth ? `Ability Additional Health: ${abbreviateNumber(shape.ability.additionalHealth)}<br>` : ""}
+        ${shape.ability && shape.ability.durabilityLimit ? `Ability Durability Bonus Limit: ${abbreviateNumber(shape.ability.durabilityLimit)}<br>` : ""}
         `;
         document.getElementById("sideDisplay").innerHTML = `
         <div style="position: absolute; top: 0px; left: 0px; width: 100%; height: 100%; background-image: linear-gradient(rgb(0, 0, 0, 0), ${tierColor(shape)});">
@@ -14180,6 +14259,7 @@
         ${shape.ability && shape.ability.suppressionPower ? `Ability Suppression Power: ${(shape.ability.suppressionPower * 100).toFixed(0)}%<br>` : ""}
         ${shape.ability && shape.ability.healingPower ? `Ability Healing Power: ${abbreviateNumber(shape.ability.healingPower)}<br>` : ""}
         ${shape.ability && shape.ability.additionalHealth ? `Ability Additional Health: ${abbreviateNumber(shape.ability.additionalHealth)}<br>` : ""}
+        ${shape.ability && shape.ability.durabilityLimit ? `Ability Durability Bonus Limit: ${abbreviateNumber(shape.ability.durabilityLimit)}<br>` : ""}
         `;
         document.getElementById("WEAPONdisplay").innerHTML = `
         <div style="position: absolute; top: 0px; left: 0px; width: 100%; height: 100%; background-image: linear-gradient(rgb(0, 0, 0, 0), ${tierColor(shape)});">
@@ -15134,7 +15214,7 @@
         MK1 Data Box, a data box that only contains resources like gold and silver.
         `,
         source: "./images/tokens/token_chests/mk1_chest.png",
-        rewards: [{
+        rewards: [/*{
             type: "silver", rarity: "Common", value: 1e6
         }, {
             type: "silver", rarity: "Common", value: 2e6
@@ -15156,9 +15236,9 @@
             type: "keys", rarity: "Epic", value: 5e3
         }, {
             type: "workshop points", rarity: "Rare", value: 3e3
-        }, {
+        },*/ {
             type: "token", rarity: "Legendary", mk: 2, value: 3
-        }, {
+        }/*, {
             type: "token", rarity: "Mythic", mk: 3, value: 3
         }, {
             type: "silver", rarity: "Epic", value: 50e6
@@ -15168,7 +15248,7 @@
             type: "gold", rarity: "Legendary", value: 25e3
         }, {
             type: "workshop points", rarity: "Legendary", value: 15e3
-        }],
+        }*/],
         tokenCost: "token 1"
     }, {
         name: "MK2 Data Box",
@@ -15302,6 +15382,10 @@
             type: "shape", rarity: "Legendary", name: "Dark Tan Circle"
         }, {
             type: "shape", rarity: "Legendary", name: "Red Octagon"
+        }, {
+            type: "shape", rarity: "Epic", name: "Light Blue Triangle"
+        }, {
+            type: "shape", rarity: "Epic", name: "Ultimate Gray Circle"
         }],
         tokenCost: "token 3"
     }];
@@ -15323,7 +15407,7 @@
         } else if (reward.type == "module") {
             player.modules.push(new module(moduleData.find(e => reward.name == e.name), null, null));
         } else if (reward.type == "token") {
-            updateMoneyDisplay(`${reward.token} ${reward.mk}`, reward.value);
+            updateMoneyDisplay(`token ${reward.mk}`, reward.value);
         } else if (reward.type == "silver") {
             updateMoneyDisplay("sliver", reward.value);
         } else if (reward.type == "drone") {
@@ -16236,38 +16320,38 @@
                 if (Math.random() < 0.5) {
                     rewardType = "silver";
                     if (i >= 125) {
-                        amount = 10e6;
+                        amount = 8e6;
                     } else if (i >= 120) {
-                        amount = i * 80e3;
+                        amount = i * 60e3;
                     } else if (i >= 50) {
-                        amount = i * 50e3;
+                        amount = i * 40e3;
                     } else if (i >= 25) {
-                        amount = i * 30e3;
+                        amount = i * 25e3;
                     } else {
-                        amount = Math.max(i * 25e3, 25e3);
+                        amount = Math.max(i * 10e3, 10e3);
                     }
                 } else if (Math.random() < 0.3334) {
                     rewardType = "keys";
                     if (i >= 100) {
-                        amount = 2500;
+                        amount = 800;
                     } else if (i >= 50) {
-                        amount = i * 25;
+                        amount = i * 7;
                     } else {
                         amount = (i * 5) + 5;
                     }
                 } else {
                     rewardType = "gold";
                     if (i >= 100) {
-                        amount = 5e3;
+                        amount = 1e3;
                     } else if (i >= 50) {
-                        amount = i * 50;
+                        amount = i * 10;
                     } else {
-                        amount = (25 * i) + 25;
+                        amount = (5 * i) + 5;
                     }
                 }
             }
             operationData.data.push({
-                maxxp: 100 + (i * (i >= 100 ? 125 : 50)),
+                maxxp: 50 + (i * (i >= 100 ? 50 : 25)),
                 done: false,
                 type: rewardType,
                 amount: amount,
@@ -16489,6 +16573,1255 @@
     document.addEventListener("click", () => {
         saveGameData();
     });
+    var univeralMothershipChargeData = {
+        base: 0,
+        level: [0, .05, .05, .05, .05, .05, .05, .05, .05, .05, .05, .05, .05, .05, .05, .05, .05, .05, .05, 0.1]
+    };
+    function getMothershipUpgradeCost(level) {
+        let index = level + 1;
+        if (index >= 50) {
+            return 1320 * index;
+        } else if (index >= 35) {
+            return 960 * index;
+        } else if (index >= 25) {
+            return 720 * index;
+        } else if (index >= 15) {
+            return 480 * index;
+        } else if (index >= 10) {
+            return 240 * index;
+        } else {
+            return 120 * index;
+        }
+    }
+    class mothership {
+        constructor(data, using) {
+            this.tier = data.tier;
+            this.level = 1;
+            this.name = data.name;
+            this.desc = data.desc;
+            this.effectDuration = data.effectDurationData ? data.effectDurationData.base : data.effectDuration;
+            this.dmg = data.dmgData ? data.dmgData.base : data.dmg;
+            this.repair = data.repairData ? data.repairData.base : data.repair;
+            this.yellowShield = data.yellowShieldData ? data.yellowShieldData.base : data.yellowShield;
+            this.chargeSpeed = data.chargeLevel ? data.chargeLevel.base : data.chargeSpeed;
+            this.color = data.color;
+            this.using = using;
+            this.maxlevel = data.maxlevel;
+            this.hardpoints = { ...data.hardpoints };
+            this.turrets = [];
+            this.industryName = data.industryName;
+            this.isItem = true;
+        }
+    }
+    var mothershipCost = [2e3, 12e3, 45e3, 95e3, 155e3];
+    function mothershipDataThingyPlsSendMod() {
+        let levels = [];
+        levels.push(0);
+        for (let i = 0; i < 39; i++) {
+            levels.push(75);
+        }
+        for (let i = 0; i < 10; i++) {
+            levels.push(125);
+        }
+        for (let i = 0; i < 10; i++) {
+            levels.push(150);
+        }
+        return levels;
+    }
+    var mothershipData = [{
+        industryName: "Circle",
+        tier: 0,
+        name: "Gray Rectangle",
+        desc: `
+        A simple mothership that strikes enemies with a powerful energy charge.<br><br>
+        Effect Radius: 500 PX<br>
+        Strike Delay: 1 second
+        `,
+        dmgData: {
+            base: 14e3,
+            level: [0, 1e3, 1e3, 1e3, 1e3, 1e3, 1e3, 1e3, 2e3, 2e3, 2e3, 2e3, 2e3, 2e3, 2e3, 2e3, 2e3, 2e3, 2e3, 2e3]
+        },
+        hardpoints: {
+            attack: 1,
+            defense: 0,
+            support: 0
+        },
+        chargeLevel: { ...univeralMothershipChargeData },
+        maxlevel: 20,
+        color: "#808080",
+        cost: mothershipCost[0]
+    }, {
+        industryName: "Circle",
+        tier: 1,
+        name: "Black Rectangle",
+        desc: `
+        There is no need to summon monsters where you can be a monster yourself. The Black Rectangle is capable of delivering a devastating laser strike to the enemy.<br><br>
+        Effect Radius: 500 PX<br>
+        Strike Delay: 1 second
+        `,
+        dmgData: {
+            base: 24e3,
+            level: [0, 1e3, 1e3, 1e3, 1e3, 1e3, 1e3, 1e3, 2e3, 2e3, 2e3, 2e3, 2e3, 2e3, 2e3, 2e3, 2e3, 2e3, 2e3, 2e3, 3e3, 3e3, 3e3, 4e3, 4e3, 4e3, 4e3, 4e3, 4e3, 4e3]
+        },
+        hardpoints: {
+            attack: 2,
+            defense: 0,
+            support: 0
+        },
+        chargeLevel: { ...univeralMothershipChargeData },
+        maxlevel: 30,
+        color: "#000",
+        cost: mothershipCost[1]
+    }, {
+        industryName: "Triangle",
+        tier: 1,
+        name: "Green Oval",
+        desc: `
+        A mothership capable of providing you and your allies with repair micro-bots and the yellow shield defense system while you are in battle. Unfortunately, the ship is not able to calm the egos of your enemies.<br><br>
+        Effect Radius: 300 PX<br>
+        Strike Delay: 2 second
+        `,
+        repairData: {
+            base: 15e3,
+            level: [0, 1e3, 1e3, 1e3, 1e3, 1e3, 1e3, 1e3, 2e3, 2e3, 2e3, 2e3, 2e3, 2e3, 2e3, 2e3, 2e3, 2e3, 2e3, 2e3, 3e3, 3e3, 3e3, 4e3, 4e3, 4e3, 4e3, 4e3, 4e3, 4e3]
+        },
+        yellowShieldData: {
+            base: 7e3,
+            level: [0, 500, 500, 500, 500, 500, 500, 500, 1e3, 1e3, 1e3, 1e3, 1e3, 1e3, 1e3, 1e3, 1e3, 1e3, 1e3, 1e3, 2e3, 2e3, 2e3, 2e3, 2e3, 2e3, 2e3, 2e3, 5e3, 5e3]
+        },
+        hardpoints: {
+            attack: 0,
+            defense: 1,
+            support: 1
+        },
+        chargeLevel: { ...univeralMothershipChargeData },
+        maxlevel: 30,
+        color: "#0f0",
+        cost: mothershipCost[1]
+    }, {
+        industryName: "Triangle",
+        tier: 3,
+        name: "Gray Oval",
+        desc: `
+        A defender ship designed specially for those who want to be in the thick of the fight under a powerful yellow bubble shield. For honor and courage!<br><br>
+        Shield Duration: 10 seconds<br>
+        Gray Damage Repair: 25%
+        `,
+        repairData: {
+            base: 57e3,
+            level: [0, 1e3, 1e3, 1e3, 1e3, 1e3, 1e3, 1e3, 2e3, 2e3, 2e3, 2e3, 2e3, 2e3, 2e3, 2e3, 2e3, 2e3, 2e3, 2e3, 3e3, 3e3, 3e3, 4e3, 4e3, 4e3, 4e3, 4e3, 4e3, 4e3]
+        },
+        yellowShieldData: {
+            base: 100e3,
+            level: [0, 2500, 2500, 5e3, 5e3, 5e3, 5e3, 5e3, 5e3, 5e3, 5e3, 10e3, 10e3, 10e3, 10e3, 10e3, 10e3, 10e3, 10e3, 10e3, 10e3, 10e3, 10e3, 10e3, 10e3, 11e3, 11e3, 11e3, 11e3, 11e3, 11e3, 11e3, 11e3, 11e3, 11e3, 11e3, 11e3, 11e3, 11e3, 11e3]
+        },
+        hardpoints: {
+            attack: 0,
+            defense: 2,
+            support: 1
+        },
+        chargeLevel: { ...univeralMothershipChargeData },
+        maxlevel: 40,
+        color: "#808080",
+        cost: mothershipCost[3]
+    }, {
+        industryName: "Circle",
+        tier: 4,
+        name: "Purple Rectangle",
+        desc: `
+        The ship was created by the Circle Industries to hide in enemy terrain. Equipped with the ability to disable the main systems of enemy shapes, it can provide help in any situation.<br><br>
+        <span style="color: #fff">Blind</span> Prevents the enemy radars from rendering any targets.<br><br>
+        <span style="color: #fff">EMP</span> Prevents the enemy from activating their shape's special ability.<br><br>
+        Effect Radius: 500 PX<br>
+        Effects Applied: Bline and EMP<br>
+        Strike Delay: 1 second
+        `,
+        effectDurationData: {
+            base: 500,
+            level: mothershipDataThingyPlsSendMod()
+        },
+        hardpoints: {
+            attack: 2,
+            defense: 0,
+            support: 2
+        },
+        chargeLevel: { ...univeralMothershipChargeData },
+        maxlevel: 60,
+        color: "#800080",
+        cost: mothershipCost[4]
+    }];
+    var turretsCost = [1e3, 5500, 15e3, 30e3, 65e3];
+    var turretsData = [{
+        tier: 0,
+        type: "attack",
+        name: "Target Ray Cannon",
+        strikeDelay: 1e3,
+        desc: "After a 1 second delay, it strikes the target.",
+        dmg: 10e3,
+        imageSource: "./images/weapons/cinder.png",
+        scale: 350,
+        cost: turretsCost[0]
+    }, {
+        tier: 1,
+        type: "attack",
+        name: "Laser Blast Cannon",
+        strikeDelay: 1e3,
+        desc: "After a 1 second delay, it strikes the target with a powerful laser blast.",
+        dmg: 22e3,
+        imageSource: "./images/weapons/laser_blast_cannon.png",
+        scale: 350,
+        cost: turretsCost[1]
+    }, {
+        tier: 0,
+        type: "defense",
+        name: "Yellow Shield Self System",
+        strikeDelay: 2e3,
+        desc: "After a 2 second delay, it grants the shape a yellow shield.",
+        shieldHp: 12e3,
+        imageSource: "./images/modules/fortifier.png",
+        cost: turretsCost[0]
+    }, {
+        tier: 0,
+        type: "support",
+        name: "Periodic Fix Station",
+        desc: "A turret that repairs a portion of your durability and that of allies in a radius around you in several seconds.",
+        scale: 300,
+        strikeDelay: 2e3,
+        healingData: {
+            rate: 1e3,
+            power: 0.01,
+            duration: 5e3
+        },
+        imageSource: "./images/abilities/self_heal.png",
+        cost: turretsCost[0]
+    }, {
+        tier: 3,
+        type: "defense",
+        name: "Life Saver",
+        desc: "When activated, this turret applies Stealth on your robot for 3 seconds, and also gives immunity to Defence Mitigation for 5 seconds. When installing several of these turrets, the duration of the applied effects is not cumulative.",
+        scale: 300,
+        strikeDelay: 2e3,
+        stealthTime: 2e3,
+        antiDefenseMig: 5e3,
+        imageSource: "./images/icons/anti_defense_mitigation.png",
+        cost: turretsCost[3]
+    }, {
+        tier: 3,
+        type: "support",
+        name: "Durability Extender",
+        desc: "A turret that increases the Durability of your robot when activated.",
+        strikeDelay: 2e3,
+        durabilityIncrease: .1,
+        imageSource: "./images/modules/heavy_armor_plating.png",
+        cost: turretsCost[3]
+    }];
+    function getMothershipImage(obj) {
+        let tmpCanvas = document.createElement("canvas");
+        tmpCanvas.width = tmpCanvas.height = 3000;
+        tmpCanvas.style.width = tmpCanvas.style.height = 3000 + "px";
+        let tmpCtx = tmpCanvas.getContext("2d");
+        tmpCtx.globalAlpha = 1;
+        tmpCtx.translate((tmpCanvas.width / 2), (tmpCanvas.height / 2));
+        if (obj.name.includes("Rectangle")) {
+            tmpCtx.fillStyle = obj.color;
+            tmpCtx.strokeStyle = "#000";
+            tmpCtx.lineWidth = 100;
+            tmpCtx.fillRect(-1000, -500, 2000, 1000);
+            tmpCtx.strokeRect(-1000, -500, 2000, 1000);
+        } else if (obj.name.includes("Oval")) {
+            renderOval(0, 0, 1250, 625, tmpCtx, obj.color, "#000", false, false, 100);
+        }
+        return tmpCanvas;
+    }
+    function giveMothershipTurrets(shape) {
+        let slot = 0;
+        let attack = shape.hardpoints.attack;
+        if (attack) {
+            let turret = turretsData.find(e => e.type == "attack");
+            for (let i = 0; i < attack; i++) {
+                let index = shape.turrets.length;
+                shape.turrets.push({ ...turret });
+                shape.turrets[index].slot = slot;
+                slot++;
+            }
+        }
+        let defense = shape.hardpoints.defense;
+        if (defense) {
+            let turret = turretsData.find(e => e.type == "defense");
+            for (let i = 0; i < defense; i++) {
+                let index = shape.turrets.length;
+                shape.turrets.push({ ...turret });
+                shape.turrets[index].slot = slot;
+                slot++;
+            }
+        }
+        let support = shape.hardpoints.support;
+        if (support) {
+            let turret = turretsData.find(e => e.type == "support");
+            for (let i = 0; i < support; i++) {
+                let index = shape.turrets.length;
+                shape.turrets.push({ ...turret });
+                shape.turrets[index].slot = slot;
+                slot++;
+            }
+        }
+    }
+    function drawMothershipEquip(shapes, currentIndex, inInventory, JA) {
+        let shape = shapes[currentIndex];
+        if (!shape.isItem) {
+            shape = new mothership(shape);
+        }
+        let infoDisplayTextThing = getMothershipInfoDisplayThing(shape);
+        document.getElementById("WEAPONdisplay").innerHTML = `
+        <div style="position: absolute; top: 0px; left: 0px; width: 100%; height: 100%; background-image: linear-gradient(rgb(0, 0, 0, 0), ${tierColor(shape)});">
+        </div>
+        <div style="position: absolute; overflow-y: scroll; left: 80px; top: ${(window.innerHeight / 2) - 250}px; width: 325px; height: 290px; border: solid; border-radius: 6px; border-color: #fff; background-color: rgb(0, 0, 0, 0.4);">
+        <div style="position: absolute; top: 7px; left: 5px;">
+        <div style="position: absolute; top: 0px; left: 0px; text-align: center; color: #fff; font-size: 25px; border-radius: 100%; width: 40px; height: 40px; background-color: ${tierColor(shape)};">
+        ${shape.level}
+        </div>
+        <div style="position: absolute; height: 32.5px; max-height: 32.5px; overflow-y: scroll; top: 2px; width: 260px; left: 45px; color: #fff; font-size: 24px;">
+        <strong>
+        ${shape.name}
+        </strong>
+        </div>
+        </div>
+        <div style="position: absolute; top: 45px; left: 0px;">
+        <hr style="position: absolute; top: 0px; left: 0px; color: #fff; width: 325px;">
+        <div style="position: absolute; top: 15px; left: 5px; width: 320px;">
+        ${infoDisplayTextThing}
+        <p></p>
+        </div>
+        </div>
+        </div>
+        <div id="shapeImage" style="position: absolute; left: ${window.innerWidth / 2 - 187.5}px; top: ${window.innerHeight / 2 - 187.5}px; width: 375px; height: 375px;">
+        <div id="showDescription" style="position: absolute; cursor: pointer; display: flex; align-items: center; right: 0px; top: 0px; width: 35px; height: 35px; background-color: rgb(255, 255, 255, .4); border-radius: 100%;">
+        <div style="width: 100%; color: #fff; text-align: center; font-size: 30px;">
+        i
+        </div>
+        </div>
+        </div>
+        <div style="position: absolute; overflow-y: scroll; right: 80px; top: ${(window.innerHeight / 2) - 267.5}px; width: 325px; height: 500px; border: solid; border-radius: 6px; border-color: #fff; background-color: rgb(0, 0, 0, 0.2);">
+        <div id="weaponDisplay" style="position: absolute; left: 0px; top: 0px; height: 500px; width: 100%; overflow-y: scroll; background-color: rgb(0, 0, 0, 0.1);">
+        </div>
+        </div>
+        <div id="upgradeMenu" style="position: absolute; z-index: 10000; color: #fff; display: none; top: 12.5%; left: 12.5%; width: 75%; height: 75%; background-color: rgb(0, 0, 0, .7);">
+        </div>
+        <div id="upgradeShape" style="position: absolute; cursor: pointer; text-align: center; font-size: 40px; color: #fff; left: ${window.innerWidth / 2 + 10}px; bottom: 20px; width: 175px; height: 60px; background-color: rgb(0, 255, 0); border-radius: 6px;">
+        UPGRADE
+        </div>
+        <div id="equipShape" style="position: absolute; cursor: pointer; text-align: center; font-size: 40px; color: #fff; left: ${window.innerWidth / 2 - 185}px; bottom: 20px; width: 175px; height: 60px; background-color: rgb(0, 255, 0); border-radius: 6px;">
+        EQUIP
+        </div>
+        <div id="backButton" style="position: absolute; cursor: pointer; text-align: center; font-size: 40px; color: #fff; left: 20px; bottom: 20px; width: 150px; height: 60px; background-color: rgb(124, 124, 124, 1); border: solid; border-color: #fff; border-radius: 6px;">
+        BACK
+        </div>
+        <div style="position: absolute; bottom: 100px; left: 12.5%; width: 75%; height: 6px; background-color: #fff; border-radius: 4px; overflow: hidden;">
+        <div style="position: absolute; top: 0px; left: ${(1 / shapes.length) * 100 * currentIndex}%; width: ${(1 / shapes.length) * 100}%; height: 100%; background-color: #03fcec;">
+        </div>
+        </div>
+        <div id="buyShape" style="position: absolute; display: none; cursor: pointer; text-align: center; font-size: 40px; color: #fff; left: ${window.innerWidth / 2 - 87.5}px; bottom: 20px; width: 175px; height: 60px; background-color: rgb(0, 255, 0); border-radius: 6px;">
+        BUY
+        </div>
+        <div id="buyMenu" style="position: absolute; display: none; color: #fff; top: ${(window.innerHeight / 2) - (225 / 2)}px; left: ${(window.innerWidth / 2) - (425 / 2)}px; width: 425px; height: 225px; background-color: rgb(0, 0, 0, .7);">
+        </div>
+        `;
+        let image = getMothershipImage(shape);
+        image.style = `
+        width: 100%;
+        height: 100%;
+        `;
+        document.getElementById("shapeImage").appendChild(image);
+        if (inInventory) {
+            document.getElementById("buyShape").style.display = "none";
+            document.getElementById("equipShape").style.display = "block";
+            document.getElementById("upgradeShape").style.display = "block";
+        } else {
+            document.getElementById("buyShape").style.display = "block";
+            document.getElementById("equipShape").style.display = "none";
+            document.getElementById("upgradeShape").style.display = "none";
+            giveMothershipTurrets(shape);
+        }
+        let order = { "attack": 0, "defense": 1, "support": 2 };
+        let tmpT = shape.turrets.sort((a, b) => {
+            return order[a.type] - order[b.type];
+        });
+        for (let i = 0; i < tmpT.length; i++) {
+            document.getElementById("weaponDisplay").innerHTML += `
+            <div id="${tmpT[i].name}_${i}" style="position: relative; ${inInventory ? "cursor: pointer;" : ""} height: ${500 / 4}px; width: 100%; background-color: ${i % 2 ? "rgb(0, 0, 0, 0.2);" : "rgb(255, 255, 255, 0.1);"}}">
+            </div>
+            `;
+        }
+        for (let i = 0; i < tmpT.length; i++) {
+            let weapon = tmpT[i];
+            let weaponIcon = getWeaponIcon(weapon, true);
+            weaponIcon.style = "width: 125px; height: 125px;";
+            let yype = weapon.type;
+            document.getElementById(`${tmpT[i].name}_${i}`).appendChild(weaponIcon);
+            document.getElementById(`${tmpT[i].name}_${i}`).innerHTML += `
+            <div style="position: absolute; color: ${tierColor(weapon)}; top: 5px; left: 135px; font-size: 24px;">
+            ${weapon.name}
+            <div style="color: #fff; font-size: 14px; margin-top: -5px;">${yype.charAt(0).toUpperCase() + yype.slice(1)}</div></div>
+            `;
+            document.getElementById(`${tmpT[i].name}_${i}`).onclick = function () {
+                if (inInventory) {
+                    customizeShipTurret(weapon, shape, weapon.slot);
+                }
+            };
+        }
+        document.getElementById("buyShape").onclick = function() {
+            document.body.appendChild(document.getElementById("moneyDisplay"));
+            document.getElementById("buyMenu").style.display = "block";
+            document.getElementById("storeButton").style.display = "none";
+            document.getElementById("inventoryButton").style.display = "none";
+            let num = 60;
+            let theHA = shapes[currentIndex];
+            document.getElementById("buyMenu").innerHTML = `
+            <div style="width: 100%; text-align: center; font-size: 30px;">
+            Confirm Purchase
+            </div>
+            <hr>
+            <div id="lo____l" style="position: absolute; cursor: pointer; top: 5px; right: 10px;">
+            x
+            </div>
+
+            <div style="position: absolute; top: ${num}px; left: ${425 / 2 - 62.5}px; border: solid; border-color: #fff; border-radius: 6px; width: 125px; height: 35px; background-color: rgb(0, 0, 0, 0.2);">
+            <div style="position: absolute; top: 0px; left: 0px; width: 35px; height: 35px; background-size: 35px 35px; background-image: url('./images/icons/workshop.png');">
+            </div>
+            <div style="position: absolute; top: 6.75px; left: 40px;  color: #fff;">
+            ${abbreviateNumber(theHA.cost)}
+            </div>
+            </div>
+
+            <div id="confirm" style="position: absolute; cursor: pointer; font-size: 24px; text-align: center; bottom: 10px; left: ${425 / 2 - 75}px; width: 150px; border-radius: 6px; height: 40px; background-color: #0f0;">
+            Confirm
+            </div>
+            `;
+            document.getElementById("confirm").onclick = function () {
+                if (player.workshopPoints - theHA.cost >= 0) {
+                    updateMoneyDisplay("workshopPoints", -theHA.cost);
+                    let data = mothershipData.find(e => e.name == theHA.name);
+                    let old = player.motherships.find(e => e.using);
+                    if (old) {
+                        old.using = false;
+                    }
+                    let index = player.motherships.length;
+                    player.motherships.push(new mothership(data, true));
+                    giveMothershipTurrets(player.motherships[index]);
+                    document.getElementById("sideDisplay").innerHTML = "";
+                    document.getElementById("hangerUI").appendChild(document.getElementById("moneyDisplay"));
+                    updateMothershipDisplay();
+                    saveGameData();
+                }
+            }
+            document.getElementById("lo____l").onclick = function () {
+                document.getElementById("hangerUI").appendChild(document.getElementById("moneyDisplay"));
+                document.getElementById("buyMenu").style.display = "none";
+                document.getElementById("storeButton").style.display = "block";
+                document.getElementById("inventoryButton").style.display = "block";
+            }
+        }
+        document.getElementById("equipShape").onclick = function() {
+            let oldShip = player.motherships.find(e => e.using);
+            if (oldShip) {
+                oldShip.using = false;
+            }
+            shape.using = true;
+            document.getElementById("sideDisplay").innerHTML = "";
+            updateMothershipDisplay();
+            saveGameData();
+        }
+        document.getElementById("upgradeShape").onclick = function () {
+            document.body.appendChild(document.getElementById("moneyDisplay"));
+            let adjustwidth = window.innerWidth * .75;
+            document.getElementById("upgradeMenu").style.display = "block";
+            let cost = getMothershipUpgradeCost(shape.level);
+            document.getElementById("upgradeMenu").innerHTML = `
+            <div style="width: 100%; text-align: center; margin-top: 5px; font-size: 30px;">
+            Lvl ${shape.level} ${shape.name}
+            </div>
+            <hr>
+            <div style="position: absolute; left: 300px; top: 65px;">
+            ${enterBarForShip("dmg", shape)}
+            ${enterBarForShip("repair", shape)}
+            ${enterBarForShip("yellow shield", shape)}
+            ${enterBarForShip("effect duration", shape)}
+            ${enterBarForShip("charge", shape)}
+            </div>
+            <div id="leaveUpgrade" style="position: absolute; cursor: pointer; right: 10px; top: 10px;">
+            X
+            </div>
+            <div id="UPGRADE" style="position: absolute; width: 200px; height: 80px; cursor: pointer; left: ${adjustwidth / 2 - 100}px; bottom: 10px; background-color: ${shape.level < shape.maxlevel ? "#00ff00" : "#808080"};">
+            <div style="width: 100%; text-align: center; color: #fff; font-size: ${shape.level < shape.maxlevel ? 30 : 40}px; margin-top: 10px;">
+            ${shape.level < shape.maxlevel ? "UPGRADE" : "MAXED"}
+            </div>
+            <div style="color: #fff; display: ${shape.level < shape.maxlevel ? "block" : "none"}; width: 100%; text-align: center; font-size: 12px;">
+            ${abbreviateNumber(cost)} WKSP
+            </div>
+            </div>
+            `;
+            let sprite = getMothershipImage(shape);
+            sprite.style = "width: 280px; height: 280px;";
+            document.getElementById("upgradeMenu").appendChild(sprite);
+            document.getElementById("leaveUpgrade").onclick = function () {
+                document.getElementById("upgradeMenu").style.display = "none";
+                document.getElementById("hangerUI").appendChild(document.getElementById("moneyDisplay"));
+            };
+            document.getElementById("UPGRADE").onclick = function () {
+                if (player.workshopPoints - cost >= 0 && shape.level < shape.maxlevel) {
+                    updateMoneyDisplay("workshopPoints", -cost);
+                    upgradeMothership(shape);
+                    drawMothershipEquip(shapes, currentIndex, inInventory, true);
+                    saveGameData();
+                }
+            };
+        }
+        document.getElementById("backButton").onclick = function() {
+            document.getElementById("sideDisplay").innerHTML = "";
+            document.getElementById("hangerUI").appendChild(document.getElementById("moneyDisplay"));
+            document.getElementById("mothershipToggle").click();
+        }
+        document.getElementById("showDescription").onclick = function () {
+            let element = document.createElement("div");
+            element.style = `
+            position: absolute;
+            top: 12.5%;
+            left: 12.5%;
+            width: 75%;
+            height: 75%;
+            background-color: rgb(0, 0, 0, 0.75);
+            z-index: 99;
+            border-radius: 6px;
+            `;
+            let width = window.innerWidth * .75;
+            let height = window.innerHeight * .75;
+            let box = width / 2 - 80;
+            element.innerHTML = `
+            <div style="position: absolute; top: 7px; left: 10px; width: ${width - 10}px;">
+            <div style="position: absolute; top: 0px; left: 0px; text-align: center; color: #fff; font-size: 25px; border-radius: 100%; width: 40px; height: 40px; background-color: ${tierColor(shape)};">
+            ${shape.level}
+            </div>
+            <div style="position: absolute; top: 2px; left: 45px; color: #fff; font-size: 24px;">
+            <strong>
+            ${returnStyledName(shape, shape.name)}
+            </strong>
+            </div>
+            </div>
+            <div id="imageShape2" style="position: absolute; top: ${(height / 2) - (box / 2)}px; left: 40px; width: ${box}px; height: ${box}px;">
+            </div>
+            <div style="position: absolute; color: #a3a3a3; top: 0px; left: ${width / 2}px; width: ${width / 2}px; height: 100%; overflow-y: scroll;">
+            <div style="margin-top: 5px;">
+            <strong style="color: #fff;">Industry: ${shape.industryName}</strong><br><br>
+            ${shape.desc}<br><br>
+            Mothership Stats:<br>
+            ${infoDisplayTextThing}
+            <p></p>
+            </div>
+            </div>
+            `;
+            document.getElementById("sideDisplay").append(element);
+            element.onclick = function () {
+                this.remove();
+            }
+            let image = getMothershipImage(shape);
+            image.style = "width: 100%; height: 100%;";
+            document.getElementById("imageShape2").appendChild(image);
+        }
+        if (JA) {
+            document.getElementById("upgradeShape").click();
+        }
+    }
+    function getMothershipInfoDisplayThing(shape) {
+        return `
+        ${shape.repair ? `Repair Power: ${abbreviateNumber(shape.repair)}<br>` : ""}
+        ${shape.dmg ? `Strike Damage: ${abbreviateNumber(shape.dmg)}<br>` : ""}
+        ${shape.effectDuration ? `Effect Duration: ${shape.effectDuration / 1e3} second(s)<br>` : ""}
+        ${shape.yellowShield ? `Energy Shield Health: ${abbreviateNumber(shape.yellowShield)}<br>` : ""}
+        Charge Speed Modifier: ${Math.round(shape.chargeSpeed * 100)}%
+        `;
+    }
+    function upgradeMothership(shape) {
+        let data = mothershipData.find(e => e.name == shape.name);
+        if (data.dmgData && data.dmgData.level[shape.level]) {
+            shape.dmg += data.dmgData.level[shape.level];
+        }
+        if (data.effectDurationData && data.effectDurationData.level[shape.level]) {
+            shape.effectDuration += data.effectDurationData.level[shape.level];
+        }
+        if (data.yellowShieldData && data.yellowShieldData.level[shape.level]) {
+            shape.yellowShield += data.yellowShieldData.level[shape.level];
+        }
+        if (data.repairData && data.repairData.level[shape.level]) {
+            shape.repair += data.repairData.level[shape.level];
+        }
+        if (data.chargeLevel && data.chargeLevel.level[shape.level]) {
+            shape.chargeSpeed += data.chargeLevel.level[shape.level];
+        }
+        shape.level++;
+    }
+    function enterBarForShip(type, weapon) {
+        let text = "";
+        let Weapon = mothershipData.find(item => item.name == weapon.name)
+        let maxwidth = window.innerWidth >= 1442 ? 500 : window.innerWidth >= 1374 ? 450 : window.innerWidth >= 1311 ? 400 : window.innerWidth >= 1245 ? 350 : window.innerWidth >= 1182 ? 300 : 250;
+        maxwidth += 281.25;
+        if (type == "dmg" && Weapon.dmgData) {
+            let maxdmg = Weapon.dmgData.base;
+            for (let i = 0; i < Weapon.dmgData.level.length; i++) {
+                maxdmg += Weapon.dmgData.level[i];
+            }
+            let indexAdjust = ((weapon.dmg / maxdmg) * maxwidth) / maxwidth;
+            let indexAdjusted = (((weapon.dmg + (Weapon.dmgData.level[weapon.level])) / maxdmg) * maxwidth) / maxwidth;
+            text = `
+            <div style="position: relative; width: ${maxwidth}px;">
+            Damage: ${abbreviateNumber(weapon.dmg)}
+            <div style="display: ${Weapon.dmgData.level[weapon.level] ? "block" : "none"};position: absolute; top: 0px; right: 0px; color: #00ff00;">
+            +${abbreviateNumber(Weapon.dmgData.level[weapon.level])}
+            </div>
+            </div>
+            <div style="position: relative; width: ${maxwidth}px; height: 3px; background-color: #fff;">
+            <div style="position: absolute; top: 0px; left: 0px; height: 3px; width: ${indexAdjusted * 100}%; background-color: #02de02;">
+            </div>
+            <div style="position: absolute; top: 0px; left: 0px; height: 3px; width: ${indexAdjust * 100}%; background-color: #00fcec;">
+            </div>
+            </div>
+            `;
+        } else if (type == "charge") {
+            let maxdmg = Weapon.chargeLevel.base;
+            for (let i = 0; i < Weapon.chargeLevel.level.length; i++) {
+                maxdmg += Weapon.chargeLevel.level[i];
+            }
+            let indexAdjust = ((weapon.chargeSpeed / maxdmg) * maxwidth) / maxwidth;
+            let indexAdjusted = (((weapon.chargeSpeed + (Weapon.chargeLevel.level[weapon.level])) / maxdmg) * maxwidth) / maxwidth;
+            text = `
+            <div style="position: relative; width: ${maxwidth}px;">
+            Charge Speed Modifier: ${Math.round(weapon.chargeSpeed * 100)}%
+            <div style="display: ${Weapon.chargeLevel.level[weapon.level] ? "block" : "none"};position: absolute; top: 0px; right: 0px; color: #00ff00;">
+            +${Math.round(Weapon.chargeLevel.level[weapon.level] * 100)}%
+            </div>
+            </div>
+            <div style="position: relative; width: ${maxwidth}px; height: 3px; background-color: #fff;">
+            <div style="position: absolute; top: 0px; left: 0px; height: 3px; width: ${indexAdjusted * 100}%; background-color: #02de02;">
+            </div>
+            <div style="position: absolute; top: 0px; left: 0px; height: 3px; width: ${indexAdjust * 100}%; background-color: #00fcec;">
+            </div>
+            </div>
+            `;
+        } else if (type == "repair" && Weapon.repairData) {
+            let maxdmg = Weapon.repairData.base;
+            for (let i = 0; i < Weapon.repairData.level.length; i++) {
+                maxdmg += Weapon.repairData.level[i];
+            }
+            let indexAdjust = ((weapon.repair / maxdmg) * maxwidth) / maxwidth;
+            let indexAdjusted = (((weapon.repair + (Weapon.repairData.level[weapon.level])) / maxdmg) * maxwidth) / maxwidth;
+            text = `
+            <div style="position: relative; width: ${maxwidth}px;">
+            Repair Power: ${abbreviateNumber(weapon.repair)}
+            <div style="display: ${Weapon.repairData.level[weapon.level] ? "block" : "none"};position: absolute; top: 0px; right: 0px; color: #00ff00;">
+            +${abbreviateNumber(Weapon.repairData.level[weapon.level])}
+            </div>
+            </div>
+            <div style="position: relative; width: ${maxwidth}px; height: 3px; background-color: #fff;">
+            <div style="position: absolute; top: 0px; left: 0px; height: 3px; width: ${indexAdjusted * 100}%; background-color: #02de02;">
+            </div>
+            <div style="position: absolute; top: 0px; left: 0px; height: 3px; width: ${indexAdjust * 100}%; background-color: #00fcec;">
+            </div>
+            </div>
+            `;
+        } else if (type == "yellow shield" && Weapon.yellowShieldData) {
+            let maxdmg = Weapon.yellowShieldData.base;
+            for (let i = 0; i < Weapon.yellowShieldData.level.length; i++) {
+                maxdmg += Weapon.yellowShieldData.level[i];
+            }
+            let indexAdjust = ((weapon.yellowShield / maxdmg) * maxwidth) / maxwidth;
+            let indexAdjusted = (((weapon.yellowShield + (Weapon.yellowShieldData.level[weapon.level])) / maxdmg) * maxwidth) / maxwidth;
+            text = `
+            <div style="position: relative; width: ${maxwidth}px;">
+            Energy Shield Health: ${abbreviateNumber(weapon.yellowShield)}
+            <div style="display: ${Weapon.yellowShieldData.level[weapon.level] ? "block" : "none"};position: absolute; top: 0px; right: 0px; color: #00ff00;">
+            +${abbreviateNumber(Weapon.yellowShieldData.level[weapon.level])}
+            </div>
+            </div>
+            <div style="position: relative; width: ${maxwidth}px; height: 3px; background-color: #fff;">
+            <div style="position: absolute; top: 0px; left: 0px; height: 3px; width: ${indexAdjusted * 100}%; background-color: #02de02;">
+            </div>
+            <div style="position: absolute; top: 0px; left: 0px; height: 3px; width: ${indexAdjust * 100}%; background-color: #00fcec;">
+            </div>
+            </div>
+            `;
+        } else if (type == "effect duration" && Weapon.effectDurationData) {
+            let maxdmg = Weapon.effectDurationData.base;
+            for (let i = 0; i < Weapon.effectDurationData.level.length; i++) {
+                maxdmg += Weapon.effectDurationData.level[i];
+            }
+            let indexAdjust = ((weapon.effectDuration / maxdmg) * maxwidth) / maxwidth;
+            let indexAdjusted = (((weapon.effectDuration + (Weapon.effectDurationData.level[weapon.level])) / maxdmg) * maxwidth) / maxwidth;
+            text = `
+            <div style="position: relative; width: ${maxwidth}px;">
+            Effect Duration: ${weapon.effectDuration / 1e3} second(s)
+            <div style="display: ${Weapon.effectDurationData.level[weapon.level] ? "block" : "none"};position: absolute; top: 0px; right: 0px; color: #00ff00;">
+            +${Weapon.effectDurationData.level[weapon.level] / 1e3} second(s)
+            </div>
+            </div>
+            <div style="position: relative; width: ${maxwidth}px; height: 3px; background-color: #fff;">
+            <div style="position: absolute; top: 0px; left: 0px; height: 3px; width: ${indexAdjusted * 100}%; background-color: #02de02;">
+            </div>
+            <div style="position: absolute; top: 0px; left: 0px; height: 3px; width: ${indexAdjust * 100}%; background-color: #00fcec;">
+            </div>
+            </div>
+            `;
+        }
+        return text;
+    }
+    function drawMothershipDisplay(module, index, shape, slot) {
+        document.getElementById("WEAPONdisplay").innerHTML = `
+        <div style="position: absolute; top: 0px; left: 0px; width: 100%; height: 100%; background-image: linear-gradient(rgb(0, 0, 0, 0), ${tierColor(module)});">
+        </div>
+        <div id="weaponImage" style="position: absolute; top: ${window.innerHeight / 2 - 187.5}px; left: ${window.innerWidth / 2 - 187.5}px; height: 375px; width: 375px;">
+        </div>
+        <div style="position: absolute; text-align: center; top: ${window.innerHeight / 2 + 187.5}px; left: ${window.innerWidth / 2 - 187.5}px; height: 50px; width: 375px;">
+        </div>
+        <div style="position: absolute; top: ${window.innerHeight / 2 - 250}px; left: ${window.innerWidth / 2 - 522.5}px; width: 325px; height: 500px; background-color: rgb(0, 0, 0, .2); border: solid; border-color: #fff; border-radius: 6px; overflow-y: scroll;">
+        <div style="position: absolute; top: 7px; left: 5px;">
+        <div style="position: absolute; top: 2px; width: 260px; left: 5px; color: #fff; font-size: 24px;">
+        <strong>
+        ${module.name}
+        </strong>
+        </div>
+        </div>
+        <div style="position: absolute; top: 45px; left: 0px;">
+        <hr style="position: absolute; top: 0px; left: 0px; color: #fff; width: 325px;">
+        <div style="position: absolute; top: 15px; left: 5px; width: 320px;">
+        ${module.desc}<br>
+        <hr style="position: absolute; left: -5px; color: #fff; width: 325px;">
+        <br>
+        ${module.dmg ? `Strike Damage: ${abbreviateNumber(module.dmg)}<br>` : ""}
+        ${module.scale ? `Effect Radius: ${abbreviateNumber(module.scale)} PX<br>` : ""}
+        ${module.shieldHp ? `Shield Health: ${abbreviateNumber(module.shieldHp)}<br>` : ""}
+        ${module.healingData ? `
+        Healing Rate: ${(module.healingData.rate / 1e3).toFixed(1)} second(s)<br>
+        Healing Power: ${module.healingData.power * 100}%<br>
+        Healing Duration: ${(module.healingData.duration / 1e3).toFixed(1)} second(s)<br>
+        ` : ""}
+        ${module.stealthTime ? `Stealth Duration: ${module.stealthTime / 1e3} second(s)<br>` : ""}
+        ${module.antiDefenseMig ? `Anti Defense Mitigation Duration: ${module.antiDefenseMig / 1e3} second(s)<br>` : ""}
+        ${module.durabilityIncrease ? `Durability Increase: ${module.durabilityIncrease * 100}%<br>` : ""}
+        ${module.strikeDelay ? `Strike Delay: ${(module.strikeDelay / 1e3).toFixed(1)} second(s)<br>` : ""}
+        <p></p>
+        </div>
+        </div>
+        </div>
+        <div id="buyTurret" style="display: ${index > 0 ? "block" : "none"}; position: absolute; color: #fff; text-align: center; font-size: 35px; left: ${window.innerWidth / 2 + 187.5}px; top: ${window.innerHeight / 2 - 25}px; cursor: pointer; width: 325px; height: 50px; border-radius: 6px; background-color: #0f0;">
+        BUY
+        </div>
+        <div id="backButton" style="position: absolute; cursor: pointer; text-align: center; font-size: 40px; color: #fff; left: 20px; bottom: 20px; width: 150px; height: 60px; background-color: rgb(124, 124, 124, 1); border: solid; border-color: #fff; border-radius: 6px;">
+        BACK
+        </div>
+        <div id="buyMenu" style="position: absolute; display: none; color: #fff; top: ${(window.innerHeight / 2) - (225 / 2)}px; left: ${(window.innerWidth / 2) - (425 / 2)}px; width: 425px; height: 225px; background-color: rgb(0, 0, 0, .7);">
+        </div>
+        `;
+        let weaponImg = getWeaponIcon(module, true);
+        weaponImg.style = "width: 100%; height: 100%;";
+        document.getElementById("weaponImage").appendChild(weaponImg);
+        document.getElementById("buyTurret").onclick = function () {
+            document.body.appendChild(document.getElementById("moneyDisplay"));
+            document.getElementById("buyMenu").style.display = "block";
+            let num = 60;
+            document.getElementById("buyMenu").innerHTML = `
+            <div style="width: 100%; text-align: center; font-size: 30px;">
+            Confirm Purchase
+            </div>
+            <hr>
+            <div id="lo____l" style="position: absolute; cursor: pointer; top: 5px; right: 10px;">
+            x
+            </div>
+
+            <div style="position: absolute; top: ${num}px; left: ${425 / 2 - 62.5}px; border: solid; border-color: #fff; border-radius: 6px; width: 125px; height: 35px; background-color: rgb(0, 0, 0, 0.2);">
+            <div style="position: absolute; top: 0px; left: 0px; width: 35px; height: 35px; background-size: 35px 35px; background-image: url('./images/icons/workshop.png');">
+            </div>
+            <div style="position: absolute; top: 6.75px; left: 40px;  color: #fff;">
+            ${abbreviateNumber(module.cost)}
+            </div>
+            <div style="position: absolute; text-align: center; top: 46.75px; left: -40px;  color: #fff; width: 200px;">
+            The previous turret will be destroyed.
+            </div>
+            </div>
+
+            <div id="confirm" style="position: absolute; cursor: pointer; font-size: 24px; text-align: center; bottom: 10px; left: ${425 / 2 - 75}px; width: 150px; border-radius: 6px; height: 40px; background-color: #0f0;">
+            Confirm
+            </div>
+            `;
+            document.getElementById("confirm").onclick = function () {
+                if (player.workshopPoints - module.cost >= 0) {
+                    updateMoneyDisplay("workshopPoints", -module.cost);
+                    document.getElementById("hangerUI").appendChild(document.getElementById("moneyDisplay"))
+                    shape.turrets[slot] = { ...module };
+                    shape.turrets[slot].slot = slot;
+                    if (shape.using) {
+                        customizeMothership(shape);
+                    } else {
+                        let eee = player.motherships.find(e => e.using);
+                        customizeMothership(eee);
+                        equipMothership();
+                    }
+                }
+            }
+            document.getElementById("lo____l").onclick = function () {
+                document.getElementById("hangerUI").appendChild(document.getElementById("moneyDisplay"));
+                document.getElementById("buyMenu").style.display = "none";
+                document.getElementById("storeButton").style.display = "block";
+                document.getElementById("inventoryButton").style.display = "block";
+            }
+        }
+        document.getElementById("backButton").onclick = function() {
+            document.getElementById("sideDisplay").innerHTML = "";
+            document.getElementById("hangerUI").appendChild(document.getElementById("moneyDisplay"));
+            document.getElementById("mothershipToggle").click();
+        }
+    }
+    function customizeShipTurret(module, shape, slot) {
+        let filtered = turretsData.filter(e => e.name != module.name && e.type == module.type).sort((a, b) => a.tier - b.tier);
+        filtered.unshift(module);
+        let currentIndex = 0;
+        document.getElementById("sideDisplay").innerHTML = `
+        <div id="WEAPONdisplay" style="position: absolute; left: 0px; top: 0px; width: 100%; height: 100%;">
+        </div>
+        <div id="goToPre" style="display: none; position: absolute; cursor: pointer; left: 10px; top: ${window.innerHeight / 2 - 200}px; width: 40px; height: 400px; background-color: rgb(0, 0, 0, 0.3); border-radius: 8px;">
+        <div id="goToPreCon" style="color: #fff; position: absolute; width: 40px; text-align: center; left: 0px; top: ${200 - 20}px;">
+        <span class="material-symbols-outlined" style="font-size: 40px;">
+        navigate_before
+        </span>
+        </div>
+        </div>
+        <div id="goToNext" style="position: absolute; transition: .25s; cursor: pointer; right: 10px; top: ${window.innerHeight / 2 - 200}px; width: 40px; height: 400px; background-color: rgb(0, 0, 0, 0.3); border-radius: 8px;">
+        <div id="goToNextCon" style="color: #fff; position: absolute; width: 40px; text-align: center; left: 0px; top: ${200 - 20}px;">
+        <span class="material-symbols-outlined" style="font-size: 40px;">
+        navigate_next
+        </span>
+        </div>
+        </div>
+        `;
+        drawMothershipDisplay(filtered[currentIndex], currentIndex, shape, slot);
+        if (!filtered[currentIndex - 1]) {
+            document.getElementById("goToPre").style.display = "none";
+        }
+        document.getElementById("goToPre").onclick = function () {
+            currentIndex--;
+            drawMothershipDisplay(filtered[currentIndex], currentIndex, shape, slot);
+            if (!filtered[currentIndex - 1]) {
+                document.getElementById("goToPre").style.display = "none";
+            } else {
+                document.getElementById("goToPre").style.display = "block";
+            }
+            if (!filtered[currentIndex + 1]) {
+                document.getElementById("goToNext").style.display = "none";
+            } else {
+                document.getElementById("goToNext").style.display = "block";
+            }
+        }
+        if (!filtered[currentIndex + 1]) {
+            document.getElementById("goToNext").style.display = "none";
+        }
+        document.getElementById("goToNext").onclick = function () {
+            currentIndex++;
+            drawMothershipDisplay(filtered[currentIndex], currentIndex, shape, slot);
+            if (!filtered[currentIndex + 1]) {
+                document.getElementById("goToNext").style.display = "none";
+            } else {
+                document.getElementById("goToNext").style.display = "block";
+            }
+            if (!filtered[currentIndex - 1]) {
+                document.getElementById("goToPre").style.display = "none";
+            } else {
+                document.getElementById("goToPre").style.display = "block";
+            }
+        }
+        document.getElementById("goToNext").onmouseover = function () {
+            this.style.backgroundColor = "rgb(255, 255, 255, .45)";
+            document.getElementById("goToNextCon").style.color = "#000";
+        }
+        document.getElementById("goToNext").onmouseout = function () {
+            this.style.backgroundColor = "rgb(0, 0, 0, 0.3)";
+            document.getElementById("goToNextCon").style.color = "#fff";
+        }
+        document.getElementById("goToPre").onmouseover = function () {
+            this.style.backgroundColor = "rgb(255, 255, 255, .45)";
+            document.getElementById("goToPreCon").style.color = "#000";
+        }
+        document.getElementById("goToPre").onmouseout = function () {
+            this.style.backgroundColor = "rgb(0, 0, 0, 0.3)";
+            document.getElementById("goToPreCon").style.color = "#fff";
+        }
+    }
+    var MOOOOOOOTHERSHIP = mothership;
+    function customizeMothership(shape, HA) {
+        document.getElementById("mothershipDisplayyy").style.display = "none";
+        let infoDisplayTextThing = getMothershipInfoDisplayThing(shape);
+        document.getElementById("sideDisplay").innerHTML = `
+        <div style="position: absolute; top: 0px; left: 0px; width: 100%; height: 100%; background-image: linear-gradient(rgb(0, 0, 0, 0), ${tierColor(shape)});">
+        </div>
+        <div style="position: absolute; overflow-y: scroll; left: 80px; top: ${(window.innerHeight / 2) - 250}px; width: 325px; height: 290px; border: solid; border-radius: 6px; border-color: #fff; background-color: rgb(0, 0, 0, 0.4);">
+        <div style="position: absolute; top: 7px; left: 5px;">
+        <div style="position: absolute; top: 0px; left: 0px; text-align: center; color: #fff; font-size: 25px; border-radius: 100%; width: 40px; height: 40px; background-color: ${tierColor(shape)};">
+        ${shape.level}
+        </div>
+        <div style="position: absolute; height: 32.5px; max-height: 32.5px; overflow-y: scroll; top: 2px; width: 260px; left: 45px; color: #fff; font-size: 24px;">
+        <strong>
+        ${shape.name}
+        </strong>
+        </div>
+        </div>
+        <div style="position: absolute; top: 45px; left: 0px;">
+        <hr style="position: absolute; top: 0px; left: 0px; color: #fff; width: 325px;">
+        <div style="position: absolute; top: 15px; left: 5px; width: 320px;">
+        ${infoDisplayTextThing}
+        <p></p>
+        </div>
+        </div>
+        </div>
+        <div id="shapeImage" style="position: absolute; left: ${window.innerWidth / 2 - 187.5}px; top: ${window.innerHeight / 2 - 187.5}px; width: 375px; height: 375px;">
+        <div id="showDescription" style="position: absolute; cursor: pointer; display: flex; align-items: center; right: 0px; top: 0px; width: 35px; height: 35px; background-color: rgb(255, 255, 255, .4); border-radius: 100%;">
+        <div style="width: 100%; color: #fff; text-align: center; font-size: 30px;">
+        i
+        </div>
+        </div>
+        </div>
+        <div style="position: absolute; overflow-y: scroll; right: 80px; top: ${(window.innerHeight / 2) - 267.5}px; width: 325px; height: 500px; border: solid; border-radius: 6px; border-color: #fff; background-color: rgb(0, 0, 0, 0.2);">
+        <div id="weaponDisplay" style="position: absolute; left: 0px; top: 0px; height: 500px; width: 100%; overflow-y: scroll; background-color: rgb(0, 0, 0, 0.1);">
+        </div>
+        </div>
+        <div id="upgradeMenu" style="position: absolute; z-index: 10000; color: #fff; display: none; top: 12.5%; left: 12.5%; width: 75%; height: 75%; background-color: rgb(0, 0, 0, .7);">
+        </div>
+        <div id="upgradeShape" style="position: absolute; cursor: pointer; text-align: center; font-size: 40px; color: #fff; left: ${window.innerWidth / 2 + 10}px; bottom: 20px; width: 175px; height: 60px; background-color: rgb(0, 255, 0); border-radius: 6px;">
+        UPGRADE
+        </div>
+        <div id="changeShape" style="position: absolute; cursor: pointer; text-align: center; font-size: 40px; color: #fff; left: ${window.innerWidth / 2 - 185}px; bottom: 20px; width: 175px; height: 60px; background-color: #808080; border-radius: 6px;">
+        CHANGE
+        </div>
+        <div id="backButton" style="position: absolute; cursor: pointer; text-align: center; font-size: 40px; color: #fff; left: 20px; bottom: 20px; width: 150px; height: 60px; background-color: rgb(124, 124, 124, 1); border: solid; border-color: #fff; border-radius: 6px;">
+        BACK
+        </div>
+        `;
+        let image = getMothershipImage(shape);
+        image.style = `
+        width: 100%;
+        height: 100%;
+        `;
+        document.getElementById("shapeImage").appendChild(image);
+        let order = { "attack": 0, "defense": 1, "support": 2 };
+        let tmpT = shape.turrets.sort((a, b) => {
+            return order[a.type] - order[b.type];
+        });
+        for (let i = 0; i < tmpT.length; i++) {
+            document.getElementById("weaponDisplay").innerHTML += `
+            <div id="${tmpT[i].name}_${i}" style="position: relative; cursor: pointer; height: ${500 / 4}px; width: 100%; background-color: ${i % 2 ? "rgb(0, 0, 0, 0.2);" : "rgb(255, 255, 255, 0.1);"}}">
+            </div>
+            `;
+        }
+        for (let i = 0; i < tmpT.length; i++) {
+            let weapon = tmpT[i];
+            let weaponIcon = getWeaponIcon(weapon, true);
+            weaponIcon.style = "width: 125px; height: 125px;";
+            let yype = weapon.type;
+            document.getElementById(`${tmpT[i].name}_${i}`).appendChild(weaponIcon);
+            document.getElementById(`${tmpT[i].name}_${i}`).innerHTML += `
+            <div style="position: absolute; color: ${tierColor(weapon)}; top: 5px; left: 135px; font-size: 24px;">
+            ${weapon.name}
+            <div style="color: #fff; font-size: 14px; margin-top: -5px;">${yype.charAt(0).toUpperCase() + yype.slice(1)}</div></div>
+            `;
+            document.getElementById(`${tmpT[i].name}_${i}`).onclick = function () {
+                customizeShipTurret(weapon, shape, weapon.slot);
+            };
+        }
+        document.getElementById("showDescription").onclick = function () {
+            let element = document.createElement("div");
+            element.style = `
+            position: absolute;
+            top: 12.5%;
+            left: 12.5%;
+            width: 75%;
+            height: 75%;
+            background-color: rgb(0, 0, 0, 0.75);
+            z-index: 99;
+            border-radius: 6px;
+            `;
+            let width = window.innerWidth * .75;
+            let height = window.innerHeight * .75;
+            let box = width / 2 - 80;
+            element.innerHTML = `
+            <div style="position: absolute; top: 7px; left: 10px; width: ${width - 10}px;">
+            <div style="position: absolute; top: 0px; left: 0px; text-align: center; color: #fff; font-size: 25px; border-radius: 100%; width: 40px; height: 40px; background-color: ${tierColor(shape)};">
+            ${shape.level}
+            </div>
+            <div style="position: absolute; top: 2px; left: 45px; color: #fff; font-size: 24px;">
+            <strong>
+            ${returnStyledName(shape, shape.name)}
+            </strong>
+            </div>
+            </div>
+            <div id="imageShape2" style="position: absolute; top: ${(height / 2) - (box / 2)}px; left: 40px; width: ${box}px; height: ${box}px;">
+            </div>
+            <div style="position: absolute; color: #a3a3a3; top: 0px; left: ${width / 2}px; width: ${width / 2}px; height: 100%; overflow-y: scroll;">
+            <div style="margin-top: 5px;">
+            <strong style="color: #fff;">Industry: ${shape.industryName}</strong><br><br>
+            ${shape.desc}<br><br>
+            Mothership Stats:<br>
+            ${infoDisplayTextThing}
+            <p></p>
+            </div>
+            </div>
+            `;
+            document.getElementById("sideDisplay").append(element);
+            element.onclick = function () {
+                this.remove();
+            }
+            let image = getMothershipImage(shape);
+            image.style = "width: 100%; height: 100%;";
+            document.getElementById("imageShape2").appendChild(image);
+        }
+        document.getElementById("changeShape").onclick = function() {
+            equipMothership();
+        }
+        document.getElementById("upgradeShape").onclick = function () {
+            document.body.appendChild(document.getElementById("moneyDisplay"));
+            let adjustwidth = window.innerWidth * .75;
+            document.getElementById("upgradeMenu").style.display = "block";
+            let cost = getMothershipUpgradeCost(shape.level);
+            document.getElementById("upgradeMenu").innerHTML = `
+            <div style="width: 100%; text-align: center; margin-top: 5px; font-size: 30px;">
+            Lvl ${shape.level} ${shape.name}
+            </div>
+            <hr>
+            <div style="position: absolute; left: 300px; top: 65px;">
+            ${enterBarForShip("dmg", shape)}
+            ${enterBarForShip("repair", shape)}
+            ${enterBarForShip("yellow shield", shape)}
+            ${enterBarForShip("effect duration", shape)}
+            ${enterBarForShip("charge", shape)}
+            </div>
+            <div id="leaveUpgrade" style="position: absolute; cursor: pointer; right: 10px; top: 10px;">
+            X
+            </div>
+            <div id="UPGRADE" style="position: absolute; width: 200px; height: 80px; cursor: pointer; left: ${adjustwidth / 2 - 100}px; bottom: 10px; background-color: ${shape.level < shape.maxlevel ? "#00ff00" : "#808080"};">
+            <div style="width: 100%; text-align: center; color: #fff; font-size: ${shape.level < shape.maxlevel ? 30 : 40}px; margin-top: 10px;">
+            ${shape.level < shape.maxlevel ? "UPGRADE" : "MAXED"}
+            </div>
+            <div style="color: #fff; display: ${shape.level < shape.maxlevel ? "block" : "none"}; width: 100%; text-align: center; font-size: 12px;">
+            ${abbreviateNumber(cost)} WKSP
+            </div>
+            </div>
+            `;
+            let sprite = getMothershipImage(shape);
+            sprite.style = "width: 280px; height: 280px;";
+            document.getElementById("upgradeMenu").appendChild(sprite);
+            document.getElementById("leaveUpgrade").onclick = function () {
+                document.getElementById("upgradeMenu").style.display = "none";
+                document.getElementById("hangerUI").appendChild(document.getElementById("moneyDisplay"));
+            };
+            document.getElementById("UPGRADE").onclick = function () {
+                if (player.workshopPoints - cost >= 0 && shape.level < shape.maxlevel) {
+                    updateMoneyDisplay("workshopPoints", -cost);
+                    upgradeMothership(shape);
+                    customizeMothership(shape, true);
+                    saveGameData();
+                }
+            };
+        }
+        document.getElementById("backButton").onclick = function() {
+            document.getElementById("sideDisplay").innerHTML = "";
+            document.getElementById("hangerUI").appendChild(document.getElementById("moneyDisplay"));
+            document.getElementById("mothershipToggle").click();
+        }
+        if (HA) {
+            document.getElementById("upgradeShape").click();
+        }
+    }
+    function equipMothership() {
+        document.getElementById("mothershipDisplayyy").style.display = "none";
+        let unequipedShapes = player.motherships.filter(e => !e.using);
+        let oldShape = player.motherships.find(e => e.using);
+        let filteredRobots = [];
+        for (let i = 0; i < unequipedShapes.length; i++) {
+            filteredRobots.push(unequipedShapes[i]);
+        }
+        filteredRobots = filteredRobots.sort((a, b) => b.level - a.level).sort((a, b) => b.tier - a.tier);
+        if (oldShape) filteredRobots.unshift(oldShape);
+        let currentIndex = 0;
+        document.getElementById("sideDisplay").innerHTML = `
+        <div id="WEAPONdisplay" style="position: absolute; top: 0px; left: 0px; width: 100%; height: 100%;">
+        </div>
+        <div id="goToPre" style="display: none; position: absolute; cursor: pointer; left: 10px; top: ${window.innerHeight / 2 - 200}px; width: 40px; height: 400px; background-color: rgb(0, 0, 0, 0.3); border-radius: 8px;">
+        <div id="goToPreCon" style="color: #fff; position: absolute; width: 40px; text-align: center; left: 0px; top: ${200 - 20}px;">
+        <span class="material-symbols-outlined" style="font-size: 40px;">
+        navigate_before
+        </span>
+        </div>
+        </div>
+        <div id="goToNext" style="position: absolute; transition: .25s; cursor: pointer; right: 10px; top: ${window.innerHeight / 2 - 200}px; width: 40px; height: 400px; background-color: rgb(0, 0, 0, 0.3); border-radius: 8px;">
+        <div id="goToNextCon" style="color: #fff; position: absolute; width: 40px; text-align: center; left: 0px; top: ${200 - 20}px;">
+        <span class="material-symbols-outlined" style="font-size: 40px;">
+        navigate_next
+        </span>
+        </div>
+        </div>
+        <div id="inventoryButton" style="position: absolute; text-align: center; font-size: 25px; color: #000; left: ${window.innerWidth / 2 - 165}px; top: 30px; border-radius: 6px; height: 42.5px; padding-top: 7.5px; width: 150px; background-color: rgb(255, 255, 255, .6);">
+        INVENTORY
+        </div>
+        <div id="storeButton" style="position: absolute; text-align: center; font-size: 35px; cursor: pointer; color: #fff; left: ${window.innerWidth / 2 + 20}px; top: 30px; border-radius: 6px; height: 50px; width: 150px; background-color: rgb(0, 0, 0, .4);">
+        STORE
+        </div>
+        `;
+        let inInventory = true;
+        let diiiisbled = false;
+        document.getElementById("inventoryButton").onclick = function () {
+            if (!diiiisbled) {
+                this.style.cursor = null;
+                this.style.color = "#000";
+                this.style.backgroundColor = "rgb(255, 255, 255, .6)";
+                document.getElementById("goToPre").style.display = "none";
+                document.getElementById("storeButton").style.cursor = "pointer";
+                document.getElementById("storeButton").style.color = "#fff";
+                document.getElementById("storeButton").style.backgroundColor = "rgb(0, 0, 0, .4)";
+                currentIndex = 0;
+                inInventory = true;
+                if (filteredRobots[currentIndex + 1]) {
+                    document.getElementById("goToNext").style.display = "block";
+                } else {
+                    document.getElementById("goToNext").style.display = "none";
+                }
+                drawMothershipEquip(inInventory ? filteredRobots : mothershipData.sort((a, b) => a.tier - b.tier), currentIndex, inInventory);
+            }
+        };
+        document.getElementById("storeButton").onclick = function () {
+            this.style.cursor = null;
+            this.style.color = "#000";
+            this.style.backgroundColor = "rgb(255, 255, 255, .6)";
+            document.getElementById("goToPre").style.display = "none";
+            document.getElementById("inventoryButton").style.cursor = "pointer";
+            document.getElementById("inventoryButton").style.color = "#fff";
+            document.getElementById("inventoryButton").style.backgroundColor = "rgb(0, 0, 0, .4)";
+            currentIndex = 0;
+            inInventory = false;
+            if (mothershipData[currentIndex + 1]) {
+                document.getElementById("goToNext").style.display = "block";
+            } else {
+                document.getElementById("goToNext").style.display = "none";
+            }
+            drawMothershipEquip(inInventory ? filteredRobots : mothershipData.sort((a, b) => a.tier - b.tier), currentIndex, inInventory);
+        };
+        if (filteredRobots.length == 0) {
+            document.getElementById("storeButton").click();
+            document.getElementById("inventoryButton").style.cursor = null;
+            diiiisbled = true;
+        }
+        drawMothershipEquip(inInventory ? filteredRobots : mothershipData.sort((a, b) => a.tier - b.tier), currentIndex, inInventory);
+        if (inInventory ? !filteredRobots[currentIndex + 1] : !mothershipData[currentIndex + 1]) {
+            document.getElementById("goToNext").style.display = "none";
+        }
+        document.getElementById("goToNext").onclick = function () {
+            document.getElementById("hangerUI").appendChild(document.getElementById("moneyDisplay"));
+            if (inInventory ? filteredRobots[currentIndex + 1] : mothershipData[currentIndex + 1]) {
+                currentIndex++;
+                drawMothershipEquip(inInventory ? filteredRobots : mothershipData.sort((a, b) => a.tier - b.tier), currentIndex, inInventory);
+                if (inInventory ? filteredRobots[currentIndex + 1] : mothershipData[currentIndex + 1]) {
+                    this.style.display = "block";
+                } else {
+                    this.style.display = "none";
+                }
+                if (inInventory ? filteredRobots[currentIndex - 1] : mothershipData[currentIndex - 1]) {
+                    document.getElementById("goToPre").style.display = "block";
+                } else {
+                    document.getElementById("goToPre").style.display = "none";
+                }
+            }
+        }
+        document.getElementById("goToNext").onmouseover = function () {
+            this.style.backgroundColor = "rgb(255, 255, 255, .45)";
+            document.getElementById("goToNextCon").style.color = "#000";
+        }
+        document.getElementById("goToNext").onmouseout = function () {
+            this.style.backgroundColor = "rgb(0, 0, 0, 0.3)";
+            document.getElementById("goToNextCon").style.color = "#fff";
+        }
+        document.getElementById("goToPre").onclick = function () {
+            document.getElementById("hangerUI").appendChild(document.getElementById("moneyDisplay"));
+            if (inInventory ? filteredRobots[currentIndex - 1] : mothershipData[currentIndex - 1]) {
+                currentIndex--;
+                drawMothershipEquip(inInventory ? filteredRobots : mothershipData.sort((a, b) => a.tier - b.tier), currentIndex, inInventory);
+                if (inInventory ? filteredRobots[currentIndex - 1] : mothershipData[currentIndex - 1]) {
+                    this.style.display = "block";
+                } else {
+                    this.style.display = "none";
+                }
+                if (inInventory ? filteredRobots[currentIndex + 1] : mothershipData[currentIndex + 1]) {
+                    document.getElementById("goToNext").style.display = "block";
+                } else {
+                    document.getElementById("goToNext").style.display = "none";
+                }
+            }
+        }
+        document.getElementById("goToPre").onmouseover = function () {
+            this.style.backgroundColor = "rgb(255, 255, 255, .45)";
+            document.getElementById("goToPreCon").style.color = "#000";
+        }
+        document.getElementById("goToPre").onmouseout = function () {
+            this.style.backgroundColor = "rgb(0, 0, 0, 0.3)";
+            document.getElementById("goToPreCon").style.color = "#fff";
+        }
+        saveGameData();
+    }
+    function updateMothershipDisplay() {
+        let adjusted = window.innerWidth - 200;
+        let adjustedH = (adjusted / 4) * 2;
+        if (document.getElementById("mothershipDisplayyy")) {
+            document.getElementById("mothershipDisplayyy").remove();
+        }
+        let element = document.createElement('div');
+        element.id = "mothershipDisplayyy";
+        element.style = `
+        position: absolute;
+        top: ${(window.innerHeight / 2) - (adjustedH / 2)}px;
+        left: 100px;
+        width: ${adjusted}px;
+        border-radius: 12px;
+        overflow: hidden;
+        height: ${adjustedH}px;
+        background-color: rgb(135, 135, 135, 0.8);
+        `;
+        document.body.append(element);
+        let mothership = player.motherships.find(e => e.using);
+        if (mothership) {
+            element.style.cursor = "pointer";
+            element.innerHTML = `
+            <div style="position: absolute; font-size: 40px; cursor: pointer; color: #fff; bottom: 5px; right: 10px; text-align: right;">
+            Lvl ${mothership.level} ${mothership.name}
+            </div>
+            `;
+            for (let t = 0; t < mothership.turrets.length; t++) {
+                let tmpImage = getModuleIcon(mothership.turrets[t], true);
+                tmpImage.style = `position: absolute; bottom: ${50 + (80 * (t >= 4 ? t - 4 : t))}px; right: ${t >= 4 ? 85 : 10}px; width: 75px; height: 75px;`;
+                element.appendChild(tmpImage);
+            }
+            let image = getMothershipImage(mothership);
+            image.style = `height: ${adjustedH}px;`;
+            element.append(image);
+            element.onclick = function() {
+                customizeMothership(mothership);
+            };
+        } else {
+            element.innerHTML = `
+            <div style="position: absolute; font-size: 40px; cursor: pointer; color: #fff; display: flex; justify-content: center; align-items: center; top 0px; left: 0px; width: 100%; height: 100%;">
+            Equip Mothership
+            </div>
+            `;
+            element.onclick = function() {
+                equipMothership();
+            };
+        }
+    }
+    document.getElementById("mothershipToggle").onclick = function() {
+        document.getElementById("hangerUI").style.display = "none";
+        updateMothershipDisplay();
+    }
     function saveGameData() {
         saveValue("settingToggles", JSON.stringify(settingToggles));
         saveValue("hasSaved", 1);
@@ -16554,12 +17887,30 @@
                 skills: skills
             });
         }
+        let motherships = [];
+        for (let i = 0; i < player.motherships.length; i++) {
+            let mothership = player.motherships[i];
+            let turrets = [];
+            mothership.turrets.forEach(e => {
+                turrets.push({
+                    name: e.name,
+                    slot: e.slot
+                });
+            });
+            motherships.push({
+                name: mothership.name,
+                using: mothership.using,
+                level: mothership.level,
+                skills: turrets
+            });
+        }
         saveValue("lootboxSpecialPrize", JSON.stringify(player.lootboxSpecialPrize));
         saveValue("pilots", JSON.stringify(pilots));
         saveValue("profile", JSON.stringify(player.profile));
         saveValue("tokens", JSON.stringify(player.tokens));
         saveValue("slotData", JSON.stringify(slotData));
         saveValue("shapes", JSON.stringify(shapes));
+        saveValue("motherships", JSON.stringify(motherships));
         saveValue("drones", JSON.stringify(drones));
         saveValue("weapons", JSON.stringify(weapons));
         saveValue("modules", JSON.stringify(modules));
@@ -16569,7 +17920,6 @@
         saveValue("keys", player.keys);
         saveValue("sliver", player.sliver);
         saveValue("gold", player.gold);
-        saveValue("tasks", JSON.stringify(tasks));
         saveValue("workshopPoints", player.workshopPoints);
         saveValue("operationData", JSON.stringify(operationData));
         saveValue("workshopQueue", JSON.stringify(workshopQueue));
@@ -16598,6 +17948,7 @@
             let ModuleData = JSON.parse(getValue("modules"));
             let DronesData = JSON.parse(getValue("drones")) || [];
             let PilotsData = JSON.parse(getValue("pilots")) || [];
+            let MothershipData = JSON.parse(getValue("motherships")) || [];
             if (getValue("parts")) {
                 let parts = getValue("parts");
                 player.parts = JSON.parse(parts);
@@ -16613,7 +17964,11 @@
                             slotData[data.slot].unlocked = true;
                             slotData[data.slot].used = true;
                         }
-                        newShape.activeModuleIndex = data.activeModuleIndex || 0;
+                        if (activeModuleData[data.activeModuleIndex]) {
+                            newShape.activeModuleIndex = data.activeModuleIndex;
+                        } else {
+                            newShape.activeModuleIndex = 0;
+                        }
                         newShape.sid = data.sid;
                         if (newShape.sid == undefined || newShape.sid == null) {
                             newShape.sid = "get anew";
@@ -16719,6 +18074,27 @@
                     }
                 }
             }
+            for (let i = 0; i < MothershipData.length; i++) {
+                let data = MothershipData[i];
+                if (data) {
+                    let Mothership = mothershipData.find(e => data.name == e.name);
+                    if (Mothership) {
+                        let thePilot = new mothership(Mothership, data.using);
+                        for (let i = 0; i < data.level - 1; i++) {
+                            upgradeMothership(thePilot)
+                        }
+                        data.skills.forEach(e => {
+                            let Skill = turretsData.find(_ => _.name == e.name);
+                            if (Skill) {
+                                let index = thePilot.turrets.length;
+                                thePilot.turrets.push({ ...Skill });
+                                thePilot.turrets[index].slot = e.slot;
+                            }
+                        });
+                        player.motherships.push(thePilot);
+                    }
+                }
+            }
             player.shapes.forEach(item => {
                 let weapons = player.weapons.filter(e => item.sid == e.owner);
                 let heavy = weapons.filter(e => e.type == "Heavy");
@@ -16777,18 +18153,9 @@
             if (getValue("workshopQueue")) {
                 workshopQueue = JSON.parse(getValue("workshopQueue"));
             }
-            if (getValue("tasks")) {
-                let data = JSON.parse(getValue("tasks"));
-                for (let i = 0; i < data.length; i++) {
-                    if (data[i].NEW) {
-                        tasks.push(data[i]);
-                    }
-                }
-            }
             if (getValue("tokens")) {
                 player.tokens = JSON.parse(getValue("tokens"));
             }
-            generateTasks();
             if (getValue("operationData")) {
                 operationData = JSON.parse(getValue("operationData"));
             }
@@ -16892,7 +18259,7 @@
     function renderPhysicalShields(robot, delta, ctx) {
         if (robot.invis) return;
         ctx.globalAlpha = 1;
-        let physicals = robot.shields.filter(e => e.type == "normal");
+        let physicals = robot.shields.filter(e => e.type == "normal" || e.type == "purple normal");
         for (let i = 0; i < physicals.length; i++) {
             let shield = physicals[i];
             if (shield) {
@@ -16906,9 +18273,9 @@
                 let healthPercentage = shield.health / shield.maxhealth;
                 let redValue = Math.floor(128 + 127 * (1 - healthPercentage));
                 let otherValues = Math.floor(128 - 127 * (1 - healthPercentage));
-                ctx.strokeStyle = `rgb(${redValue}, ${otherValues}, ${otherValues})`;
+                ctx.strokeStyle = shield.type == "purple normal" ? "#800080" : `rgb(${redValue}, ${otherValues}, ${otherValues})`;
                 ctx.beginPath();
-                ctx.arc(0, 0, robot.scale + 20, 0, shield.angleDist * .85);
+                ctx.arc(0, 0, robot.scale + 20, 0, shield.angleDist * (shield.barrierField ? 1 : .85));
                 ctx.stroke();
                 ctx.restore();
             }
@@ -16952,6 +18319,24 @@
         }
         ctx.restore();
     }
+    function interpolateColor(startColor, endColor, percent) {
+        let startRGB = hexToRgb(startColor);
+        let endRGB = hexToRgb(endColor);
+        let r = Math.round(startRGB.r + (endRGB.r - startRGB.r) * percent);
+        let g = Math.round(startRGB.g + (endRGB.g - startRGB.g) * percent);
+        let b = Math.round(startRGB.b + (endRGB.b - startRGB.b) * percent);
+        return rgbToHex(r, g, b);
+    }
+    function hexToRgb(hex) {
+        let bigint = parseInt(hex.slice(1), 16);
+        let r = (bigint >> 16) & 255;
+        let g = (bigint >> 8) & 255;
+        let b = bigint & 255;
+        return { r, g, b };
+    }
+    function rgbToHex(r, g, b) {
+        return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+    }
     function renderShapeBody(ctx, robot, w) {
         if (w == undefined && !robot.name.includes("Circle")) w = 12;
         let asd = Math.random() * 360;
@@ -16970,6 +18355,16 @@
         }
         let dir = robot.dir2 || robot.dir;
         if (robot.name.includes("Circle")) {
+            if (robot.effects) {
+                let force = robot.effects.find(e => e.name == "forcefield");
+                if (force) {
+                    let percent = 1 - (force.data.health / force.data.maxhealth);
+                    let startColor = "#00ffff";
+                    let endColor = "#ff0000";
+                    let interpolatedColor = interpolateColor(startColor, endColor, percent);
+                    renderCircle(0, 0, robot.scale + 5, ctx, false, true, "#fff", interpolatedColor, 15);
+                }
+            }
             renderCircle(0, 0, robot.scale, ctx, false, false, Date.now() - robot.damagedTime <= 20 ? "#fff" : robot.color, robot.isFREEZE ? "#fff" : robot.borderColor || "#000", w);
             if (robot.name == "Ultimate Green Circle") {
                 renderCircle(0, 0, 600, ctx, false, true, "#fff", "#06a600", 20);
@@ -17154,6 +18549,8 @@
                 scale = 25;
             } else if (weapon.name == "Maha Vajra" || weapon.name == "Vajra") {
                 scale = 35;
+            } else if (weapon.name == "Inferno" || weapon.name == "Pyro") {
+                scale = 25;
             }
             let hScale = scale / 2;
             if (shape.target && !shape.isMe) {
@@ -17230,7 +18627,7 @@
                     slowEffect: {
                         name: "slowdown",
                         last: 7e3,
-                        power: 0.05
+                        power: 0.025
                     },
                     motherShipCharge: weapon.motherShipCharge,
                     defensePointsBypass: (1 - weapon.defenseBypass),
@@ -17668,7 +19065,7 @@
                     slowEffect: {
                         name: "slowdown",
                         last: 5e3,
-                        power: 0.0086
+                        power: 0.0043
                     },
                     motherShipCharge: weapon.motherShipCharge,
                     color: "./images/bullets/purple_bullet.png",
@@ -17795,6 +19192,33 @@
                         level: weapon.level
                     }
                 });
+            } else if (weapon.name == "Inferno" || weapon.name == "Pyro") {
+                let mathp = (weapon.firedTime / weapon.overheatTime);
+                for (let i = 0; i < (Math.random() > .5 ? 2 : 1); i++) projectiles.push({
+                    projType: weapon.projType,
+                    x: x,
+                    y: y,
+                    oldX: x,
+                    oldY: y,
+                    velx: 0,
+                    vely: 0,
+                    scale: scale,
+                    avoidBuildings: shape.avoidBuildings,
+                    speed: ((1-mathp) * 0.1) + 0.035,
+                    dmg: weapon.dmg,
+                    range: weapon.range,
+                    aoeRange: scale * 2.5,
+                    dir: dir + getRandomOffset((weapon.spread * mathp) + 2),
+                    isAlly: isAlly,
+                    color: `rgb(0, ${(Math.random() < .5 ? 255 : 0)}, 255, ${Math.randInt(8, 10) / 10})`,
+                    owner: shape,
+                    defensePointsBypass: (1 - weapon.defenseBypass),
+                    motherShipCharge: weapon.motherShipCharge,
+                    weaponOwner: {
+                        name: weapon.name,
+                        level: weapon.level
+                    }
+                });
             } else if (weapon.name == "Maha Vajra" || weapon.name == "Vajra") {
                 for (let i = 0; i < 7; i++) projectiles.push({
                     projType: weapon.projType,
@@ -17817,7 +19241,7 @@
                     slowEffect: {
                         name: "slowdown",
                         last: 15e3,
-                        power: 0.0178
+                        power: 0.0089
                     },
                     motherShipCharge: weapon.motherShipCharge,
                     weaponOwner: {
@@ -18903,7 +20327,7 @@
         }
     }
     function decelerateRobot(robot, delta) {
-        let m = 0.993;
+        let m = 0.994;
         if (robot.velx) robot.velx *= Math.pow(m, delta);
         if (robot.vely) robot.vely *= Math.pow(m, delta);
     }
@@ -19061,9 +20485,9 @@
             if (i > 5) break;
             document.getElementById("shields").innerHTML += `
             <div style="opacity: ${shield.notActive ? .4 : 1}; position: absolute; top: ${30 * i}px; left: 10px; width: 300px; height: 25px; background-color: rgb(0, 0, 0, 0.2); border: solid; border-color: #fff; border-width: 1px;">
-            <div style="position: absolute; top: 0px; left: 0px; width: ${shield.type == "purple" ? 100 : (100 * (shield.health / shield.maxhealth))}%; height: 100%; background-color: ${shield.type == "yellow" ? "#ffff00" : shield.type == "purple" ? "#800080" : "#02ccaa"};">
+            <div style="position: absolute; top: 0px; left: 0px; width: ${shield.type == "purple normal" ? Math.min(100, 100 * (shield.health / shield.limit)) : shield.type == "purple" ? 100 : (100 * (shield.health / shield.maxhealth))}%; height: 100%; background-color: ${shield.type == "yellow" ? "#ffff00" : shield.type == "purple" || shield.type == "purple normal" ? "#800080" : "#02ccaa"};">
             </div>
-            <div style="display: ${shield.type == "purple" ? "none" : "block"}; position: absolute; top: 0px; left: 5px; font-size: 17px;">
+            <div style="display: ${shield.type == "purple" || shield.type == "purple normal" ? "none" : "block"}; position: absolute; top: 0px; left: 5px; font-size: 17px;">
             ${removeDecimals(shield.health)}
             </div>
             </div>
@@ -19103,15 +20527,19 @@
                         shield.kill = true;
                     }
                 }
-                if (!shield.notActive && (shield.health > 0 || shield.type == "purple")) {
-                    if (shield.type == "normal") {
+                if (!shield.notActive && (shield.health > 0 || shield.type == "purple" || shield.type == "purple normal")) {
+                    if (shield.type == "normal" || shield.type == "purple normal") {
                         let touchBullets = projectiles.filter(e => e.isAlly != isAlly && checkIfHit(e, robot, "shield") && Math.getAngleDist((shield.dir + robot.dir) + Math.PI, e.dir) <= shield.angleDist / 2);
                         for (let t = 0; t < touchBullets.length; t++) {
                             let bullet = touchBullets[t];
                             changeHealth(shield, {
-                                amount: -(bullet.dmg * (bullet.projType == "normal" ? 2 : 1)),
+                                amount: (bullet.dmg * (bullet.projType == "normal" && shield.type == "normal" ? 2 : 1)) * (shield.type == "purple normal" ? 1 : -1),
                             }, false, bullet.owner);
                             if (bullet.aoeRange) {
+                                if (shield.type == "purple normal") {
+                                    bullet.dmg = 0;
+                                    bullet.kill = true;
+                                }
                             } else {
                                 bullet.dmg = 0;
                                 bullet.kill = true;
@@ -19134,9 +20562,16 @@
                         }
                     }
                 }
-                if ((shield.health <= 0 && shield.type != "purple" && !shield.regen) || shield.kill) {
-                    if (!shield.droneShield && (shield.health <= 0 && shield.type != "purple" && !shield.regen) && shield.type == "yellow" && robot.ability && robot.ability.name == "Paladin") {
+                if ((shield.health <= 0 && shield.type != "purple" && shield.type != "purple normal" && !shield.regen) || shield.kill) {
+                    if (!shield.droneShield && (shield.health <= 0 && shield.type != "purple" && shield.type != "purple normal" && !shield.regen) && shield.type == "yellow" && robot.ability && robot.ability.name == "Paladin") {
                         doPaldinStuff(robot, isAlly);
+                    } else if (shield.grayOvalShield) {
+                        if (shield.health > 0) {
+                            robot.grayDamage *= .75;
+                        }
+                        changeHealth(robot, {
+                            amount: shield.repair
+                        }, false, robot);
                     }
                     robot.shields.splice(i, 1);
                 }
@@ -19284,9 +20719,9 @@
     }
     function doDamageToPhysicalShields(shields, dmg, doer) {
         for (let i = 0; i < shields.length; i++) {
-            if (shields[i].type == "normal") {
+            if (shields[i].type == "normal" || shields[i].type == "purple normal") {
                 changeHealth(shields[i], {
-                    amount: -dmg,
+                    amount: dmg * (shields[i].type == "purple normal" ? 1 : -1),
                 }, false, doer);
             }
         }
@@ -19303,7 +20738,7 @@
                 }
             }
         } else {
-            if (robot.name == "Remote Repair" && dist(robot.owner, robot) <= abilityRange + robot.owner.scale) {
+            if ((robot.name == "Remote Repair" || robot.name == "healfield") && dist(robot.owner, robot) <= abilityRange + robot.owner.scale) {
                 return [robot.owner];
             }
             near = enemies.filter(e => Math.hypot(e.y - robot.y, e.x - robot.x) <= abilityRange + e.scale);
@@ -19373,6 +20808,8 @@
                 });
             }
         }
+        robot.blind = false;
+        robot.emp = false;
         for (let i = 0; i < robot.effects.length; i++) {
             let effect = robot.effects[i];
             if (effect) {
@@ -19800,6 +21237,10 @@
                         if (robot.name == "Dark Tan Circle") {
                             speedMulti += .75;
                         }
+                    } else if (effect.name == "blind") {
+                        robot.blind = true;
+                    } else if (effect.name == "emp") {
+                        robot.emp = true;
                     }
                 }
                 if (effect.lastTime <= 0) {
@@ -20105,8 +21546,14 @@
             return "./images/modules/defense_amplifier.png";
         } else if (index == "Clain Blink") {
             return "./images/abilities/clain_blink.png";
+        } else if (index == "forcefield") {
+            return "./images/forcefield.png";
         } else if (index == "extra health") {
             return "./images/modules/heavy_armor_plating.png";
+        } else if (index == "blind") {
+            return "./images/icons/blind.png";
+        } else if (index == "emp") {
+            return "./images/icons/emp.png";
         } else {
             return "./images/abilities/cold_pulse.png";
         }
@@ -20164,8 +21611,8 @@
         for (let i = 0; i < doWeaponss.length; i++) {
             let weapon = doWeaponss[i];
             let rgb = "";
-            if (weapon.name == "Atomizer" || weapon.name == "Nucleon") {
-                let colorValue = ((weapon.firedTime / 16000) * 100);
+            if (weapon.name == "Atomizer" || weapon.name == "Nucleon" || weapon.name == "Inferno" || weapon.name == "Pyro") {
+                let colorValue = ((weapon.firedTime / weapon.overheatTime) * 100);
                 rgb = `rgb(${Math.min(255, Math.floor((colorValue) * 255 / 100))}, ${Math.min(235, Math.floor((100 - colorValue) * 235 / 100))}, 0)`;
             } else if (weapon.name == "Lance" || weapon.name == "Glaive") {
                 if (weapon.ammoFired == null) weapon.ammoFired = 0;
@@ -20189,7 +21636,7 @@
             </div>
             </div>
             <div style="position: absolute; top: 23px; left: 60px; background-color: #404040; border-radius: 12px; width: 250px; height: 30px;">
-            <div style="width: ${weapon.name == "Atomizer" || weapon.name == "Nucleon" ? ((weapon.firedTime / 16000) * 100) : ((weapon.ammo / weapon.maxammo) * 100)}%; height: 100%; border-radius: 12px; background-color: ${(weapon.name == "Atomizer" || weapon.name == "Nucleon" || weapon.name == "Lance" || weapon.name == "Glaive") ? rgb : "#fff"};">
+            <div style="width: ${weapon.overheatTime ? ((weapon.firedTime / weapon.overheatTime) * 100) : ((weapon.ammo / weapon.maxammo) * 100)}%; height: 100%; border-radius: 12px; background-color: ${(weapon.overheatTime || weapon.name == "Lance" || weapon.name == "Glaive") ? rgb : "#fff"};">
             </div>
             </div>
             </div>
@@ -20203,15 +21650,15 @@
     };
     function doLaserDamage(robot, weapon, taker) {
         if (weapon.weaponIsBroken) return;
-        if (taker.invis) return;
+        if (["Leiming", "Fengbao"].includes(weapon.name) ? false : taker.invis) return;
         if (taker.shields) {
             for (let i = 0; i < taker.shields.length; i++) {
                 let shield = taker.shields[i];
-                if (shield && !shield.notActive && (shield.health > 0 || shield.type == "purple")) {
-                    if (shield.type == "normal") {
+                if (shield && !shield.notActive && (shield.health > 0 || shield.type == "purple" || shield.type == "purple normal")) {
+                    if (shield.type == "normal" || shield.type == "purple normal") {
                         if (Math.getAngleDist((shield.dir + taker.dir) + Math.PI, robot.dir) <= shield.angleDist / 2) {
                             changeHealth(shield, {
-                                amount: -(weapon.dmg * (weapon.projType == "normal" ? 2 : 1)),
+                                amount: (weapon.dmg * (shield.type == "normal" && weapon.projType == "normal" ? 2 : 1)) * (shield.type == "purple normal" ? 1 : -1),
                             }, false, robot);
                             return;
                         }
@@ -20262,13 +21709,13 @@
             }
         } else {
             let direction = robot.dir;
-            let angle = 0.72;
+            let angle = ["Leiming", "Fengbao"].includes(weapon.name) ? Math.PI : 0.72;
             if (hasPlayers()) {
                 for (let i = 0; i < players.length; i++) {
                     let player = players[i].robots[players[i].robotIndex];
                     if (player && players[i].isAlly != isAlly) {
                         let dir = Math.atan2(player.y - robot.y, player.x - robot.x);
-                        if (!player.invis && Math.getAngleDist(direction, dir) <= angle && dist(player, robot) <= weapon.range + player.scale) {
+                        if ((["Leiming", "Fengbao"].includes(weapon.name) ? true : !player.invis) && Math.getAngleDist(direction, dir) <= angle && dist(player, robot) <= weapon.range + player.scale) {
                             doLaserDamage(robot, weapon, player);
                         }
                     }
@@ -20407,9 +21854,15 @@
                 if (!weapon.notActive && !weapon.weaponIsBroken) {
                     if (weapon.name == "Atomizer" || weapon.name == "Nucleon") {
                         if ((robot.isMe ? spacePressed : robot.fireWeapon)) {
-                            increaseFireTime(weapon, delta, 10e3, -(delta * 10));
+                            increaseFireTime(weapon, delta, weapon.overheatTime, -(delta * 10));
                         } else {
                             increaseFireTime(weapon, -(delta * 10));
+                        }
+                    } else if (weapon.name == "Inferno" || weapon.name == "Pyro") {
+                        if ((robot.isMe ? spacePressed : robot.fireWeapon)) {
+                            increaseFireTime(weapon, delta, weapon.overheatTime, -(delta * 4));
+                        } else {
+                            increaseFireTime(weapon, -(delta * 4));
                         }
                     } else if (weapon.name == "Evora" || weapon.name == "Veyron") {
                         if ((robot.isMe ? spacePressed : robot.fireWeapon)) {
@@ -20447,7 +21900,11 @@
                                     weapon.continueToFire = true;
                                 }
                                 weapon.lastFire = Date.now();
-                                fireWeapon(weapon, robot, isAlly);
+                                if (weapon.name == "Leiming" || weapon.name == "Fengbao") {
+                                    doLaserStuff(robot, weapon, isAlly);
+                                } else {
+                                    fireWeapon(weapon, robot, isAlly);
+                                }
                                 if (weapon.ammoFired % weapon.fireRate.length == weapon.fireRate.length - 1) {
                                     weapon.continueToFire = false;
                                 }
@@ -20842,7 +22299,7 @@
                     robot.abilityLast = 1;
                 }
             }
-        } else if (robot.ability.name == "Blink Assault" || (robot.ability.name == "Clain Blink" && !robot.ability.maxcharge) || robot.ability.name == "Remote Assault" || robot.ability.name == "Cannonier" || robot.ability.name == "Long Shot" || robot.ability.name == "Support" || robot.ability.name == "Matrix" || robot.ability.name == "Reflector" || robot.ability.name == "Clear Sky" || robot.ability.name == "Reinforce Hull" || robot.ability.name == "Ultimate Mending" || robot.ability.name == "Divine Judgement" || robot.ability.name == "Grand Fortitude" || robot.ability.name == "Paladin" || robot.ability.name == "Overload" || robot.ability.name == "Stampede" || robot.ability.name == "Stealth" || robot.ability.name == "Retribution" || robot.ability.name == "Ultimate Defense" || robot.ability.name == "Self Heal" || robot.ability.name == "Dragon Flight" || robot.ability.name == "Shield Regeneration" || robot.ability.name == "Full Action") {
+        } else if (robot.ability.name == "Barrier Field" || robot.ability.name == "Blink Assault" || (robot.ability.name == "Clain Blink" && !robot.ability.maxcharge) || robot.ability.name == "Remote Assault" || robot.ability.name == "Cannonier" || robot.ability.name == "Long Shot" || robot.ability.name == "Support" || robot.ability.name == "Matrix" || robot.ability.name == "Reflector" || robot.ability.name == "Clear Sky" || robot.ability.name == "Reinforce Hull" || robot.ability.name == "Ultimate Mending" || robot.ability.name == "Divine Judgement" || robot.ability.name == "Grand Fortitude" || robot.ability.name == "Paladin" || robot.ability.name == "Overload" || robot.ability.name == "Stampede" || robot.ability.name == "Stealth" || robot.ability.name == "Retribution" || robot.ability.name == "Ultimate Defense" || robot.ability.name == "Self Heal" || robot.ability.name == "Dragon Flight" || robot.ability.name == "Shield Regeneration" || robot.ability.name == "Full Action") {
             if (robot.abilityReload == 0 && robot.abilityLast == 0) {
                 robot.abilityLast = robot.ability.lastingTime;
                 doWonderworkerSkill(robot);
@@ -21095,6 +22552,18 @@
                         owner: robot,
                         duration: robot.ability.lastingTime,
                         isAlly: isAlly
+                    });
+                } else if (robot.ability.name == "Barrier Field") {
+                    robot.shields.push({
+                        health: 0,
+                        baseShield: "built in",
+                        dir: 0,
+                        angleDist: Math.PI * 1.2,
+                        barrierField: true,
+                        owner: robot,
+                        type: "purple normal",
+                        limit: robot.ability.durabilityLimit,
+                        lastTime: robot.ability.lastingTime
                     });
                 }
             }
@@ -21661,6 +23130,12 @@
             robot.ability.charges = undefined;
             robot.ability.maxcharge = undefined;
         }
+        if (robot.ability.name == "Barrier Field") {
+            let shield = robot.shields.find(e => e.type == "purple shield");
+            if (shield) {
+                shield.kill = true;
+            }
+        }
         if (robot.onAbilityEndFix) {
             let amount = (robot.maxhealth - robot.health) - robot.grayDamage;
             changeHealth(robot, {
@@ -21754,7 +23229,7 @@
         let possibleTargets = [];
         for (let i = 0; i < players.length; i++) {
             let player = players[i].robots[players[i].robotIndex];
-            if (player && players[i].isAlly != isAlly && (robot.isBluebell ? player.invis ? (dist(player, robot) <= 200 + robot.scale + player.scale) : true : !player.invis)) {
+            if (player && players[i].isAlly != isAlly && (robot.isBluebell ? (player.invis || robot.blind) ? (dist(player, robot) <= 200 + robot.scale + player.scale) : true : !player.invis && !robot.blind)) {
                 possibleTargets.push(player);
             }
         }
@@ -21792,8 +23267,12 @@
         }
         if (robot.ability) {
             let abilityName = robot.ability.name;
-            if (["Dismantle", "Blink Assault", "Support", "Ultimate Defense", "Matrix", "Blink Support", "Reflector", "Stampede", "Clear Sky", "Reinforce Hull", "Cold Pulse", "Divine Judgement", "Full Action", "Stealth", "Domain Expansion: Infinite Void", "Paladin", "Dragon Flight", "Phase Shift", "Ultimate Mending", "Self Heal", "Retribution"].includes(abilityName) && Date.now() - robot.damagedTime <= 50) {
-                robot.useAbility = true;
+            if (["Barrier Field", "Clain Blink", "Dismantle", "Blink Assault", "Support", "Ultimate Defense", "Matrix", "Blink Support", "Reflector", "Stampede", "Clear Sky", "Reinforce Hull", "Cold Pulse", "Divine Judgement", "Full Action", "Stealth", "Domain Expansion: Infinite Void", "Paladin", "Dragon Flight", "Phase Shift", "Ultimate Mending", "Self Heal", "Retribution"].includes(abilityName) && Date.now() - robot.damagedTime <= 50) {
+                if (abilityName == "Clain Blink" && robot.movementTarget) {
+                    robot.useAbility = true;
+                } else if (abilityName != "Clain Blink") {
+                    robot.useAbility = true;
+                }
             } else if (abilityName == "Remote Assault" && robot.target && dist(robot.target, robot) <= 1800) {
                 robot.useAbility = true;
             } else if (abilityName == "Ultimate Reflecting Dash") {
@@ -21991,24 +23470,6 @@
                         isActiveModuleEffect: true,
                         lastTime: module.lastTime
                     });
-                } else if (module.name == "Life Saver") {
-                    robot.effects.push({
-                        name: "stealth",
-                        lastTime: 2e3
-                    });
-                    robot.effects.push({
-                        name: "healing",
-                        isActiveModuleEffect: true,
-                        type: module.repairUnitPower.type,
-                        power: module.repairUnitPower.power,
-                        rate: module.repairUnitPower.rate,
-                        lastTime: module.lastTime
-                    });
-                    robot.effects.push({
-                        name: "anti defense mig",
-                        isActiveModuleEffect: true,
-                        lastTime: module.lastTime
-                    });
                 }
                 robot.activeModuleReload = module.reload;
             }
@@ -22113,7 +23574,7 @@
                 slowEffect: {
                     name: "slowdown",
                     last: 7e3,
-                    power: 0.05
+                    power: 0.025
                 },
                 color: "./images/bullets/bullet.png",
                 avoidBuildings: robot.avoidBuildings,
@@ -22126,6 +23587,7 @@
         }
     }
     function doDroneWeaponStuff(robot, isAlly) {
+        if (robot.blind) return;
         if (robot.drone && robot.drone.abilities.find(e => e.weapon)) {
             let weapon = robot.drone.abilities.find(e => e.weapon);
             let near = getNearest(robot, weapon.range, isAlly);
@@ -22136,6 +23598,118 @@
                     weapon.lastFire = Date.now();
                     fireProjectileDrone(weapon, isAlly, robot, robot.drone, nearest);
                 }
+            }
+        }
+    }
+    function useMothership(robot, mothership, isAlly) {
+        let Player = players[robot.playersIndexSid];
+        Player.mothership.current = 0;
+        if (mothership.name == "Gray Rectangle" || mothership.name == "Black Rectangle") {
+            domains.push({
+                name: "dmgfield",
+                x: robot.isMe ? robot.cursorLocation.x : robot.target.x,
+                y: robot.isMe ? robot.cursorLocation.y : robot.target.y,
+                dmg: mothership.dmg,
+                scale: 500,
+                lastingTime: 1e3,
+                oldLast: 1e3,
+                isAlly: isAlly,
+                owner: robot
+            });
+        } else if (mothership.name == "Green Oval") {
+            domains.push({
+                name: "healfield",
+                x: robot.x,
+                y: robot.y,
+                repair: mothership.repair,
+                yellowShield: mothership.yellowShield,
+                scale: 300,
+                lastingTime: 2e3,
+                oldLast: 2e3,
+                isAlly: isAlly,
+                owner: robot
+            });
+        } else if (mothership.name == "Gray Oval") {
+            robot.shields.push({
+                type: "yellow",
+                grayOvalShield: true,
+                health: mothership.yellowShield,
+                maxhealth: mothership.yellowShield,
+                repair: mothership.repair,
+                regen: 0,
+                lastTime: 10e3
+            });
+        } else if (mothership.name == "Purple Rectangle") {
+            domains.push({
+                name: "mutefield",
+                x: robot.isMe ? robot.cursorLocation.x : robot.target.x,
+                y: robot.isMe ? robot.cursorLocation.y : robot.target.y,
+                scale: 500,
+                duration: mothership.effectDuration,
+                lastingTime: 1e3,
+                oldLast: 1e3,
+                isAlly: isAlly,
+                owner: robot
+            });
+        }
+        for (let i = 0; i < mothership.turrets.length; i++) {
+            let turret = mothership.turrets[i];
+            if (turret.name == "Laser Blast Cannon" || turret.name == "Target Ray Cannon") {
+                domains.push({
+                    name: "dmgfield",
+                    x: robot.isMe ? robot.cursorLocation.x : robot.target.x,
+                    y: robot.isMe ? robot.cursorLocation.y : robot.target.y,
+                    dmg: turret.dmg,
+                    scale: turret.scale,
+                    lastingTime: 1e3,
+                    oldLast: 1e3,
+                    isAlly: isAlly,
+                    owner: robot
+                });
+            } else if (turret.name == "Periodic Fix Station") {
+                domains.push({
+                    name: "healfield",
+                    x: robot.x,
+                    y: robot.y,
+                    repair: turret.healingData,
+                    scale: 300,
+                    lastingTime: 2e3,
+                    oldLast: 2e3,
+                    isAlly: isAlly,
+                    owner: robot
+                });
+            } else if (turret.name == "Yellow Shield Self System") {
+                domains.push({
+                    name: "healfield",
+                    x: robot.x,
+                    y: robot.y,
+                    yellowShield: turret.shieldHp,
+                    scale: 300,
+                    lastingTime: 2e3,
+                    oldLast: 2e3,
+                    isAlly: isAlly,
+                    owner: robot
+                });
+            } else if (turret.name == "Life Saver") {
+                setTimeout(() => {
+                    robot.effects.push({
+                        name: "stealth",
+                        lastTime: turret.stealthTime
+                    });
+                    robot.effects.push({
+                        name: "anti defense mig",
+                        lastTime: turret.antiDefenseMig
+                    });
+                }, turret.strikeDelay);
+            } else if (turret.name == "Durability Extender") {
+                setTimeout(() => {
+                    if (robot.healthIncreaseFromDurabilityExtenderTurret == null) {
+                        robot.healthIncreaseFromDurabilityExtenderTurret = robot.normalMaxHealth * turret.durabilityIncrease;
+                    }
+                    robot.normalMaxHealth += robot.healthIncreaseFromDurabilityExtenderTurret;
+                    robot.maxhealth += robot.healthIncreaseFromDurabilityExtenderTurret;
+                    robot.health += robot.healthIncreaseFromDurabilityExtenderTurret;
+                }, turret.strikeDelay);
             }
         }
     }
@@ -22180,9 +23754,6 @@
         }
         robot.lastX = robot.x;
         robot.lastY = robot.y;
-        if (robot.isMe) {
-            //document.title = `x${robot.x.toFixed(0)} y${robot.y.toFixed(0)} dir:${robot.dir}`;
-        }
         robot.builtInDefensePoints = robot.normalDefensePoints;
         if (robot.isMe) {
             document.getElementById("weaponThing").style.display = "block";
@@ -22205,7 +23776,7 @@
         let { effectNames, lastStand, slowdownMulti, speedMulti } = doEffectStuff(robot, delta, isAlly);
         if (!robot.isMe) doOtherBotStuff(robot, isAlly);
         doActiveModuleStuff(robot, robot.weapons.length, MATH1HA___, isAlly, delta);
-        if (robot.ability && (robot.ability.name == "Phase Shift" ? true : !robot.isFREEZE)) {
+        if (robot.ability && !robot.emp && (robot.ability.name == "Phase Shift" ? true : !robot.isFREEZE)) {
             if (robot.isMe) {
                 let color = "#000";
                 let color2 = "#000";
@@ -22315,6 +23886,10 @@
         if (robot.health > (robot.maxhealth - robot.grayDamage)) {
             robot.health = (robot.maxhealth - robot.grayDamage);
         }
+        let force = robot.effects.find(e => e.name == "forcefield");
+        if (force && Date.now() - force.data.lastHit >= force.rechargeTime) {
+            force.data.health = force.data.maxhealth;
+        }
         if (robot.canGetAbilityBackAtHalfHealth) {
             let half = robot.maxhealth * .5;
             if (robot.abLastHealthAB__) {
@@ -22330,6 +23905,14 @@
             robot.abLastHealthAB__ = robot.health;
         }
         doOnDamageTakeStuff(robot);
+        let Player = players[robot.playersIndexSid];
+        if (Player && Player.mothership && Player.mothership.data) {
+            if (Player.mothership.current >= 1) {
+                if (robot.isMe ? keysPressed[70] : robot.useMothership) {
+                    useMothership(robot, Player.mothership.data, isAlly);
+                }
+            }
+        }
         if (robot.health > robot.maxhealth) {
             robot.health = robot.maxhealth;
         }
@@ -22350,6 +23933,19 @@
             ${removeDecimals(robot.health)}
             </div>
             `;
+            let mothershipData = players[robot.playersIndexSid];
+            if (mothershipData && mothershipData.mothership) {
+                mothershipData = mothershipData.mothership;
+                document.getElementById("mothershipBar").innerHTML = `
+                <div style="position: absolute; top: 0px; right: 0px; height: ${100 * mothershipData.current}%; width: 100%; background-color: #ffff00;">
+                </div>
+                <div style="position: absolute; display: flex; justify-content: center; align-items: center; top: 0px; right: 0px; height: 100%; width: 100%; font-size: 16px;">
+                ${Math.round(mothershipData.current*100)}%
+                </div>
+                `;
+            } else {
+                document.getElementById("mothershipBar").style.display = "none";
+            }
         }
         if (robot.isMe) drawWeaponUI(robot, delta);
         collideWithBuildings(robot, delta, isAlly);
@@ -22396,6 +23992,7 @@
                         document.getElementById("useActiveModule").style.display = "none";
                         document.getElementById("weaponThing").style.display = "none";
                         document.getElementById("healthBar").style.display = "none";
+                        document.getElementById("mothershipBar").style.display = "none";
                         let hasRobots = players[0].robots.find(e => e && !e.USED);
                         document.getElementById("chooseSlot").style.bottom = `0px`;
                         document.getElementById("mapName").style.display = "block";
@@ -22424,6 +24021,7 @@
                                 document.getElementById("weaponThing").style.display = "none";
                                 document.getElementById("healthBar").style.display = "none";
                                 document.getElementById("chooseSlot").style.bottom = "-200px";
+                                document.getElementById("mothershipBar").style.display = "none";
                                 endGame([...players], true);
                             }
                         }
@@ -22436,12 +24034,16 @@
         let Player = players[0];
         if (Player.robotIndex >= 0) {
             let robot = Player.robots[Player.robotIndex];
+            if (Player.mothership.data) {
+                document.getElementById("mothershipBar").style.display = "block";
+            }
             updateRobot(robot, true, delta);
         }
     }
     var lastUpdate = Date.now();
     class enemy {
         constructor(data, isBoss, multi = 1) {
+            this.blind = false;
             this.x = (data.x || Math.random() * mapInfo.x);
             this.y = (data.y || Math.random() * mapInfo.y);
             this.velx = 0;
@@ -22499,7 +24101,6 @@
         return enemies.find(e => e.inGameSid == sid);
     }
     function manageImmuneAmp(robot, amount) {
-        //robot.immuneAmp
         if (!robot.immuneAmp) return;
         amount = Math.abs(amount);
         if (robot.immuneAmp.thing == null) robot.immuneAmp.thing = 0;
@@ -22735,11 +24336,11 @@
     }
     var killDisplayTimeout = null;
     var killDisplayText = ["KILL", "DOUBLE KILL", "TRIPLE KILL", "RAMPAGE", "GODLIKE", "BEYOND GODLIKE", "LIVING LEGEND"];
-    function changeHealth(object, { amount, graydmg, noAmp, onDamageHealBack, isDotDamage, defensePointsBypass, bypassReflector, damageTypeName }, isPlayer, doer, noDefense) {
+    function changeHealth(object, { amount, graydmg, noAmp, onDamageHealBack, isDotDamage, defensePointsBypass, bypassReflector, damageTypeName, motherShipCharge }, isPlayer, doer, noDefense) {
         try {
             amount = parseInt(removeDecimals(amount));
             if (object.killed && object.health <= 0) amount = 0;
-            if (!object || (object.health <= 0 && object.type != "purple")) return;
+            if (!object || (object.health <= 0 && object.type != "purple" && object.type != "purple normal")) return;
             let resistance = 0;
             if (object.builtInDefensePoints) {
                 resistance += object.builtInDefensePoints;
@@ -22803,6 +24404,18 @@
                     amount = 0;
                     return;
                 }
+                if (object.effects && !noDefense && !isDotDamage) {
+                    let force = object.effects.find(e => e.name == "forcefield");
+                    if (force) {
+                        if (force.data.health > 0) {
+                            force.data.lastHit = Date.now();
+                            let resistance = force.data.resistance;
+                            resistance *= force.data.health / force.data.maxhealth;
+                            amount *= (1 - resistance);
+                            force.data.health = Math.max(force.data.health - Math.abs(amount), 0);
+                        }
+                    }
+                }
             }
             if (amount >= 0) {
                 if (object.healingMulti) {
@@ -22846,6 +24459,23 @@
                             }
                         }
                         object.defenseAmp.repaired = 0;
+                    }
+                }
+                if (object.type == "purple normal" && object.owner) {
+                    if (object.amountOfHealthGained == null) object.amountOfHealthGained = 0;
+                    if (object.amountOfHealthGained < object.limit) {
+                        if (object.amountOfHealthGained + amount >= 300e3) {
+                            let diff = (object.amountOfHealthGained + amount) - 300e3;
+                            object.owner.health += diff;
+                            object.owner.maxhealth += diff;
+                            object.owner.normalMaxHealth += diff;
+                            object.amountOfHealthGained += diff;
+                        } else {
+                            object.owner.health += amount;
+                            object.owner.maxhealth += amount;
+                            object.owner.normalMaxHealth += amount;
+                            object.amountOfHealthGained += amount;
+                        }
                     }
                 }
             }
@@ -22925,6 +24555,11 @@
                                         power: doer.onKillSpeed,
                                         lastTime: 5e3
                                     });
+                                }
+                                let Player = players[doer.playersIndexSid];
+                                if (Player && Player.mothership && Player.mothership.data) {
+                                    Player.mothership.current += (!hasPlayers() ? .0075 : .07) * (1 + Player.mothership.data.chargeSpeed);
+                                    if (Player.mothership.current > 1) Player.mothership.current = 1;
                                 }
                                 if (doer.drone) {
                                     for (let t = 0; t < doer.drone.abilities.length; t++) {
@@ -23054,6 +24689,13 @@
             if ((object.turnDmgIntoDOT ? isDotDamage : true) && amount < 0 && !object.LASTSTANDISON) {
                 addGrayDamage(object, amount, graydmg, isDotDamage);
             }
+            if (motherShipCharge && doer && doer.playersIndexSid != null) {
+                let player = players[doer.playersIndexSid];
+                if (player.mothership && player.mothership.data) {
+                    player.mothership.current += motherShipCharge * (1 + player.mothership.data.chargeSpeed);
+                    if (player.mothership.current > 1) player.mothership.current = 1;
+                }
+            }
             if (amount != 0) {
                 if (doer && amount < 0) {
                     if (object.reflector && !bypassReflector && !isDotDamage) {
@@ -23159,7 +24801,9 @@
                             }
                         }
                     }
-                    if (object.health < 0) object.health = 0;
+                    if (object.health < 0) {
+                        object.health = 0;
+                    }
                 }
                 if (amount < 0 && object.health <= object.maxhealth * .2) {
                     if (object.weapons && !isDotDamage && damageTypeName != "REFLECTOR") {
@@ -23208,6 +24852,7 @@
                 document.getElementById("useActiveModule").style.display = "none";
                 document.getElementById("weaponThing").style.display = "none";
                 document.getElementById("healthBar").style.display = "none";
+                document.getElementById("mothershipBar").style.display = "none";
                 document.getElementById("chooseSlot").style.bottom = "-200px";
                 endGame([...players], true);
             }, 50);
@@ -23312,6 +24957,7 @@
                 let freezingAMount = 0;
                 let blastAmount = 0;
                 enemy.dotDamage = 0;
+                enemy.blind = false;
                 for (let tt = 0; tt < enemy.effects.length; tt++) {
                     let effect = enemy.effects[tt];
                     if (effect) {
@@ -23346,6 +24992,8 @@
                                 freezingAMount++;
                             } else if (effect.name == "blast") {
                                 blastAmount++;
+                            } else if (effect.name == "blind") {
+                                enemy.blind = true;
                             }
                         }
                         if (effect.lastTime <= 0) {
@@ -23407,7 +25055,7 @@
                 }
                 speedMULTIIIII = Math.max(speedMULTIIIII, 0.01);
                 let moveSpeed = enemy.speed * (enemy.isFREEZE ? 0 : 1) * speedMULTIIIII;
-                if (!enemy.isFREEZE && !playerRobot.invis) {
+                if (!enemy.isFREEZE && !playerRobot.invis && !enemy.blind) {
                     if (enemy.name == "Burner Circle") {
                         if (Math.hypot(enemy.y - playerRobot.y, enemy.x - playerRobot.x) >= enemy.range) {
                             enemy.velx += Math.cos(Math.atan2(playerRobot.y - enemy.y, playerRobot.x - enemy.x)) * (moveSpeed * delta);
@@ -23648,7 +25296,7 @@
                                     slowEffect: {
                                         name: "slowdown",
                                         last: 10e3,
-                                        power: 1
+                                        power: .75
                                     }
                                 });
                             }
@@ -23865,7 +25513,7 @@
                                 slowEffect: {
                                     name: "slowdown",
                                     last: 5e3,
-                                    power: 0.012
+                                    power: 0.006
                                 },
                                 grayDamageAmount: 1,
                                 color: "./images/bullets/energy_bullet.png",
@@ -24011,9 +25659,6 @@
                 }
                 if (enemy.health <= 0) {
                     if (enemy.isBoss) {
-                        if (enemy.name == "Level 8 Boss") {
-                            addTaskXP("8 boss", 1);
-                        }
                         arena.bossIndex++;
                         if (players[0].rewardBonus == null) {
                             players[0].rewardBonus = {
@@ -24146,7 +25791,7 @@
                         }
                     }
                     if (bullet.targetDir == null) bullet.targetDir = bullet.dir;
-                    if (bullet.autoTargetData) {
+                    if (bullet.autoTargetData && !bullet.owner.blind) {
                         if (dist({ x: bullet.oldX, y: bullet.oldY }, bullet) >= bullet.autoTargetData.range || bullet.autoTargetData.canDo) {
                             bullet.autoTargetData.canDo = true;
                             if (bullet.autoTargetData.type == "nearest") {
@@ -24622,6 +26267,9 @@
             }
         }
         robot.movementTarget = target;
+        if (domains.find(e => e.name == "healfield" && dist(e, robot) <= e.scale + robot.scale && e.isAlly == isAlly)) {
+            return null;
+        }
         if (target) {
             let extra = doCollRectMovement(target, robot);
             if (extra != null && extra != undefined) return extra;
@@ -24655,12 +26303,12 @@
             }
         }
     }
-    function updatePlayers(delta) {
+    function updatePlayers(delta, isBlind) {
         for (let i = 1; i < players.length; i++) {
             let robot = players[i].robots[players[i].robotIndex];
             if (robot) {
                 PLAYERKNOCKBACK(robot);
-                drawTracer(robot, i, players[i].isAlly);
+                if (!isBlind) drawTracer(robot, i, players[i].isAlly);
                 updateRobot(robot, players[i].isAlly, delta, i);
             } else {
                 if (document.getElementById("enemyradar" + i)) {
@@ -24703,10 +26351,14 @@
             let player = players[i].robots[players[i].robotIndex];
             if (player && players[i].isAlly == isAlly) {
                 if (dist(obj, player) <= 400) {
-                    if (player.isMe) { addTaskXP("beacon", 1); }
                     if (player.battleStats == null) player.battleStats = {};
                     if (player.battleStats.beacons == null) player.battleStats.beacons = 0;
                     player.battleStats.beacons++;
+                    let Player = players[player.playersIndexSid];
+                    if (Player && Player.mothership && Player.mothership.data) {
+                        Player.mothership.current += .07 * (1 + Player.mothership.data.chargeSpeed);
+                        if (Player.mothership.current > 1) Player.mothership.current = 1;
+                    }
                     if (player.drone) {
                         for (let t = 0; t < player.drone.abilities.length; t++) {
                             let data = player.drone.abilities[t];
@@ -24778,7 +26430,7 @@
                 for (let t = 0; t < players.length; t++) {
                     let Robot = players[t].robots[players[t].robotIndex];
                     if (Robot && obj.isAlly != players[t].isAlly) {
-                        if (Math.hypot(obj.y - Robot.y, obj.x - Robot.x) <= obj.range + obj.scale) {
+                        if (!Robot.invis && Math.hypot(obj.y - Robot.y, obj.x - Robot.x) <= obj.range + obj.scale) {
                             if (obj.name == "Blink Assault" && Robot.shields.find(e => e.type == "purple")) {
                                 continue;
                             }
@@ -24830,7 +26482,7 @@
                             color: "./images/bullets/rocket.png",
                             slowEffect: {
                                 name: "slowdown",
-                                power: .1,
+                                power: .05,
                                 last: 5e3
                             },
                             owner: obj.owner,
@@ -24863,7 +26515,7 @@
                             owner: obj.owner,
                             slowEffect: obj.name == "Blink Assault" ? {
                                 name: "slowdown",
-                                power: .05,
+                                power: .025,
                                 last: 5e3
                             } : undefined,
                             weaponOwner: {
@@ -24890,7 +26542,7 @@
                             owner: obj.owner,
                             slowEffect: obj.name == "Blink Assault" ? {
                                 name: "slowdown",
-                                power: .05,
+                                power: .025,
                                 last: 5e3
                             } : undefined,
                             weaponOwner: {
@@ -24921,7 +26573,7 @@
                             color: "./images/bullets/energy_bullet.png",
                             slowEffect: {
                                 name: "slowdown",
-                                power: .05,
+                                power: .025,
                                 last: 10e3
                             },
                             dotEffect: {
@@ -25113,6 +26765,7 @@
             document.getElementById("useActiveModule").style.display = "none";
             document.getElementById("weaponThing").style.display = "none";
             document.getElementById("healthBar").style.display = "none";
+            document.getElementById("mothershipBar").style.display = "none";
             document.getElementById("chooseSlot").style.bottom = "-200px";
             endGame([...players], false);
         } else if (beaconPoints.ally >= 3500) {
@@ -25122,6 +26775,7 @@
             document.getElementById("useActiveModule").style.display = "none";
             document.getElementById("weaponThing").style.display = "none";
             document.getElementById("healthBar").style.display = "none";
+            document.getElementById("mothershipBar").style.display = "none";
             document.getElementById("chooseSlot").style.bottom = "-200px";
             endGame([...players], true);
         }
@@ -25161,12 +26815,18 @@
                 ctx.translate(domain.x - offset.x, domain.y - offset.y);
                 let color1 = null;
                 let color2 = null;
-                if (domain.name == "Roulette Strike") {
+                if (domain.name == "Roulette Strike" || domain.name == "mutefield") {
                     color1 = "rgb(128, 0, 128, .4)";
                     color2 = "rgb(128, 0, 128)";
                 } else if (domain.name == "Dismantle") {
                     color1 = "rgb(255, 0, 0, .2)";
                     color2 = "rgb(255, 0, 0)";
+                } else if (domain.name == "dmgfield") {
+                    color1 = "rgb(255, 255, 0, .2)";
+                    color2 = "rgb(255, 255, 0)";
+                } else if (domain.name == "healfield") {
+                    color1 = "rgb(0, 255, 0, .2)";
+                    color2 = "rgb(0, 255, 0)";
                 }
                 renderCircle(0, 0, domain.tmpScale, ctx, false, false, color1 || "rgb(0, 0, 255, .4)", domain.isAlly == true ? "rgb(0, 0, 128)" : "rgb(255, 0, 0)", 16);
                 let multi = (domain.lastingTime / domain.oldLast);
@@ -25184,7 +26844,8 @@
             let domain = domains[i];
             if (domain) {
                 domain.lastingTime -= delta;
-                if (domain.name == "Roulette Strike") {
+                if (domain.name == "dmgfield" || domain.name == "healfield" || domain.name == "mutefield") {
+                } else if (domain.name == "Roulette Strike") {
                     if (domain.effectThingy == null) domain.effectThingy = 0;
                     domain.effectThingy -= delta;
                     let cando = false;
@@ -25215,7 +26876,7 @@
                                 });
                                 robot.effects.push({
                                     name: "slowdown",
-                                    power: .15,
+                                    power: .075,
                                     lastTime: 251
                                 });
                             }
@@ -25243,7 +26904,7 @@
                             });
                             enemy.effects.push({
                                 name: "slowdown",
-                                power: .34,
+                                power: .17,
                                 lastTime: 251
                             });
                         }
@@ -25382,11 +27043,60 @@
                             lastTime: 2e3
                         });
                     } else if (domain.name == "Dismantle") {
-                        let enemies = getNearest(domain.owner, domain.scale, domain.isAlly);
+                        let enemies = getNearest(domain, domain.scale, domain.isAlly);
                         domain.owner.effects.push({
                             name: "defense points",
                             amount: (250 * enemies.length) + 250,
                             lastTime: 10e3
+                        });
+                    } else if (domain.name == "dmgfield") {
+                        let enemies = getNearest(domain, domain.scale, domain.isAlly);
+                        enemies.forEach(e => {
+                            changeHealth(e, {
+                                amount: -domain.dmg,
+                                graydmg: 0
+                            }, false, domain.owner);
+                        });
+                    } else if (domain.name == "healfield") {
+                        let allies = getNearest(domain, domain.scale, domain.isAlly, true);
+                        allies.forEach(e => {
+                            if (domain.repair && typeof domain.repair == "object") {
+                                e.effects.push({
+                                    name: "healing",
+                                    type: "percent",
+                                    power: domain.repair.power,
+                                    rate: domain.repair.rate,
+                                    lastTime: domain.repair.duration
+                                });
+                            } else if (domain.repair) {
+                                changeHealth(e, {
+                                    amount: domain.repair
+                                }, false, domain.owner);
+                            }
+                            if (domain.yellowShield && e.shields) {
+                                e.shields.push({
+                                    type: "yellow",
+                                    health: domain.yellowShield,
+                                    maxhealth: domain.yellowShield,
+                                    regen: 0
+                                });
+                            }
+                        });
+                    } else if (domain.name == "mutefield") {
+                        let enemies = getNearest(domain, domain.scale, domain.isAlly);
+                        enemies.forEach(e => {
+                            if (e.effects) {
+                                e.effects.push({
+                                    name: "blind",
+                                    neg: true,
+                                    lastTime: domain.duration
+                                });
+                                e.effects.push({
+                                    name: "emp",
+                                    neg: true,
+                                    lastTime: domain.duration
+                                });
+                            }
                         });
                     }
                     domains.splice(i, 1);
@@ -25495,7 +27205,7 @@
                                 ctx.stroke();
                                 ctx.restore();
                             }
-                        } else if (["Pantagruel", "Gangantua"].includes(weapon.name)) {
+                        } else if (["Leiming", "Fengbao", "Pantagruel", "Gangantua"].includes(weapon.name)) {
                             let Enemies = [];
                             let direction = player.dir;
                             let angle = 0.72;
@@ -25504,7 +27214,7 @@
                                     let ROBOTBOTBT = players[t].robots[players[t].robotIndex];
                                     if (ROBOTBOTBT && players[t].isAlly != players[i].isAlly) {
                                         let dir = Math.atan2(ROBOTBOTBT.y - player.y, ROBOTBOTBT.x - player.x);
-                                        if (Math.getAngleDist(direction, dir) <= angle && dist(player, ROBOTBOTBT) <= weapon.range + ROBOTBOTBT.scale) {
+                                        if ((["Leiming", "Fengbao"].includes(weapon.name) ? true : !ROBOTBOTBT.invis) && Math.getAngleDist(direction, dir) <= angle && dist(player, ROBOTBOTBT) <= weapon.range + ROBOTBOTBT.scale) {
                                             Enemies.push(ROBOTBOTBT);
                                         }
                                     }
@@ -25538,9 +27248,11 @@
                                         }
                                     }
                                 }
+                                let color2 = players[i].isAlly == true ? "rgb(255, 255, 255)" : "rgb(0, 0, 0)";
+                                let color1 = players[i].isAlly == true ? "rgb(0, 150, 0, .6)" : "rgb(255, 165, 0, .6)";
                                 ctx.save();
-                                ctx.lineWidth = 16;
-                                ctx.strokeStyle = players[i].isAlly == true ? "rgb(0, 150, 0, .6)" : "rgb(255, 165, 0, .6)";
+                                ctx.lineWidth = ["Leiming", "Fengbao"].includes(weapon.name) ? 8 : 16;
+                                ctx.strokeStyle = ["Leiming", "Fengbao"].includes(weapon.name) ? color2 : color1;
                                 ctx.beginPath();
                                 ctx.moveTo(Offset.x - offset.x, Offset.y - offset.y);
                                 ctx.lineTo(tmp.x - offset.x, tmp.y - offset.y);
@@ -25593,6 +27305,85 @@
         x: 0,
         y: 0
     };
+    function updateEffectDisplayOnEnemies(isBlind) {
+        document.getElementById("effectsForEnemies").innerHTML = "";
+        if (isBlind) {
+            document.getElementById("effectsForEnemies").style.display = "none";
+            return;
+        }
+        let playerRobot = players[0].robots[players[0].robotIndex];
+        if (playerRobot) {
+            let enemies = getNearest(playerRobot, 4e3, true);
+            if (enemies.length) {
+                enemies = enemies.filter(e => !e.invis);
+                let enemy = enemies.sort((a, b) => dist(playerRobot.cursorLocation, a) - dist(playerRobot.cursorLocation, b))[0];
+                if (enemy) {
+                    document.getElementById("effectsForEnemies").style.display = "block";
+                    document.getElementById("effectsForEnemies").innerHTML = `
+                    <div style="color: #f00;">
+                    ${enemy.playersIndexSid ? players[enemy.playersIndexSid].name : (enemy.dummy ? "Test Dummy" : (enemy.displayName || "unknown shape"))}
+                    </div>
+                    <div id="effectsForGood" style="text-align: right;"></div>
+                    <div id="effectsForBad" style="text-align: right;"></div>
+                    `;
+                    let thinng = {};
+                    if (enemy.effects) {
+                        enemy.effects.forEach(effect => {
+                            if (effect.name == "cooldown") {
+                                thinng[effect.name + " " + i] = {
+                                    neg: effect.neg
+                                };
+                            } else {
+                                let indexName = effect.name + " " + effect.lastForever + " " + effect.isActiveModuleEffect;
+                                if (!thinng[indexName]) {
+                                    thinng[indexName] = {
+                                        neg: effect.neg
+                                    };
+                                }
+                            }
+                        });
+                    }
+                    let index1 = 0;
+                    let index2 = 0;
+                    for (let i in thinng) {
+                        if (i == "dot") {
+                            thinng[i].neg = true;
+                        }
+                        let info = thinng[i];
+                        if (info.neg) {
+                            if (index2 < 10) {
+                                document.getElementById("effectsForBad").innerHTML += `
+                                <div style="display: inline-block; width: 30px; height: 30px; background-size: 30px 30px; ${typeof getEffectIcon(i) == "object" ? "" : `background-image: url('${getEffectIcon(i)}');`}">
+                                ${typeof getEffectIcon(i) == "object" ? `
+                                <span class="material-symbols-outlined" style="color: #fff; font-size: 30px; padding-right: 5px;">
+                                ${getEffectIcon(i).name}
+                                </span>
+                                ` : ""}
+                                </div>
+                                `;
+                                index2++;
+                            }
+                        } else {
+                            if (index1 < 10) {
+                                document.getElementById("effectsForGood").innerHTML += `
+                                <div style="display: inline-block; width: 30px; height: 30px; background-size: 30px 30px; ${typeof getEffectIcon(i) == "object" ? "" : `background-image: url('${getEffectIcon(i)}');`}">
+                                ${typeof getEffectIcon(i) == "object" ? `
+                                <span class="material-symbols-outlined" style="color: #fff; font-size: 30px; padding-right: 5px;">
+                                ${getEffectIcon(i).name}
+                                </span>
+                                ` : ""}
+                                </div>
+                                `;
+                                index1++;
+                            }
+                        }
+                    }
+                } else {
+                    document.getElementById("effectsForEnemies").style.display = "none";
+                }
+            }
+        }
+    }
     function updateGame() {
         try {
             let delta = Date.now() - lastUpdate;
@@ -25603,6 +27394,7 @@
                 fpsInfo.real = fpsInfo.count;
                 fpsInfo.count = 0;
             }
+            let isBlind = false;
             if (player.gameMode >= 0 && players[0]) {
                 if (players[0].robotIndex == -1) {
                     document.getElementById("LMAOLMAOLMAOLMAO").innerHTML = "";
@@ -25619,6 +27411,7 @@
                     }
                 } else {
                     let playerRobot = players[0].robots[players[0].robotIndex];
+                    isBlind = playerRobot.blind;
                     if (playerRobot) {
                         if (typeof playerRobot.flightVisualData == "object") {
                             let newMaxScreen = {
@@ -25667,10 +27460,10 @@
                 }
                 renderBackground(delta);
                 renderBuildings(delta);
-                renderBullets(ctx);
+                if (!isBlind) renderBullets(ctx);
                 renderPlayer(delta);
-                renderPlayers(delta);
-                renderEnemies(ctx);
+                if (!isBlind) renderPlayers(delta);
+                if (!isBlind) renderEnemies(ctx);
                 ctx.globalAlpha = 1;
                 for (let i = 0; i < bombeffect.length; i++) {
                     let effect = bombeffect[i];
@@ -25699,9 +27492,9 @@
                     }
                 }
                 updatePlayer(delta);
-                if (hasPlayers()) updatePlayers(delta);
+                if (hasPlayers()) updatePlayers(delta, isBlind);
                 ctx.globalAlpha = 1;
-                renderLasers(delta);
+                if (!isBlind) renderLasers(delta);
                 updateBullets(delta);
                 for (let i = 0; i < text.length; i++) {
                     let Text = text[i];
@@ -25717,6 +27510,7 @@
                 for (let i = 0; i < shieldEffects.length; i++) {
                     let effect = shieldEffects[i];
                     if (effect) {
+                        if (isBlind) break;
                         if (effect.last == null) effect.last = Date.now();
                         ctx.save();
                         ctx.translate(effect.location.x - offset.x, effect.location.y - offset.y);
@@ -25775,7 +27569,10 @@
                         }
                     }
                 }
+                updateEffectDisplayOnEnemies(isBlind);
             } else {
+                document.getElementById("effectsForEnemies").style.display = "none";
+                document.getElementById("effectsForEnemies").innerHTML = "";
                 document.getElementById("LOGGER").innerHTML = "";
                 document.getElementById("abilityCharges").innerHTML = "";
                 document.getElementById("shields").innerHTML = "";
