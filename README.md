@@ -1,4 +1,4 @@
-this is a random single player wannabe war robots browser game i made
+this is a ass single player wannabe war robots browser game i made
 
 it isn't really "coded optimally" so no bully pls
 
