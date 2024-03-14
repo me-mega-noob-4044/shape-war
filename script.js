@@ -1,5 +1,5 @@
 (function () {
-    //window.isDev = true;
+   //window.isDev = true;
     var slotData = [{
         unlocked: true,
         used: true,
@@ -326,12 +326,21 @@
             `)}
         `)}
     `);
-    updateLogger.newLog("V55 UPDATE NOTES (Feb 26, 2024)", `
+    updateLogger.newLog("V55 UPDATE NOTES (Mar 6, 2024, 2024)", `
         ${updateLogger.marginBlock(10, `
             ${updateLogger.lineBlock(["New Shape: Purple Pentagon", "New Weapon(s): Leiming, Fengbao, Inferno, and Pyro", "Less OXP is needed to reach level 200 at the Osperation", "Balance Changes / Other Improvements"])}
             ${updateLogger.title("h2", `CHANGES`)}
             ${updateLogger.marginBlock(10, `
                 ${updateLogger.lineBlock(["Reduced the effectiveness of all slowdown effects."])}
+            `)}
+        `)}
+    `);
+    updateLogger.newLog("V56 UPDATE NOTES (Mar 6, 2024, 2024)", `
+        ${updateLogger.marginBlock(10, `
+            ${updateLogger.lineBlock(["Balance Changes / Other Improvements"])}
+            ${updateLogger.title("h2", `CHANGES`)}
+            ${updateLogger.marginBlock(10, `
+                ${updateLogger.lineBlock(["Fengbao and Leiming: -15% Damage"])}
             `)}
         `)}
     `);
@@ -417,6 +426,7 @@
             this.y = 0;
             this.layer = 0;
             this.velx = 0;
+            this.tracers = [];
             this.hullIntegrity = data.hullIntegrity;
             this.flightAnimationSpeed = data.flightAnimationSpeed;
             this.oldScale = data.scale;
@@ -491,8 +501,12 @@
                     iconSource: data.ability.iconSource,
                     oldIconSource: data.ability.iconSource
                 };
-                if (data.ability.name == "Clain Blink" || data.ability.name == "Barrier Field") {
+                if (data.ability.name == "Blocking Matrix") {
+                    this.ability.effectAccumulation = data.ability.effectAccumulationData ? data.ability.effectAccumulationData.base : data.ability.effectAccumulation;
+                } else if (data.ability.name == "Ferocity" || data.ability.name == "Clain Blink" || data.ability.name == "Barrier Field") {
                     this.ability.lastingTime = data.ability.lastingTime;
+                    this.ability.dmg = data.ability.damageData ? data.ability.damageData.base : data.ability.dmg;
+                    this.ability.executionThreshold = data.ability.executionThresholdData ? data.ability.executionThresholdData.base : data.ability.executionThreshold;
                     this.ability.durabilityLimit = data.ability.durabilityLimitData ? data.ability.durabilityLimitData.base : data.ability.durabilityLimit;
                     this.ability.shieldHp = data.ability.shieldHpData ? data.ability.shieldHpData.base : data.ability.shieldHp;
                 } else if (data.ability.name == "Remote Assault" || data.ability.name == "Blink Assault") {
@@ -2785,6 +2799,91 @@
         color: "#800080",
         moduleHardpoints: 4,
         costParts: true
+    }, {
+        dontSell: true,
+        tier: 3,
+        name: "Yellow Heptagon",
+        speed: 0.0012,
+        speedLevel: [0, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0002, 0.0002, 0.0002, 0.0002, 0.0004],
+        scale: 50,
+        fieldOfViewMulti: 1.25,
+        desc: `
+        A real predator, this shape can hunt down enemies with its quick movement speed and can execute them at low durability.<br><br>
+        <strong style="color: #fff">Forcefield</strong> Another type of defense which reduces damage taken. It cannot be mitigated by defense mitigation effect weapon but may be reduced. Forcefield is based on durability but not considered as a shield.<br><br>
+        Damage Reduction: 90% (MAX) to 75% (MIN)<br>
+        Durability: 200,000<br>
+        Regeneration Time: 6 seconds
+        `,
+        healthData: {
+            base: 65e3,
+            level: [0, 3e3, 3e3, 5e3, 5e3, 5e3, 5e3, 5e3, 6e3, 7e3, 8e3, 10e3],
+        },
+        ability: {
+            name: "Ferocity",
+            desc: `
+            <strong style="color: #fff">Ferocity</strong> The shape enter stealth and moves faster. A built-in weapon is activated, shots fired from this weapon can instantly kill enemies at a threshold.<br><br>
+            Duration: 4 seconds<br>
+            Speed Increase: 50%<br>
+            Fire Rate: .5 seconds<br>
+            Cooldown: 6 seconds
+            `,
+            iconSource: "./images/weapons/reaper.png",
+            executionThresholdData: {
+                base: .05,
+                level: [0, .01, .01, .01, .01, .01, .02, .03, .03, .03, .04, .05]
+            },
+            damageData: {
+                base: 1e3,
+                level: [0, 250, 250, 250, 500, 500, 500, 500, 500, 1e3, 1e3, 1e3]
+            },
+            lastingTime: 4e3,
+            reload: 6e3
+        },
+        hardpoints: {
+            light: 0,
+            heavy: 2
+        },
+        color: "#ffff00",
+        moduleHardpoints: 4,
+        costParts: true
+    }, {
+        tier: 4,
+        name: "Orange Heptagon",
+        speed: 0.0004,
+        speedLevel: [0, 0, 0.0001, 0.0001, 0, 0.0001, 0.0001, 0.0001, 0, 0.0001, 0.0001, 0.0001],
+        scale: 95,
+        fieldOfViewMulti: 2,
+        desc: `
+        Legendary Tank, walking into enemy fire with 100% confidence is this shape's special ability. Orange Heptagon can accumulate block effects that prevent it from taking any damage. The only downside: it's speed.
+        <br><br>
+        Recommended Equipment: x5 Brisant / x5 Inferno / x5 Maha Vajra
+        `,
+        healthData: {
+            base: 250e3,
+            level: [0, 15e3, 15e3, 20e3, 20e3, 20e3, 20e3, 25e3, 25e3, 35e3, 35e3, 45e3]
+        },
+        hardpoints: {
+            light: 0,
+            heavy: 3
+        },
+        ability: {
+            name: "Blocking Matrix",
+            desc: `
+            <span style="font-width: bolder; color: #fff;">Blocking Matrix</span> The shape gains permanent effects of Block.<br><br>
+            <span style="font-width: bolder; color: #fff;">Block</span> This effect blocks/ignores damage per stack of effect.<br><br>
+            Cooldown: 14 seconds
+            `,
+            iconSource: "./images/icons/block.png",
+            effectAccumulationData: {
+                base: 25,
+                level: [0, 12, 12, 12, 12, 12, 12, 12, 12, 22, 25, 32]
+            },
+            reload: 14e3
+        },
+        builtInDefensePoints: 150,
+        color: "#ffa500",
+        moduleHardpoints: 6,
+        costParts: true
     }];
     function defensePointsToResistance(defense) {
         return (100) / (100 + defense);
@@ -3446,11 +3545,11 @@
             base: .05,
             level: [0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.1, 0.15],
         },
-        motherShipCharge: 0.00025,
+        motherShipCharge: 0.00011,
         imageSource: "./images/weapons/evora.png",
         fireRate: 50,
-        ammo: 125,
-        reload: 3500,
+        ammo: 250,
+        reload: 5e3,
         range: 1200,
         cost: {
             sliver: 5e6,
@@ -3477,11 +3576,11 @@
             base: .05,
             level: [0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.15, 0.15, 0.15, 0.15],
         },
-        motherShipCharge: 0.00025,
+        motherShipCharge: 0.00011,
         imageSource: "./images/weapons/veyron.png",
         fireRate: 50,
-        ammo: 125,
-        reload: 3500,
+        ammo: 250,
+        reload: 5e3,
         range: 1200,
         cost: {
             sliver: 50e6,
@@ -4614,8 +4713,8 @@
         projType: "energy",
         desc: `Super close ranged light laser arc weapon that deals a lot of damage in a short time. Every hit accumulates a lockdown effect that disables enemies from moving.`,
         damageData: {
-            base: 1200,
-            level: [0, 200, 200, 250, 250, 250, 300, 300, 300, 300, 350, 400]
+            base: 1020,
+            level: [0, 170, 170, 213, 213, 213, 255, 255, 255, 255, 298, 340]
         },
         defenseBypassData: {
             base: .05,
@@ -4641,8 +4740,8 @@
         projType: "energy",
         desc: `Super close ranged heavy laser arc weapon that deals a lot of damage in a short time. Every hit accumulates a lockdown effect that disables enemies from moving.`,
         damageData: {
-            base: 3e3,
-            level: [0, 400, 400, 500, 500, 500, 600, 600, 600, 600, 700, 800]
+            base: 2550,
+            level: [0, 340, 340, 425, 425, 425, 510, 510, 510, 510, 595, 680]
         },
         defenseBypassData: {
             base: .05,
@@ -4676,7 +4775,7 @@
             base: .05,
             level: [0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.15, 0.15, 0.15, 0.15],
         },
-        overheatTime: 8e3,
+        overheatTime: 10e3,
         motherShipCharge: 0.00016,
         imageSource: "./images/weapons/inferno.png",
         fireRate: 35,
@@ -4705,7 +4804,7 @@
             base: .05,
             level: [0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.1, 0.15],
         },
-        overheatTime: 8e3,
+        overheatTime: 10e3,
         motherShipCharge: 0.00016,
         imageSource: "./images/weapons/pyro.png",
         fireRate: 35,
@@ -5056,7 +5155,10 @@
         fieldOfViewMulti,
         speed,
         hullIntegrity,
-        moduleHardpoints
+        shieldData,
+        moduleHardpoints,
+        dotResistance,
+        scale
     }, type, specialOf, source) {
         if (type == "shape") {
             let shape = shapeData.find(e => e.name == name);
@@ -5071,8 +5173,10 @@
             if (tier) newshape.tier = tier;
             newshape.healthData.base *= health;
             if (speed) newshape.speed *= health;
+            if (scale) newshape.scale = scale;
             if (!cantGet) newshape.dontSell = true;
             newshape.dontShow = true;
+            if (dotResistance) newshape.dotResistance = dotResistance;
             if (hullIntegrity) newshape.hullIntegrity = hullIntegrity;
             if (fieldOfViewMulti) newshape.fieldOfViewMulti = fieldOfViewMulti;
             if (healingAuraData) newshape.healingAuraData = healingAuraData;
@@ -5083,6 +5187,7 @@
             if (borderColor) newshape.borderColor = borderColor;
             if (moduleSlots) newshape.moduleHardpoints = moduleSlots;
             if (newshape.reflector && reflector) newshape.reflector = reflector;
+            if (shieldData) newshape.shieldData = shieldData;
             if (moduleHardpoints) newshape.moduleHardpoints = moduleHardpoints;
             for (let i = 0; i < newshape.healthData.level.length; i++) {
                 newshape.healthData.level[i] *= health;
@@ -5269,6 +5374,46 @@
         builtInDefensePoints: 25,
         moduleHardpoints: 4,
         hullIntegrity: .5,
+        borderColor: "#ffff00"
+    }, "shape", "Ultimate");
+    makeNewSpecialEdition("Brown Pentagon", {
+        tier: 4,
+        health: 1.8,
+        scale: 80,
+        topDesc: `
+        ULTIMATE SHAPE VERSION<br>
+        The rarest modification of the Brown Pentagon.
+        Surpassing the original in all aspects,
+        it is a desirable shape for any player.
+        `,
+        newDesc: `
+        A well protected shape that can swtich between modes to increase its mobility or defense.<br><br>
+        The shape has a built-in immunity to defense mitigation.
+        `,
+        shieldData: {
+            type: "yellow",
+            base: 57e3,
+            level: [0, 800, 800, 1600, 1600, 1600, 1600, 3e3, 3e3, 4e3, 8e3, 16e3],
+            regen: 0.05
+        },
+        ability: {
+            name: "Shapeshift",
+            desc: `
+            <span style="font-width: bolder; color: #fff;">Shapeshift</span> The shape, upon activating the ability, switches between modes.<br><br>
+            <span style="font-width: bolder; color: #fff;">Travel Mode</span>: Robot activates its energy shield, drops its 2 heavy weapons, and moves faster.<br><br>
+            <span style="font-width: bolder; color: #fff;">Tank Mode</span>: Robot disables its energy shield, activates its 2 heavy weapons, moves slower, and activates a defense system. During Tank Mode, the energy shield regens faster (1000%).<br><br>
+            Default Mode: Travel Mode<br>
+            Cooldown: .5 second
+            `,
+            iconSource: "./images/abilities/shapeshift.png",
+            abilityDefensePointsData: {
+                base: 150,
+                level: [0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5]
+            },
+            reload: 500
+        },
+        moduleHardpoints: 6,
+        hullIntegrity: .25,
         borderColor: "#ffff00"
     }, "shape", "Ultimate");
     var activeModuleData = [{
@@ -9189,6 +9334,7 @@
         let league = player.league;
         let name = getLeagueName(league);
         if (name == "Champion") {
+            if (league >= 7e3) return 5;
             if (league >= 6e3 && Math.random() < .85) {
                 return 5;
             } else if (Math.random() < .25 && !type) {
@@ -9317,7 +9463,7 @@
             let newWeapon = new weapon(weapons[t]);
             newWeapon.level = weapons[t].level;
             newWeapon.slot = (weapons[t].slot != undefined ? weapons[t].slot : t);
-            if (robot.name == "Brown Pentagon" && newWeapon.type == "Heavy") {
+            if ((robot.name == "Ultimate Brown Pentagon" || robot.name == "Brown Pentagon") && newWeapon.type == "Heavy") {
                 newWeapon.notActive = true;
             } else if (robot.name == "Light Blue Heptagon" && newWeapon.type == "Heavy" && checked < 2) {
                 checked++;
@@ -9334,7 +9480,6 @@
         for (let t = 0; t < modules.length; t++) {
             let newModule = new module(modules[t]);
             newModule.level = modules[t].level;
-            //if (newModule.baseDefensePoints) robot.baseDP += newModule.baseDefensePoints;
             robot.modules.push(newModule);
         }
         let repairAmps = robot.modules.filter(e => e.name == "Repair Amplifier");
@@ -9437,6 +9582,9 @@
     function doPilotSkillInject(skill, statAdjustments, robot) {
         if (skill.healthIncrease) {
             statAdjustments.health += skill.healthIncrease;
+        }
+        if (skill.name == "Bernadette's Stamina") {
+            robot.baseShielding = undefined;
         }
         if (skill.domainRangeIncrease) {
             robot.domainRangeIncrease = skill.domainRangeIncrease;
@@ -9561,11 +9709,29 @@
                 name: "forcefield",
                 data: {
                     resistance: .9,
-                    maxresistance: .1,
                     maxhealth: 150e3,
                     health: 150e3
                 },
                 rechargeTime: 5e3,
+                lastTime: 1,
+                lastForever: true
+            });
+        } else if (robot.name == "Yellow Heptagon") {
+            robot.effects.push({
+                name: "forcefield",
+                data: {
+                    resistance: .9,
+                    min: .75,
+                    maxhealth: 200e3,
+                    health: 200e3
+                },
+                rechargeTime: 6e3,
+                lastTime: 1,
+                lastForever: true
+            });
+        } else if (robot.name == "Ultimate Brown Pentagon") {
+            robot.effects.push({
+                name: "anti defense mig",
                 lastTime: 1,
                 lastForever: true
             });
@@ -9622,13 +9788,23 @@
         if (isBluebell) {
             robot.isBluebell = true;
             if (typeof isBluebell == "string" && typeof robot.baseDP == "number") {
+                if (player.league >= 7e3) {
+                    robot.baseDP += 200;
+                } else if (player.league >= 6e3) {
+                    robot.baseDP += 100;
+                }
+            }
+        } else if (isAlly != true) {
+            if (player.league >= 7e3) {
                 robot.baseDP += 100;
+            } else if (player.league >= 6e3) {
+                robot.baseDP += 50;
             }
         }
         return robot;
     }
     var skirmishHanger = [{
-        "name": "Tan Circle",
+        "name": "Purple Pentagon",
         "weapons": {
             "heavy": "Veyron",
             "light": "Evora"
@@ -9642,7 +9818,7 @@
         "drone": "Hiruko",
         "activeModuleIndex": 3
     }, {
-        "name": "Tan Circle",
+        "name": "Dark Tan Circle",
         "weapons": {
             "heavy": "Brisant",
             "light": "Shatter"
@@ -9686,8 +9862,8 @@
     }, {
         "name": "Tan Circle",
         "weapons": {
-            "heavy": "Destroyer",
-            "light": "Punisher"
+            "heavy": "Inferno",
+            "light": "Pyro"
         },
         "modules": [
             "Immune Amplifier",
@@ -9698,7 +9874,7 @@
         "drone": "Hiruko",
         "activeModuleIndex": 3
     }, {
-        "name": "Tan Circle",
+        "name": "Dark Tan Circle",
         "weapons": {
             "heavy": "Maha Vajra",
             "light": "Vajra"
@@ -9712,7 +9888,7 @@
         "drone": "Beak",
         "activeModuleIndex": 3
     }, {
-        "name": "Tan Circle",
+        "name": "Dark Tan Circle",
         "weapons": {
             "heavy": "Devastator",
             "light": "Scatter"
@@ -9726,7 +9902,7 @@
         "drone": "Hiruko",
         "activeModuleIndex": 3
     }, {
-        "name": "Tan Circle",
+        "name": "Purple Pentagon",
         "weapons": {
             "heavy": "Thunder",
             "light": "Storm"
@@ -9785,6 +9961,7 @@
             }
         };
         if (gameMode == 7) {
+            players[0].mothership.data = undefined;
             for (let i = 0; i < 10; i++) {
                 let isAlly = i < 5 ? true : false;
                 let name = generateRandomName();
@@ -11340,6 +11517,48 @@
             </div>
             </div>
             `;
+        } else if (type == "executionThresholdData" && Shape.ability && Shape.ability.executionThresholdData) {
+            let maxhealth = Shape.ability.executionThresholdData.base;
+            for (let i = 0; i < Shape.ability.executionThresholdData.level.length; i++) {
+                maxhealth += Shape.ability.executionThresholdData.level[i];
+            }
+            let indexAdjust = ((shape.ability.executionThreshold / maxhealth) * maxwidth) / maxwidth;
+            let indexAdjusted = (((shape.ability.executionThreshold + (Shape.ability.executionThresholdData.level[shape.level])) / maxhealth) * maxwidth) / maxwidth;
+            text = `
+            <div style="position: relative; width: ${maxwidth}px;">
+            Ability Execution Threshold: ${(shape.ability.executionThreshold * 100)}%
+            <div style="display: ${Shape.ability.executionThresholdData.level[shape.level] ? "block" : "none"};position: absolute; top: 0px; right: 0px; color: #00ff00;">
+            +${(Shape.ability.executionThresholdData.level[shape.level] * 100)}%
+            </div>
+            </div>
+            <div style="position: relative; width: ${maxwidth}px; height: 3px; background-color: #fff;">
+            <div style="position: absolute; top: 0px; left: 0px; height: 3px; width: ${indexAdjusted * 100}%; background-color: #02de02;">
+            </div>
+            <div style="position: absolute; top: 0px; left: 0px; height: 3px; width: ${indexAdjust * 100}%; background-color: #00fcec;">
+            </div>
+            </div>
+            `;
+        } else if (type == "effectAccumulationData" && Shape.ability && Shape.ability.effectAccumulationData) {
+            let maxhealth = Shape.ability.effectAccumulationData.base;
+            for (let i = 0; i < Shape.ability.effectAccumulationData.level.length; i++) {
+                maxhealth += Shape.ability.effectAccumulationData.level[i];
+            }
+            let indexAdjust = ((shape.ability.effectAccumulation / maxhealth) * maxwidth) / maxwidth;
+            let indexAdjusted = (((shape.ability.effectAccumulation + (Shape.ability.effectAccumulationData.level[shape.level])) / maxhealth) * maxwidth) / maxwidth;
+            text = `
+            <div style="position: relative; width: ${maxwidth}px;">
+            Ability Effect Accumulation: ${shape.ability.effectAccumulation}
+            <div style="display: ${Shape.ability.effectAccumulationData.level[shape.level] ? "block" : "none"};position: absolute; top: 0px; right: 0px; color: #00ff00;">
+            +${Shape.ability.effectAccumulationData.level[shape.level]}
+            </div>
+            </div>
+            <div style="position: relative; width: ${maxwidth}px; height: 3px; background-color: #fff;">
+            <div style="position: absolute; top: 0px; left: 0px; height: 3px; width: ${indexAdjusted * 100}%; background-color: #02de02;">
+            </div>
+            <div style="position: absolute; top: 0px; left: 0px; height: 3px; width: ${indexAdjust * 100}%; background-color: #00fcec;">
+            </div>
+            </div>
+            `;
         }
         return text;
     }
@@ -11349,14 +11568,21 @@
         if (!settingToggles.dmgHealText) return;
         value = Math.abs(value);
         let dirs = [-0.78, -2.34, -0.39, -1.17, -1.95];
-        text.push({
-            x: x,
-            y: y,
-            value: value,
-            dir: dirs[textIndex % 5],
-            life: life,
-            color: color
-        });
+        let hi = text.find(e => color == e.color && dist({x, y}, e) <= 20);
+        if (hi) {
+            hi.value += value;
+            if (hi.stroke == null) hi.stroke = 0;
+            hi.stroke += 5;
+        } else {
+            text.push({
+                x: x,
+                y: y,
+                value: value,
+                dir: dirs[textIndex % 5],
+                life: life,
+                color: color
+            });
+        }
         textIndex++;
     }
     function upgradeShape(shape, noEz) {
@@ -11380,6 +11606,14 @@
                 } else {
                     shape.ability.shieldHp *= shape.level == 13 ? 1.05 : 1.2;
                 }
+            }
+            if (Shape.ability.effectAccumulationData && shape.level < 12) {
+                let increase = Shape.ability.effectAccumulationData.level[shape.level];
+                shape.ability.effectAccumulation += increase;
+            }
+            if (Shape.ability.executionThresholdData && shape.level < 12) {
+                let increase = Shape.ability.executionThresholdData.level[shape.level];
+                shape.ability.executionThreshold += increase;
             }
             if (Shape.ability.durabilityLimitData && shape.level < 12) {
                 let increase = Shape.ability.durabilityLimitData.level[shape.level];
@@ -11642,6 +11876,19 @@
             desc: "Red Octagon has a increased domain radius and its ability deals 15% more damage.",
             domainRangeIncrease: .5,
             extraAbilityDamage: .15
+        }
+    }, {
+        tier: 3,
+        name: "Bernadette",
+        industryName: "Pentagon",
+        story: [],
+        legendarySkill: {
+            name: "Bernadette's Stamina",
+            main: "healthIncrease",
+            onlyFor: "Brown Pentagon",
+            imageSource: "./images/modules/heavy_armor_plating.png",
+            desc: "Brown Pentagon gains extra durability but loses its shield.",
+            healthIncrease: .75
         }
     }];
     class skill {
@@ -12726,7 +12973,7 @@
                         limit: _.limit
                     };
                     obj.unlockAtLevel = _.unlockAtLevel;
-                    if (_.name == "On Mild Damage: Fix" || _.name == "On High Damage: Fix") {
+                    if (_.name == "On Block: Fix" || _.name == "On Mild Damage: Fix" || _.name == "On High Damage: Fix") {
                         obj.required = _.required;
                         obj.in = _.in;
                         obj.healing = _.healingData ? _.healingData.base : _.healing;
@@ -12751,7 +12998,7 @@
                         obj.grayDamageHeal_p = _.grayDamageHeal_pData ? _.grayDamageHeal_pData.base : _.grayDamageHeal_p;
                         obj.healPower = _.healPowerData ? _.healPowerData.base : _.healPower;
                         obj.defenseIncrease = _.defenseIncreaseData ? _.defenseIncreaseData.base : _.defenseIncrease;
-                    } else if (obj.name == "On Kill: Damage") {
+                    } else if (obj.name == "On Kill: Damage" || obj.name == "On Block: Damage") {
                         obj.onKillDamage = _.onKillDamageData ? _.onKillDamageData.base : _.onKillDamage;
                     } else if (obj.name == "On Kill: Speed") {
                         obj.onKillSpeed = _.onKillSpeedData ? _.onKillSpeed.base : _.onKillSpeed;
@@ -12765,8 +13012,8 @@
                         obj.spread = _.spread;
                         obj.dmg = _.damageData ? _.damageData.base : _.dmg;
                         obj.deathmark = _.deathmarkData ? _.deathmarkData.base : _.deathmark;
-                    } else if (obj.name == "On Module Use: More Durability With DOT") {
-                        obj.dmg = 1;
+                    } else if (obj.name == "On Module Use: More Durability With DOT" || obj.name == "On Module Use: Block") {
+                        obj.dmg = obj.name == "On Module Use: Block" ? 50 : 1;
                     } else if (obj.name == "Additional Damage Depending DoT") {
                         obj.dmgDependingDoT = _.dmgDependingDoT;
                     }
@@ -13172,6 +13419,56 @@
             onKillFix: .17,
             grayDamageHeal_p: .5
         }]
+    }, {
+        dontSell: true,
+        tier: 4,
+        industryName: "Heptagon",
+        name: "Bulwark",
+        desc: "",
+        visualData: {
+            scale: 35,
+            color: "#ffa500",
+            name: "Heptagon"
+        },
+        abilities: [{
+            weapon: true,
+            name: "On Block: Fix",
+            desc: ".",
+            icon: "./images/modules/self_fix_unit.png",
+            main: "healing",
+            healingData: {
+                base: 2e3,
+                level: [0, 125, 125, 125, 125, 250, 250, 250, 250, 250, 250, 250, 500, 500, 500]
+            }
+        }, {
+            name: "On Deployment: Durability",
+            desc: "Increases the shape's max durability by X%.",
+            unlockAtLevel: 4,
+            icon: "./images/modules/armor_plating.png",
+            main: "healthIncrease",
+            healthIncrease: .05
+        }, {
+            name: "On Deployment: Durability",
+            desc: "Increases the shape's max durability by X%.",
+            unlockAtLevel: 9,
+            icon: "./images/modules/armor_plating.png",
+            main: "healthIncrease",
+            healthIncrease: .07
+        }, {
+            name: "On Module Use: Block",
+            desc: ".",
+            unlockAtLevel: 12,
+            icon: "./images/icons/block.png",
+            main: "dmg"
+        }, {
+            name: "On Block: Damage",
+            desc: "The shape gains a permanent damage boost for each block.",
+            unlockAtLevel: 15,
+            icon: "./images/modules/nuclear_amplifier.png",
+            main: "onKillDamage",
+            limit: 50,
+            onKillDamage: .005
+        }]
     }];
     checkIfDev();
     updateWorkshopDataStuff();
@@ -13216,9 +13513,9 @@
         if (!noEz) saveGameData();
     }
     function getStylesForBarD(value, name, name2) {
-        if (name == "On Mild Damage: Fix" || name == "On High Damage: Fix") {
+        if (name == "On Mild Damage: Fix" || name == "On High Damage: Fix" || name == "On Block: Fix") {
             return abbreviateNumber(value);
-        } else if (name == "On Kill: Fix" || name == "Additional Damage Depending DoT" || name == "On Deployment: Durability" || name == "On Deployment: Damage" || name == "On Kill: Damage") {
+        } else if (name == "On Block: Damage" || name == "On Kill: Fix" || name == "Additional Damage Depending DoT" || name == "On Deployment: Durability" || name == "On Deployment: Damage" || name == "On Kill: Damage") {
             return (value * 100).toFixed(1) + "%";
         } else if (name.includes("On High Damage: [") || name.includes("On Low Durability: [") || name.includes("On Mild Damage: [")) {
             return abbreviateNumber(value);
@@ -13808,6 +14105,8 @@
         ${shape.ability && shape.ability.healingPower ? `Ability Healing Power: ${abbreviateNumber(shape.ability.healingPower)}<br>` : ""}
         ${shape.ability && shape.ability.additionalHealth ? `Ability Additional Health: ${abbreviateNumber(shape.ability.additionalHealth)}<br>` : ""}
         ${shape.ability && shape.ability.durabilityLimit ? `Ability Durability Bonus Limit: ${abbreviateNumber(shape.ability.durabilityLimit)}<br>` : ""}
+        ${shape.ability && shape.ability.executionThreshold ? `Ability Execution Threshold: ${shape.ability.executionThreshold * 100}%<br>` : ""}
+        ${shape.ability && shape.ability.effectAccumulation ? `Ability Effect Accumulation: ${shape.ability.effectAccumulation}<br>` : ""}
         `;
         document.getElementById("sideDisplay").innerHTML = `
         <div style="position: absolute; top: 0px; left: 0px; width: 100%; height: 100%; background-image: linear-gradient(rgb(0, 0, 0, 0), ${tierColor(shape)});">
@@ -14167,6 +14466,8 @@
             ${enterBarForShape("ability suppression", shape)}
             ${enterBarForShape("ability healing power", shape)}
             ${enterBarForShape("additionalHealthData", shape)}
+            ${enterBarForShape("executionThresholdData", shape)}
+            ${enterBarForShape("effectAccumulationData", shape)}
             </div>
             <div id="leaveUpgrade" style="position: absolute; cursor: pointer; right: 10px; top: 10px;">
             X
@@ -14261,6 +14562,8 @@
         ${shape.ability && shape.ability.healingPower ? `Ability Healing Power: ${abbreviateNumber(shape.ability.healingPower)}<br>` : ""}
         ${shape.ability && shape.ability.additionalHealth ? `Ability Additional Health: ${abbreviateNumber(shape.ability.additionalHealth)}<br>` : ""}
         ${shape.ability && shape.ability.durabilityLimit ? `Ability Durability Bonus Limit: ${abbreviateNumber(shape.ability.durabilityLimit)}<br>` : ""}
+        ${shape.ability && shape.ability.executionThreshold ? `Ability Execution Threshold: ${shape.ability.executionThreshold * 100}%<br>` : ""}
+        ${shape.ability && shape.ability.effectAccumulation ? `Ability Effect Accumulation: ${shape.ability.effectAccumulation}<br>` : ""}
         `;
         document.getElementById("WEAPONdisplay").innerHTML = `
         <div style="position: absolute; top: 0px; left: 0px; width: 100%; height: 100%; background-image: linear-gradient(rgb(0, 0, 0, 0), ${tierColor(shape)});">
@@ -14772,6 +15075,8 @@
             ${enterBarForShape("ability suppression", shape)}
             ${enterBarForShape("ability healing power", shape)}
             ${enterBarForShape("additionalHealthData", shape)}
+            ${enterBarForShape("executionThresholdData", shape)}
+            ${enterBarForShape("effectAccumulationData", shape)}
             </div>
             <div id="leaveUpgrade" style="position: absolute; cursor: pointer; right: 10px; top: 10px;">
             X
@@ -15215,7 +15520,7 @@
         MK1 Data Box, a data box that only contains resources like gold and silver.
         `,
         source: "./images/tokens/token_chests/mk1_chest.png",
-        rewards: [/*{
+        rewards: [{
             type: "silver", rarity: "Common", value: 1e6
         }, {
             type: "silver", rarity: "Common", value: 2e6
@@ -15237,9 +15542,9 @@
             type: "keys", rarity: "Epic", value: 5e3
         }, {
             type: "workshop points", rarity: "Rare", value: 3e3
-        },*/ {
+        }, {
             type: "token", rarity: "Legendary", mk: 2, value: 3
-        }/*, {
+        }, {
             type: "token", rarity: "Mythic", mk: 3, value: 3
         }, {
             type: "silver", rarity: "Epic", value: 50e6
@@ -15249,7 +15554,7 @@
             type: "gold", rarity: "Legendary", value: 25e3
         }, {
             type: "workshop points", rarity: "Legendary", value: 15e3
-        }*/],
+        }],
         tokenCost: "token 1"
     }, {
         name: "MK2 Data Box",
@@ -15323,6 +15628,16 @@
             type: "weapon", rarity: "Common", name: "Jaw"
         }, {
             type: "weapon", rarity: "Common", name: "Talon"
+        }, {
+            type: "weapon", rarity: "Epic", name: "Fengbao"
+        }, {
+            type: "weapon", rarity: "Epic", name: "Leiming"
+        }, {
+            type: "weapon", rarity: "Legendary", name: "Inferno"
+        }, {
+            type: "weapon", rarity: "Legendary", name: "Pyro"
+        }, {
+            type: "drone", rarity: "Legendary", name: "Bulwark"
         }],
         tokenCost: "token 2"
     }, {
@@ -15387,6 +15702,8 @@
             type: "shape", rarity: "Epic", name: "Light Blue Triangle"
         }, {
             type: "shape", rarity: "Epic", name: "Ultimate Gray Circle"
+        }, {
+            type: "shape", rarity: "Legendary", name: "Purple Pentagon"
         }],
         tokenCost: "token 3"
     }];
@@ -18354,6 +18671,28 @@
             ctx.stroke();
             ctx.rotate(-asd * 2);
         }
+        if (robot.tracers) {
+            ctx.save();
+            for (let i = 0; i < robot.tracers.length; i++) {
+                let pre = robot.tracers[i - 1];
+                let first = robot.tracers[i];
+                let next = robot.tracers[i + 1];
+                ctx.beginPath();
+                ctx.lineWidth = i;
+                ctx.strokeStyle = `rgb(255, 255, 0, ${i / robot.tracers.length})`;
+                if (pre) {
+                    ctx.lineTo(pre.x - robot.x, pre.y - robot.y);
+                }
+                ctx.lineTo(first.x - robot.x, first.y - robot.y);
+                if (next) {
+                    ctx.lineTo(next.x - robot.x, next.y - robot.y);
+                } else {
+                    ctx.lineTo(0, 0);
+                }
+                ctx.stroke();
+            }
+            ctx.restore();
+        }
         let dir = robot.dir2 || robot.dir;
         if (robot.name.includes("Circle")) {
             if (robot.effects) {
@@ -18366,7 +18705,7 @@
                     renderCircle(0, 0, robot.scale + 5, ctx, false, true, "#fff", interpolatedColor, 15);
                 }
             }
-            renderCircle(0, 0, robot.scale, ctx, false, false, Date.now() - robot.damagedTime <= 20 ? "#fff" : robot.color, robot.isFREEZE ? "#fff" : robot.borderColor || "#000", w);
+            renderCircle(0, 0, robot.scale, ctx, false, false, robot.color, robot.isFREEZE ? "#fff" : robot.borderColor || "#000", w);
             if (robot.name == "Ultimate Green Circle") {
                 renderCircle(0, 0, 600, ctx, false, true, "#fff", "#06a600", 20);
             }
@@ -18390,6 +18729,19 @@
             ctx.rotate(-(dir + Math.PI / 2));
         } else if (robot.name.includes("Heptagon")) {
             ctx.rotate(dir + Math.PI / 2);
+            if (robot.effects) {
+                let force = robot.effects.find(e => e.name == "forcefield");
+                if (force) {
+                    let percent = 1 - (force.data.health / force.data.maxhealth);
+                    let startColor = "#00ffff";
+                    let endColor = "#ff0000";
+                    let interpolatedColor = interpolateColor(startColor, endColor, percent);
+                    ctx.strokeStyle = interpolatedColor;
+                    ctx.lineWidth = 15;
+                    renderStar(ctx, 3.5, robot.scale + 10, robot.scale + 10);
+                    ctx.stroke();
+                }
+            }
             ctx.strokeStyle = robot.isFREEZE ? "#fff" : "#000";
             ctx.lineWidth = w;
             ctx.fillStyle = robot.color;
@@ -18523,6 +18875,7 @@
                         }
                     }
                 }
+                drawCanvasHealthBars(robot, "me", ctx);
                 ctx.restore();
             }
         }
@@ -20403,8 +20756,12 @@
             if (!robot.avoidBuildings && buildings.find(e => e.name == "pond" && dist(e, robot) <= e.tmpScale)) {
                 moveSpeed *= (1 / 3);
             }
-            if (robot.name == "Brown Pentagon" && robot.ability.mode == 1) {
-                moveSpeed *= (1 / 3);
+            if ((robot.name == "Ultimate Brown Pentagon" || robot.name == "Brown Pentagon") && robot.ability.mode == 1) {
+                if (robot.name == "Ultimate Brown Pentagon") {
+                    moveSpeed *= .5;
+                } else {
+                    moveSpeed *= (1 / 3);
+                }
             }
             robot.velx += Math.cos(moveDir) * (moveSpeed * delta);
             robot.vely += Math.sin(moveDir) * (moveSpeed * delta);
@@ -20463,7 +20820,7 @@
                 robot.ability.dmg /= 1 + (highestMultiAmp * robot.oldAmountOfAmps);
                 robot.ability.dmg *= 1 + (highestMultiAmp * amountOfAmps);
             }
-            let drone = robot.drone.abilities.find(e => e.weapon);
+            let drone = robot.drone ? robot.drone.abilities.find(e => e.weapon) : undefined;
             if (drone) {
                 drone.dmg /= 1 + (highestMultiAmp * robot.oldAmountOfAmps);
                 drone.dmg *= 1 + (highestMultiAmp * amountOfAmps);
@@ -20501,7 +20858,7 @@
             if (shield) {
                 if (shield.regen) {
                     if (shield.lastRegen == null) shield.lastRegen = false;
-                    if (Date.now() - shield.lastRegen >= (5e3 * robot.shieldRegen * shieldRegenMulti * (robot.name == "Brown Pentagon" && robot.ability.mode == 1 ? .1 : 1))) {
+                    if (Date.now() - shield.lastRegen >= (5e3 * robot.shieldRegen * shieldRegenMulti * ((robot.name == "Ultimate Brown Pentagon" || robot.name == "Brown Pentagon") && robot.ability.mode == 1 ? .1 : 1))) {
                         shield.lastRegen = Date.now();
                         shield.health += shield.maxhealth * shield.regen;
                     }
@@ -20667,7 +21024,8 @@
                         graydmg: bullet.grayDamageAmount,
                         defensePointsBypass: bullet.defensePointsBypass,
                         bypassReflector: bullet.bypassReflector,
-                        motherShipCharge: bullet.motherShipCharge
+                        motherShipCharge: bullet.motherShipCharge,
+                        execute: bullet.execute
                     }, bullet.owner.isMe, bullet.owner);
                 } else {
                     for (let t = 0; t < players.length; t++) {
@@ -20679,7 +21037,8 @@
                                     graydmg: bullet.grayDamageAmount,
                                     defensePointsBypass: bullet.defensePointsBypass,
                                     bypassReflector: bullet.bypassReflector,
-                                    motherShipCharge: bullet.motherShipCharge
+                                    motherShipCharge: bullet.motherShipCharge,
+                                    execute: bullet.execute
                                 }, bullet.owner.isMe, bullet.owner);
                             }
                         }
@@ -21555,6 +21914,8 @@
             return "./images/icons/blind.png";
         } else if (index == "emp") {
             return "./images/icons/emp.png";
+        } else if (index == "block") {
+            return "./images/icons/block.png";
         } else {
             return "./images/abilities/cold_pulse.png";
         }
@@ -22104,15 +22465,15 @@
     }
     var transitionProgress = 0;
     function doShapeShiftStuff(robot, isAlly) {
-        if (robot.name == "Brown Pentagon") {
+        if (robot.name == "Brown Pentagon" || robot.name == "Ultimate Brown Pentagon") {
             if (robot.isMe) transitionProgress = 0;
             let shield = robot.shields.find(e => e.baseShield == "built in");
             if (robot.ability.mode == 0) {
                 robot.flightVisualData = {
                     scale: robot.oldScale,
                     fov: {
-                        x: 1980 * robot.fieldOfViewMulti * .65,
-                        y: 1080 * robot.fieldOfViewMulti * .65
+                        x: 1980 * robot.fieldOfViewMulti * (robot.name == "Ultimate Brown Pentagon" ? .7 : .6),
+                        y: 1080 * robot.fieldOfViewMulti * (robot.name == "Ultimate Brown Pentagon" ? .7 : .6)
                     }
                 };
                 if (shield) {
@@ -22300,7 +22661,7 @@
                     robot.abilityLast = 1;
                 }
             }
-        } else if (robot.ability.name == "Barrier Field" || robot.ability.name == "Blink Assault" || (robot.ability.name == "Clain Blink" && !robot.ability.maxcharge) || robot.ability.name == "Remote Assault" || robot.ability.name == "Cannonier" || robot.ability.name == "Long Shot" || robot.ability.name == "Support" || robot.ability.name == "Matrix" || robot.ability.name == "Reflector" || robot.ability.name == "Clear Sky" || robot.ability.name == "Reinforce Hull" || robot.ability.name == "Ultimate Mending" || robot.ability.name == "Divine Judgement" || robot.ability.name == "Grand Fortitude" || robot.ability.name == "Paladin" || robot.ability.name == "Overload" || robot.ability.name == "Stampede" || robot.ability.name == "Stealth" || robot.ability.name == "Retribution" || robot.ability.name == "Ultimate Defense" || robot.ability.name == "Self Heal" || robot.ability.name == "Dragon Flight" || robot.ability.name == "Shield Regeneration" || robot.ability.name == "Full Action") {
+        } else if (robot.ability.name == "Ferocity" || robot.ability.name == "Barrier Field" || robot.ability.name == "Blink Assault" || (robot.ability.name == "Clain Blink" && !robot.ability.maxcharge) || robot.ability.name == "Remote Assault" || robot.ability.name == "Cannonier" || robot.ability.name == "Long Shot" || robot.ability.name == "Support" || robot.ability.name == "Matrix" || robot.ability.name == "Reflector" || robot.ability.name == "Clear Sky" || robot.ability.name == "Reinforce Hull" || robot.ability.name == "Ultimate Mending" || robot.ability.name == "Divine Judgement" || robot.ability.name == "Grand Fortitude" || robot.ability.name == "Paladin" || robot.ability.name == "Overload" || robot.ability.name == "Stampede" || robot.ability.name == "Stealth" || robot.ability.name == "Retribution" || robot.ability.name == "Ultimate Defense" || robot.ability.name == "Self Heal" || robot.ability.name == "Dragon Flight" || robot.ability.name == "Shield Regeneration" || robot.ability.name == "Full Action") {
             if (robot.abilityReload == 0 && robot.abilityLast == 0) {
                 robot.abilityLast = robot.ability.lastingTime;
                 doWonderworkerSkill(robot);
@@ -22610,6 +22971,18 @@
                     changeHealth(robot, {
                         amount: (5000 * near.length)
                     }, robot.isMe, robot);
+                }
+                robot.abilityReload = robot.ability.reload;
+            }
+        } else if (robot.ability.name == "Blocking Matrix") {
+            if (robot.abilityReload == 0) {
+                doWonderworkerSkill(robot);
+                for (let i = 0; i < robot.ability.effectAccumulation; i++) {
+                    robot.effects.push({
+                        name: "block",
+                        lastTime: 1,
+                        lastForever: true
+                    });
                 }
                 robot.abilityReload = robot.ability.reload;
             }
@@ -23068,6 +23441,35 @@
                 });
                 (!robot.isMe ? robot.deltaTimer = robot.ability.fireRate : deltaTimer = robot.ability.fireRate);
             }
+        } else if (robot.ability.name == "Ferocity") {
+            robot.invis = true;
+            robot.abilitySpeedMulti = 1.5;
+            (!robot.isMe ? robot.deltaTimer -= delta : deltaTimer -= delta);
+            if ((!robot.isMe ? robot.deltaTimer <= 0 : deltaTimer <= 0)) {
+                projectiles.push({
+                    x: robot.x,
+                    y: robot.y,
+                    oldX: robot.x,
+                    oldY: robot.y,
+                    velx: 0,
+                    projType: "energy",
+                    vely: 0,
+                    scale: 25,
+                    speed: 0.25,
+                    dmg: robot.ability.dmg,
+                    range: 1600,
+                    dir: robot.dir,
+                    isAlly: isAlly,
+                    color: "./images/bullets/energy_bullet.png",
+                    owner: robot,
+                    execute: robot.ability.executionThreshold,
+                    weaponOwner: {
+                        name: "Clear Sky",
+                        level: robot.level
+                    }
+                });
+                (!robot.isMe ? robot.deltaTimer = 500 : deltaTimer = 500);
+            }
         }
     }
     function doAbilityEndFunction(robot, delta, effect) {
@@ -23293,7 +23695,7 @@
                         robot.useAbility = true;
                     }
                 }
-            } else if (["Overload", "Dash", "Fortify"].includes(abilityName)) {
+            } else if (["Overload", "Dash", "Fortify", "Blocking Matrix"].includes(abilityName)) {
                 robot.useAbility = true;
             } else if (abilityName == "Long Shot" && robot.target && dist(robot.target, robot) <= 3800) {
                 robot.useAbility = true;
@@ -23329,7 +23731,7 @@
                     robot.useAbility = false;
                 }
             } else if (["Shapeshift"].includes(abilityName)) {
-                if (robot.name == "Brown Pentagon" || robot.name == "Gray Heptagon") {
+                if (robot.name == "Ultimate Brown Pentagon" || robot.name == "Brown Pentagon" || robot.name == "Gray Heptagon") {
                     if (Date.now() - robot.damagedTime <= 50 && robot.ability.mode == 0) {
                         robot.useAbility = true;
                     } else if (Date.now() - robot.damagedTime >= 1e3 && robot.ability.mode == 1) {
@@ -23343,13 +23745,9 @@
     }
     function doShapeStuffPassiveEffects(robot, delta, isAlly) {
         if (robot.ability && robot.ability.name == "Shapeshift") {
-            if (robot.name == "Brown Pentagon") {
+            if (robot.name == "Brown Pentagon" || robot.name == "Ultimate Brown Pentagon") {
                 if (robot.ability.mode == 1) {
-                    let multi = 1;
-                    if (robot.increasedAbilityDefenseLaLaLaLa__1) {
-                        multi = robot.increasedAbilityDefenseLaLaLaLa__1;
-                    }
-                    robot.builtInDefensePoints += robot.ability.abilityDefensePoints * multi;
+                    robot.builtInDefensePoints += robot.ability.abilityDefensePoints;
                 }
             } else {
                 if (robot.ability.mode == 0) {
@@ -23406,6 +23804,7 @@
                 if (robot.isMe) updateMoneyDisplay("workshopPoints", -module.cost);
                 if (robot.drone) {
                     let yay = robot.drone.abilities.find(e => e.name == "On Module Use: More Durability With DOT");
+                    let yay1 = robot.drone.abilities.find(e => e.name == "On Module Use: Block");
                     if (yay) {
                         robot.drone.effects.push({
                             name: "speed",
@@ -23428,6 +23827,19 @@
                             dmg: robot.fixedDurabilityIncreaseWithAbility____JustToMakeSure_ / 7,
                             lastTime: 7e3
                         });
+                    } else if (yay1) {
+                        robot.drone.effects.push({
+                            name: "speed",
+                            amount: 2,
+                            lastTime: 7e3
+                        });
+                        for (let i = 0; i < yay1.dmg; i++) {
+                            robot.effects.push({
+                                name: "block",
+                                lastTime: 1,
+                                lastForever: true
+                            });
+                        }
                     }
                 }
                 if (module.name == "Repair Unit" || module.name == "Advanced Repair Unit") {
@@ -23714,6 +24126,13 @@
             }
         }
     }
+    var inWindow = true;
+    window.onblur = function() {
+        inWindow = false;
+    };
+    window.onfocus = function() {
+        inWindow = true;
+    };
     function updateRobot(robot, isAlly, delta, index) {
         if (robot.deltaTimer == null) robot.deltaTimer = 0;
         robot.shieldRegen = 1;
@@ -23946,6 +24365,19 @@
                 `;
             } else {
                 document.getElementById("mothershipBar").style.display = "none";
+            }
+        }
+        if (robot.name.includes("Ultimate")) {
+            robot.tracers.push({
+                x: robot.x,
+                y: robot.y
+            });
+            if (robot.tracers.length > 50) {
+                if (robot.tracers.length > 51) {
+                    robot.tracers = [];
+                } else {
+                    robot.tracers.shift();
+                }
             }
         }
         if (robot.isMe) drawWeaponUI(robot, delta);
@@ -24337,12 +24769,222 @@
     }
     var killDisplayTimeout = null;
     var killDisplayText = ["KILL", "DOUBLE KILL", "TRIPLE KILL", "RAMPAGE", "GODLIKE", "BEYOND GODLIKE", "LIVING LEGEND"];
-    function changeHealth(object, { amount, graydmg, noAmp, onDamageHealBack, isDotDamage, defensePointsBypass, bypassReflector, damageTypeName, motherShipCharge }, isPlayer, doer, noDefense) {
+    function doDoKillStuff(doer, amount, object, noAmp) {
+        if (object.thingToKill && !object.revive) {
+            if (doer.battleStats.kills == null) doer.battleStats.kills = 0;
+            if (doer.battleStats.killCount == null) doer.battleStats.killCount = 0;
+            if (doer.battleStats.killCountTimeout == null) doer.battleStats.killCountTimeout = null;
+            if (doer.isMe && players.length > 1) {
+                clearTimeout(killDisplayTimeout);
+                if (killDisplayText[doer.battleStats.killCount]) {
+                    document.getElementById("killDisplay").innerHTML = killDisplayText[doer.battleStats.killCount];
+                } else {
+                    document.getElementById("killDisplay").innerHTML = killDisplayText[killDisplayText.length - 1] + " X" + ((doer.battleStats.killCount - killDisplayText.length) + 2);
+                }
+                document.getElementById("killDisplay").style.display = "block";
+                killDisplayTimeout = setTimeout(() => {
+                    document.getElementById("killDisplay").style.display = "none";
+                }, 1e3);
+            }
+            object.killed = true;
+            doer.battleStats.kills++;
+            if (players.length > 1) {
+                clearTimeout(doer.battleStats.killCountTimeout);
+                doer.battleStats.killCount++;
+                doer.battleStats.killCountTimeout = setTimeout(() => {
+                    if (doer && doer.battleStats) {
+                        doer.battleStats.killCount = 0;
+                    }
+                }, 10e3);
+            }
+            if (doer.onKillDefense) {
+                doer.effects.push({
+                    name: "defense points",
+                    amount: doer.onKillDefense,
+                    lastTime: 5e3
+                });
+            }
+            if (doer.onKillHeal) {
+                let value = doer.maxhealth * doer.onKillHeal;
+                doer.grayDamage = Math.max(0, doer.grayDamage - value);
+                changeHealth(doer, {
+                    amount: value
+                }, false, doer);
+            }
+            if (doer.onKillSpeed) {
+                doer.effects.unshift({
+                    name: "speed",
+                    power: doer.onKillSpeed,
+                    lastTime: 5e3
+                });
+            }
+            let Player = players[doer.playersIndexSid];
+            if (Player && Player.mothership && Player.mothership.data) {
+                Player.mothership.current += (!hasPlayers() ? .0075 : .07) * (1 + Player.mothership.data.chargeSpeed);
+                if (Player.mothership.current > 1) Player.mothership.current = 1;
+            }
+            if (doer.drone) {
+                for (let t = 0; t < doer.drone.abilities.length; t++) {
+                    let data = doer.drone.abilities[t];
+                    if (data) {
+                        if (data.name == "On Kill: Defense") {
+                            if (!doer.effects.find(e => e.name == "cooldown_timer" && e.reason == data.name)) {
+                                doer.effects.push({
+                                    name: "defense points",
+                                    lastForever: true,
+                                    amount: data.defenseIncrease,
+                                    lastTime: 1
+                                });
+                                doer.effects.push({
+                                    name: "cooldown_timer",
+                                    reason: data.name,
+                                    lastTime: data.reload
+                                });
+                                doer.drone.effects.push({
+                                    name: "speed",
+                                    amount: 1,
+                                    lastTime: 5e3
+                                });
+                            }
+                        } else if (data.name == "On Kill: Damage") {
+                            if (!doer.effects.find(e => e.name == "cooldown_timer" && e.reason == data.name)) {
+                                doer.effects.push({
+                                    name: "cooldown_timer",
+                                    reason: data.name,
+                                    lastTime: data.reload
+                                });
+                                doer.effects.push({
+                                    name: "attack",
+                                    power: data.onKillDamage,
+                                    lastTime: 1,
+                                    lastForever: true
+                                });
+                            }
+                        } else if (data.name == "On Kill: Speed") {
+                            if (doer.effects.filter(e => e.name == "speed" && e.typeOfHAHAHAHAHAHAHA).length < data.limit && !doer.effects.find(e => e.name == "cooldown_timer" && e.reason == data.name)) {
+                                doer.effects.push({
+                                    name: "cooldown_timer",
+                                    reason: data.name,
+                                    lastTime: data.reload
+                                });
+                                doer.effects.push({
+                                    name: "speed",
+                                    power: data.onKillSpeed,
+                                    typeOfHAHAHAHAHAHAHA: true,
+                                    lastTime: 1,
+                                    lastForever: true
+                                });
+                            }
+                        } else if (data.name == "On Kill: Fix") {
+                            if (!doer.effects.find(e => e.name == "cooldown_timer" && e.reason == data.name)) {
+                                doer.effects.push({
+                                    name: "cooldown_timer",
+                                    reason: data.name,
+                                    lastTime: data.reload
+                                });
+                                let amount = doer.maxhealth * data.onKillFix;
+                                doer.grayDamage = Math.max(0, doer.grayDamage - (amount * data.grayDamageHeal_p));
+                                changeHealth(doer, {
+                                    amount: amount
+                                }, false, doer);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    function doOnKillStuff(doer, amount, object, noAmp) {
+        if (doer.battleStats == null) doer.battleStats = {};
+        if (doer.battleStats.dmg == null) doer.battleStats.dmg = 0;
+        let value = Math.abs(amount);
+        if ((amount < 0 ? true : amount >= 0 && object != doer) && object.health > 0) {
+            if (amount >= 0) {
+                if (object.health + amount >= (object.maxhealth - object.grayDamage)) {
+                    amount = (object.maxhealth - object.grayDamage) - object.health;
+                }
+            }
+            if (object.health + amount <= 0) {
+                if (object.health > 0) {
+                    damageDone = object.health;
+                    doer.battleStats.dmg += object.health;
+                    doDoKillStuff(doer, amount, object, noAmp);
+                }
+            } else {
+                doer.battleStats.dmg += value;
+                damageDone = value;
+            }
+            if (amount < 0 && !noAmp) {
+                let amps = doer.effects.filter(e => e.name == "nuclear amps");
+                if (amps.length < 95) {
+                    if (doer.dmgDamageDone == null) doer.dmgDamageDone = 0;
+                    doer.dmgDamageDone += Math.abs(amount);
+                    if (doer.dmgDamageDone - 25e3 >= 0 && doer.modules) {
+                        let Amps = doer.modules.filter(e => e.name == "Nuclear Amplifier");
+                        if (amps.length + Amps.length >= 95) {
+                            let amount = 95 - amps.length;
+                            let healAmount = 0;
+                            Amps.forEach(e => {
+                                healAmount += e.selfFixRepair;
+                            });
+                            changeHealth(doer, {
+                                amount: healAmount
+                            }, true, doer);
+                            for (let i = 0; i < amount; i++) {
+                                doer.effects.push({
+                                    name: "nuclear amps",
+                                    lastForever: true,
+                                    lastTime: 1
+                                });
+                            }
+                        } else {
+                            for (let i = 0; i < Amps.length; i++) {
+                                doer.effects.push({
+                                    name: "nuclear amps",
+                                    lastForever: true,
+                                    lastTime: 1
+                                });
+                            }
+                        }
+                        doer.dmgDamageDone = 0;
+                    }
+                }
+            }
+        }
+    } 
+    function changeHealth(object, { amount, graydmg, noAmp, onDamageHealBack, isDotDamage, execute, defensePointsBypass, bypassReflector, damageTypeName, motherShipCharge }, isPlayer, doer, noDefense) {
         try {
             amount = parseInt(removeDecimals(amount));
             if (object.killed && object.health <= 0) amount = 0;
             if (!object || (object.health <= 0 && object.type != "purple" && object.type != "purple normal")) return;
             let resistance = 0;
+            if (amount < 0 && object.effects && object.effects.find(e => e.name == "block" && !e.used)) {
+                amount = 0;
+                let effect = object.effects.find(e => e.name == "block" && !e.used);
+                effect.lastForever = false;
+                effect.lastTime = 0;
+                effect.used = true;
+                if (object.drone) {
+                    for (let i = 0; i < object.drone.abilities.length; i++) {
+                        let data = object.drone.abilities[i];
+                        if (data.name == "On Block: Fix") {
+                            let healing = data.healing;
+                            object.grayDamage = Math.max(0, object.grayDamage - (healing * .05));
+                            changeHealth(object, {
+                                amount: healing
+                            }, false, object);
+                        } else if (data.name == "On Block: Damage" && object.effects.filter(e => e.name == "attack" && e.onBlockDmg).length < data.limit) {
+                            object.effects.push({
+                                name: "attack",
+                                power: data.onKillDamage,
+                                onBlockDmg: true,
+                                lastTime: 1,
+                                lastForever: true
+                            });
+                        }
+                    }
+                }
+            }
             if (object.builtInDefensePoints) {
                 resistance += object.builtInDefensePoints;
             }
@@ -24410,9 +25052,17 @@
                     if (force) {
                         if (force.data.health > 0) {
                             force.data.lastHit = Date.now();
-                            let resistance = force.data.resistance;
-                            resistance *= force.data.health / force.data.maxhealth;
-                            amount *= (1 - resistance);
+                            if (force.data.min) {
+                                let res = force.data.resistance;
+                                let p = force.data.health / force.data.maxhealth;
+                                let min = (1 - force.data.min) * (1 - p);
+                                let nres = res - min;
+                                amount *= (1 - nres);
+                            } else {
+                                let resistance = force.data.resistance;
+                                resistance *= force.data.health / force.data.maxhealth;
+                                amount *= (1 - resistance);
+                            }
                             force.data.health = Math.max(force.data.health - Math.abs(amount), 0);
                         }
                     }
@@ -24496,184 +25146,7 @@
                 amount *= amounts;
             }
             if (doer && (object.turnDmgIntoDOT ? isDotDamage : true)) {
-                if (doer.battleStats == null) doer.battleStats = {};
-                if (doer.battleStats.dmg == null) doer.battleStats.dmg = 0;
-                let value = Math.abs(amount);
-                if ((amount < 0 ? true : amount >= 0 && object != doer) && object.health > 0) {
-                    if (amount >= 0) {
-                        if (object.health + amount >= (object.maxhealth - object.grayDamage)) {
-                            amount = (object.maxhealth - object.grayDamage) - object.health;
-                        }
-                    }
-                    if (object.health + amount <= 0) {
-                        if (object.health > 0) {
-                            damageDone = object.health;
-                            doer.battleStats.dmg += object.health;
-                            if (object.thingToKill && !object.revive) {
-                                if (doer.battleStats.kills == null) doer.battleStats.kills = 0;
-                                if (doer.battleStats.killCount == null) doer.battleStats.killCount = 0;
-                                if (doer.battleStats.killCountTimeout == null) doer.battleStats.killCountTimeout = null;
-                                if (doer.isMe && players.length > 1) {
-                                    clearTimeout(killDisplayTimeout);
-                                    if (killDisplayText[doer.battleStats.killCount]) {
-                                        document.getElementById("killDisplay").innerHTML = killDisplayText[doer.battleStats.killCount];
-                                    } else {
-                                        document.getElementById("killDisplay").innerHTML = killDisplayText[killDisplayText.length - 1] + " X" + ((doer.battleStats.killCount - killDisplayText.length) + 2);
-                                    }
-                                    document.getElementById("killDisplay").style.display = "block";
-                                    killDisplayTimeout = setTimeout(() => {
-                                        document.getElementById("killDisplay").style.display = "none";
-                                    }, 1e3);
-                                }
-                                object.killed = true;
-                                doer.battleStats.kills++;
-                                if (players.length > 1) {
-                                    clearTimeout(doer.battleStats.killCountTimeout);
-                                    doer.battleStats.killCount++;
-                                    doer.battleStats.killCountTimeout = setTimeout(() => {
-                                        if (doer && doer.battleStats) {
-                                            doer.battleStats.killCount = 0;
-                                        }
-                                    }, 10e3);
-                                }
-                                if (doer.onKillDefense) {
-                                    doer.effects.push({
-                                        name: "defense points",
-                                        amount: doer.onKillDefense,
-                                        lastTime: 5e3
-                                    });
-                                }
-                                if (doer.onKillHeal) {
-                                    let value = doer.maxhealth * doer.onKillHeal;
-                                    doer.grayDamage = Math.max(0, doer.grayDamage - value);
-                                    changeHealth(doer, {
-                                        amount: value
-                                    }, false, doer);
-                                }
-                                if (doer.onKillSpeed) {
-                                    doer.effects.unshift({
-                                        name: "speed",
-                                        power: doer.onKillSpeed,
-                                        lastTime: 5e3
-                                    });
-                                }
-                                let Player = players[doer.playersIndexSid];
-                                if (Player && Player.mothership && Player.mothership.data) {
-                                    Player.mothership.current += (!hasPlayers() ? .0075 : .07) * (1 + Player.mothership.data.chargeSpeed);
-                                    if (Player.mothership.current > 1) Player.mothership.current = 1;
-                                }
-                                if (doer.drone) {
-                                    for (let t = 0; t < doer.drone.abilities.length; t++) {
-                                        let data = doer.drone.abilities[t];
-                                        if (data) {
-                                            if (data.name == "On Kill: Defense") {
-                                                if (!doer.effects.find(e => e.name == "cooldown_timer" && e.reason == data.name)) {
-                                                    doer.effects.push({
-                                                        name: "defense points",
-                                                        lastForever: true,
-                                                        amount: data.defenseIncrease,
-                                                        lastTime: 1
-                                                    });
-                                                    doer.effects.push({
-                                                        name: "cooldown_timer",
-                                                        reason: data.name,
-                                                        lastTime: data.reload
-                                                    });
-                                                    doer.drone.effects.push({
-                                                        name: "speed",
-                                                        amount: 1,
-                                                        lastTime: 5e3
-                                                    });
-                                                }
-                                            } else if (data.name == "On Kill: Damage") {
-                                                if (!doer.effects.find(e => e.name == "cooldown_timer" && e.reason == data.name)) {
-                                                    doer.effects.push({
-                                                        name: "cooldown_timer",
-                                                        reason: data.name,
-                                                        lastTime: data.reload
-                                                    });
-                                                    doer.effects.push({
-                                                        name: "attack",
-                                                        power: data.onKillDamage,
-                                                        lastTime: 1,
-                                                        lastForever: true
-                                                    });
-                                                }
-                                            } else if (data.name == "On Kill: Speed") {
-                                                if (doer.effects.filter(e => e.name == "speed" && e.typeOfHAHAHAHAHAHAHA).length < data.limit && !doer.effects.find(e => e.name == "cooldown_timer" && e.reason == data.name)) {
-                                                    doer.effects.push({
-                                                        name: "cooldown_timer",
-                                                        reason: data.name,
-                                                        lastTime: data.reload
-                                                    });
-                                                    doer.effects.push({
-                                                        name: "speed",
-                                                        power: data.onKillSpeed,
-                                                        typeOfHAHAHAHAHAHAHA: true,
-                                                        lastTime: 1,
-                                                        lastForever: true
-                                                    });
-                                                }
-                                            } else if (data.name == "On Kill: Fix") {
-                                                if (!doer.effects.find(e => e.name == "cooldown_timer" && e.reason == data.name)) {
-                                                    doer.effects.push({
-                                                        name: "cooldown_timer",
-                                                        reason: data.name,
-                                                        lastTime: data.reload
-                                                    });
-                                                    let amount = doer.maxhealth * data.onKillFix;
-                                                    doer.grayDamage = Math.max(0, doer.grayDamage - (amount * data.grayDamageHeal_p));
-                                                    changeHealth(doer, {
-                                                        amount: amount
-                                                    }, false, doer);
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    } else {
-                        doer.battleStats.dmg += value;
-                        damageDone = value;
-                    }
-                    if (amount < 0 && !noAmp) {
-                        let amps = doer.effects.filter(e => e.name == "nuclear amps");
-                        if (amps.length < 95) {
-                            if (doer.dmgDamageDone == null) doer.dmgDamageDone = 0;
-                            doer.dmgDamageDone += Math.abs(amount);
-                            if (doer.dmgDamageDone - 25e3 >= 0 && doer.modules) {
-                                let Amps = doer.modules.filter(e => e.name == "Nuclear Amplifier");
-                                if (amps.length + Amps.length >= 95) {
-                                    let amount = 95 - amps.length;
-                                    let healAmount = 0;
-                                    Amps.forEach(e => {
-                                        healAmount += e.selfFixRepair;
-                                    });
-                                    changeHealth(doer, {
-                                        amount: healAmount
-                                    }, true, doer);
-                                    for (let i = 0; i < amount; i++) {
-                                        doer.effects.push({
-                                            name: "nuclear amps",
-                                            lastForever: true,
-                                            lastTime: 1
-                                        });
-                                    }
-                                } else {
-                                    for (let i = 0; i < Amps.length; i++) {
-                                        doer.effects.push({
-                                            name: "nuclear amps",
-                                            lastForever: true,
-                                            lastTime: 1
-                                        });
-                                    }
-                                }
-                                doer.dmgDamageDone = 0;
-                            }
-                        }
-                    }
-                }
+                doOnKillStuff(doer, amount, object, noAmp);
             }
             if (amount < 0 && isDotDamage && object.dotResistance) {
                 amount *= object.dotResistance;
@@ -24789,6 +25262,16 @@
                         }
                     }
                     object.health += amount;
+                    if (execute && object.health > 0 && object.health / object.maxhealth <= execute && !object.killed) {
+                        object.kill = true;
+                        let player1 = findPlayerBySid(object.inGameSid);
+                        let player2 = findPlayerBySid(doer.inGameSid);
+                        addLogger(player2, {
+                            name: "Executed",
+                            level: 1
+                        }, player1);
+                        doDoKillStuff(doer, amount, object);
+                    }
                     if (amount < 0 && object.effects && object.effects.find(e => ["Cannonier", "extra health"].includes(e.name) && e.health > 0)) {
                         let effect = object.effects.find(e => ["Cannonier", "extra health"].includes(e.name) && e.health > 0);
                         effect.health += amount;
@@ -25560,7 +26043,8 @@
                         amount: -bullet.dmg,
                         graydmg: bullet.grayDamageAmount,
                         defensePointsBypass: bullet.defensePointsBypass,
-                        motherShipCharge: bullet.motherShipCharge
+                        motherShipCharge: bullet.motherShipCharge,
+                        execute: bullet.execute
                     }, true, playerRobot);
                     if (bullet.dmg > 0) {
                         if (bullet.knockback) {
@@ -25641,7 +26125,8 @@
                                 graydmg: bullet.grayDamageAmount,
                                 defensePointsBypass: bullet.defensePointsBypass,
                                 bypassReflector: bullet.bypassReflector,
-                                motherShipCharge: bullet.motherShipCharge
+                                motherShipCharge: bullet.motherShipCharge,
+                                execute: bullet.execute
                             }, true, playerRobot);
                         });
                         bombeffect.push({
@@ -25658,7 +26143,7 @@
                 if (enemy.health > (enemy.maxhealth - enemy.grayDamage)) {
                     enemy.health = (enemy.maxhealth - enemy.grayDamage);
                 }
-                if (enemy.health <= 0) {
+                if (enemy.health <= 0 || enemy.kill) {
                     if (enemy.isBoss) {
                         arena.bossIndex++;
                         if (players[0].rewardBonus == null) {
@@ -25854,7 +26339,7 @@
                     ctx.textAlign = "center";
                     ctx.fillText(enemy.displayName, 0, -(enemy.scale + 35));
                 }
-                if (!enemy.name.includes("Boss")) renderCircle(0, 0, enemy.scale, ctx, false, false, Date.now() - enemy.damagedTime <= 20 ? "#fff" : enemy.name == "Burner Circle" ? "#f00" : enemy.name == "Smasher Circle" ? "#ffff00" : "#808080", enemy.isFREEZE ? "#fff" : "#000");
+                if (!enemy.name.includes("Boss")) renderCircle(0, 0, enemy.scale, ctx, false, false, enemy.name == "Burner Circle" ? "#f00" : enemy.name == "Smasher Circle" ? "#ffff00" : "#808080", enemy.isFREEZE ? "#fff" : "#000");
                 if (enemy.name == "Burner Circle") {
                     ctx.globalAlpha = 0.6;
                     renderCircle(0, 0, enemy.range, ctx, false, true, "#f00", "#f00", 17);
@@ -25863,15 +26348,15 @@
                     renderCircle(0, 0, enemy.AOEArea.range, ctx, true, false, "#f00");
                     renderCircle(0, 0, enemy.BLASTWAVE.range, ctx, true, false, "#f00");
                     ctx.globalAlpha = 1;
-                    renderCircle(0, 0, enemy.scale, ctx, false, false, Date.now() - enemy.damagedTime <= 20 ? "#fff" : "#808080", enemy.isFREEZE ? "#fff" : "#000");
+                    renderCircle(0, 0, enemy.scale, ctx, false, false, "#808080", enemy.isFREEZE ? "#fff" : "#000");
                 } else if (enemy.name == "Level 3 Boss" || enemy.name == "Level 4 Boss") {
                     ctx.globalAlpha = 0.2;
                     renderCircle(0, 0, enemy.AOEArea.range, ctx, true, false, "#f00");
                     ctx.globalAlpha = 1;
-                    renderCircle(0, 0, enemy.scale, ctx, false, false, Date.now() - enemy.damagedTime <= 20 ? "#fff" : "#ffff00", enemy.isFREEZE ? "#fff" : "#000");
+                    renderCircle(0, 0, enemy.scale, ctx, false, false, "#ffff00", enemy.isFREEZE ? "#fff" : "#000");
                 } else if (enemy.name == "Level 10 Boss") {
-                    ctx.rotate(enemy.dir + Math.PI / 2);
-                    ctx.fillStyle = Date.now() - enemy.damagedTime <= 20 ? "#fff" : "#808080";
+                    ctx.rotate(enemy.dir + Math.PI / 2);//Date.now() - enemy.damagedTime <= 20 ? "#fff" : 
+                    ctx.fillStyle = "#808080";
                     ctx.strokeStyle = enemy.isFREEZE ? "#fff" : "#000";
                     ctx.lineWidth = 25;
                     renderStar(ctx, 3.5, enemy.scale, enemy.scale);
@@ -25879,7 +26364,7 @@
                     ctx.stroke();
                     ctx.rotate(-(enemy.dir + Math.PI / 2));
                 } else if (enemy.name.includes("Boss")) {
-                    renderCircle(0, 0, enemy.scale, ctx, false, false, Date.now() - enemy.damagedTime <= 20 ? "#fff" : enemy.name == "Level 7 Boss" || enemy.name == "Level 8 Boss" ? "#0f0" : "#f00", enemy.isFREEZE ? "#fff" : "#000");
+                    renderCircle(0, 0, enemy.scale, ctx, false, false, enemy.name == "Level 7 Boss" || enemy.name == "Level 8 Boss" ? "#0f0" : "#f00", enemy.isFREEZE ? "#fff" : "#000");
                 }
                 if (enemy.reflector) {
                     ctx.save();
@@ -25979,68 +26464,80 @@
         if (!playerRobot) return;
         ctx.globalAlpha = 1;
         if (robot.invis) return;
-        if (isAlly != true) {
+        if (isAlly != "me") {
+            if (robot.dummy) {
+                ctx.save();
+                ctx.zIndex = 1920139120390123;
+                ctx.globalAlpha = 1;
+                ctx.textBaseline = "middle";
+                ctx.textAlign = "center";
+                let text = `${robot.dps || 0} | ${robot.dpsh || 0} | ${robot.dpm || 0}`
+                ctx.fillStyle = "#fff";
+                ctx.font = `${Math.min(50, robot.scale * (1 / 3))}px Open Sans`;
+                ctx.fillText(text, 0, 0);
+                ctx.restore();
+            }
+            let width = (robot.scale + 20);
+            let padding = 4.5;
+            let x = -(width + padding);
+            let y = (robot.scale * 1.5);
+            ctx.fillStyle = "#000";
+            ctx.roundRect(x, y, (width * 2) + (padding * 2), 20.4, 8);
+            ctx.fill();
+            ctx.fillStyle = "#808080";
+            ctx.roundRect((x + padding) + (width * 2 * (1 - (robot.grayDamage / robot.maxhealth))), y + padding, (width * 2) * (robot.grayDamage / robot.maxhealth), (20.4 - (padding * 2)), 8);
+            ctx.fill();
+            ctx.fillStyle = isAlly == true ? "#0f0" : "#f00";
+            ctx.roundRect(x + padding, y + padding, (width * 2) * (robot.health / robot.maxhealth), (20.4 - (padding * 2)), 8);
+            ctx.fill();
+            ctx.fillStyle = "#ffff00";
+            ctx.roundRect((x + padding) + ((width * 2) * (robot.health / robot.maxhealth)) - ((width * 2) * (Math.min(robot.dotDamage, robot.health) / robot.maxhealth)), y + padding, (width * 2) * (Math.min(robot.dotDamage, robot.health) / robot.maxhealth), (20.4 - (padding * 2)), 8);
+            ctx.fill();
+            if (robot.lastStandThreshold) {
+                let invis = "rgb(0, 0, 0, 0)";
+                let color = "rgb(0, 0, 0, 0.2)";
+                let effect = robot.effects.find(e => e.name == "last stand");
+                ctx.fillStyle = effect ? effect.LOLOL ? color : invis : robot.usedLastStand ? invis : color;
+                ctx.roundRect(x + padding, y + padding, (width * 2) * ((robot.lastStandThreshold * robot.maxhealth) / robot.maxhealth), (20.4 - (padding * 2)), 8);
+                ctx.fill();
+            }
+        }
+        if (robot.effects.filter(e => e.name == "block").length) {
             ctx.save();
             ctx.zIndex = 1920139120390123;
             ctx.globalAlpha = 1;
             ctx.textBaseline = "middle";
             ctx.textAlign = "center";
             let colors = ["#ffff00", "#fff", "#ffffff"];
-            let text = abbreviateNumber(removeDecimals(Math.hypot(robot.y - playerRobot.y, robot.x - playerRobot.x))) + " PX";
-            if (robot.dummy) {
-                text = `${robot.dps || 0} | ${robot.dpsh || 0} | ${robot.dpm || 0}`
-            }
-            let names = ["Level 3 Boss", "Level 4 Boss"];
-            ctx.fillStyle = (colors.includes(robot.color) || names.includes(robot.name) ? "#000" : "#fff");
-            ctx.font = `${Math.min(50, robot.scale * (1 / 3))}px Open Sans`;
-            ctx.fillText(text, 0, 0);
+            ctx.fillStyle = (colors.includes(robot.color) ? "#000" : "#fff");
+            ctx.strokeStyle = "#f00";
+            ctx.lineWidth = 10;
+            ctx.font = `${Math.min(50, robot.scale * (1 / 2))}px Open Sans`;
+            ctx.strokeText(robot.effects.filter(e => e.name == "block").length, 0, 0);
+            ctx.fillText(robot.effects.filter(e => e.name == "block").length, 0, 0);
             ctx.restore();
         }
-
-        let width = (robot.scale + 20);
-        let padding = 4.5;
-        let x = -(width + padding);
-        let y = (robot.scale * 1.5);
-        ctx.fillStyle = "#000";
-        ctx.roundRect(x, y, (width * 2) + (padding * 2), 20.4, 8);
-        ctx.fill();
-        ctx.fillStyle = "#808080";
-        ctx.roundRect((x + padding) + (width * 2 * (1 - (robot.grayDamage / robot.maxhealth))), y + padding, (width * 2) * (robot.grayDamage / robot.maxhealth), (20.4 - (padding * 2)), 8);
-        ctx.fill();
-        ctx.fillStyle = isAlly == true ? "#0f0" : "#f00";
-        ctx.roundRect(x + padding, y + padding, (width * 2) * (robot.health / robot.maxhealth), (20.4 - (padding * 2)), 8);
-        ctx.fill();
-        ctx.fillStyle = "#ffff00";
-        ctx.roundRect((x + padding) + ((width * 2) * (robot.health / robot.maxhealth)) - ((width * 2) * (Math.min(robot.dotDamage, robot.health) / robot.maxhealth)), y + padding, (width * 2) * (Math.min(robot.dotDamage, robot.health) / robot.maxhealth), (20.4 - (padding * 2)), 8);
-        ctx.fill();
-        if (robot.lastStandThreshold) {
-            let invis = "rgb(0, 0, 0, 0)";
-            let color = "rgb(0, 0, 0, 0.2)";
-            let effect = robot.effects.find(e => e.name == "last stand");
-            ctx.fillStyle = effect ? effect.LOLOL ? color : invis : robot.usedLastStand ? invis : color;
-            ctx.roundRect(x + padding, y + padding, (width * 2) * ((robot.lastStandThreshold * robot.maxhealth) / robot.maxhealth), (20.4 - (padding * 2)), 8);
-            ctx.fill();
-        }
-
-        if (robot.shields && robot.shields.length) {
-            let shieldss = robot.shields.filter(e => e.health || e.type == "purple");
-            shieldss = shieldss.filter(e => e.type != "normal");
-            for (let i = 0; i < 5; i++) {
-                let shield = shieldss[i];
-                let width = (robot.scale + 20);
-                let padding = 4.5;
-                let x = -(width + padding);
-                let y = (robot.scale * 1.5) + (26.4 + (26.4 * i));
-                if (shield) {
-                    ctx.save();
-                    ctx.globalAlpha = shield.notActive ? .4 : 1;
-                    ctx.fillStyle = "#000";
-                    ctx.roundRect(x, y, (width * 2) + (padding * 2), 20.4, 8);
-                    ctx.fill();
-                    ctx.fillStyle = shield.type == "yellow" ? "#ffff00" : shield.type == "purple" ? "#800080" : "#02ccaa";
-                    ctx.roundRect(x + padding, y + padding, (width * 2) * (shield.type == "purple" ? 1 : (shield.health / shield.maxhealth)), (20.4 - (padding * 2)), 8);
-                    ctx.fill();
-                    ctx.restore();
+        if (isAlly != "me") {
+            if (robot.shields && robot.shields.length) {
+                let shieldss = robot.shields.filter(e => e.health || e.type == "purple");
+                shieldss = shieldss.filter(e => e.type != "normal");
+                for (let i = 0; i < 5; i++) {
+                    let shield = shieldss[i];
+                    let width = (robot.scale + 20);
+                    let padding = 4.5;
+                    let x = -(width + padding);
+                    let y = (robot.scale * 1.5) + (26.4 + (26.4 * i));
+                    if (shield) {
+                        ctx.save();
+                        ctx.globalAlpha = shield.notActive ? .4 : 1;
+                        ctx.fillStyle = "#000";
+                        ctx.roundRect(x, y, (width * 2) + (padding * 2), 20.4, 8);
+                        ctx.fill();
+                        ctx.fillStyle = shield.type == "yellow" ? "#ffff00" : ((shield.type == "purple normal" || shield.type == "purple") ? "#800080" : "#02ccaa");
+                        ctx.roundRect(x + padding, y + padding, (width * 2) * (shield.type == "purple normal" ? Math.min(1, shield.health / shield.limit) : shield.type == "purple" ? 1 : (shield.health / shield.maxhealth)), (20.4 - (padding * 2)), 8);
+                        ctx.fill();
+                        ctx.restore();
+                    }
                 }
             }
         }
@@ -26308,7 +26805,7 @@
         for (let i = 1; i < players.length; i++) {
             let robot = players[i].robots[players[i].robotIndex];
             if (robot) {
-                PLAYERKNOCKBACK(robot);
+                if (!robot.avoidBuildings) PLAYERKNOCKBACK(robot);
                 if (!isBlind) drawTracer(robot, i, players[i].isAlly);
                 updateRobot(robot, players[i].isAlly, delta, i);
             } else {
@@ -27488,7 +27985,12 @@
                     let Text = text[i];
                     if (Text && isOnScreen(Text.x - offset.x, Text.y - offset.y, 50)) {
                         ctx.fillStyle = Text.color;
+                        ctx.strokeStyle = Text.color == "#ffff00" ? "#f00" : "#ffff00";
                         ctx.font = "50px Open Sans";
+                        if (Text.stroke) {
+                            ctx.lineWidth = ctx.stroke;
+                            ctx.strokeText(abbreviateNumber(removeDecimals(Text.value)), Text.x - offset.x, Text.y - offset.y);
+                        }
                         ctx.fillText(abbreviateNumber(removeDecimals(Text.value)), Text.x - offset.x, Text.y - offset.y);
                     }
                 }
