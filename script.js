@@ -15704,6 +15704,10 @@
             type: "shape", rarity: "Epic", name: "Ultimate Gray Circle"
         }, {
             type: "shape", rarity: "Legendary", name: "Purple Pentagon"
+        }, {
+            type: "shape", rarity: "Legendary", name: "Ultimate Brown Pentagon"
+        }, {
+            type: "shape", rarity: "Epic", name: "Orange Heptagon"
         }],
         tokenCost: "token 3"
     }];
