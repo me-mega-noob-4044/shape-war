@@ -1,5 +1,5 @@
 (function () {
-   //window.isDev = true;
+    //window.isDev = true;
     var slotData = [{
         unlocked: true,
         used: true,
@@ -326,7 +326,7 @@
             `)}
         `)}
     `);
-    updateLogger.newLog("V55 UPDATE NOTES (Mar 6, 2024, 2024)", `
+    updateLogger.newLog("V55 UPDATE NOTES (Mar 6, 2024)", `
         ${updateLogger.marginBlock(10, `
             ${updateLogger.lineBlock(["New Shape: Purple Pentagon", "New Weapon(s): Leiming, Fengbao, Inferno, and Pyro", "Less OXP is needed to reach level 200 at the Osperation", "Balance Changes / Other Improvements"])}
             ${updateLogger.title("h2", `CHANGES`)}
@@ -335,12 +335,12 @@
             `)}
         `)}
     `);
-    updateLogger.newLog("V56 UPDATE NOTES (Mar 6, 2024, 2024)", `
+    updateLogger.newLog("V56 UPDATE NOTES (Mar 6, 2024)", `
         ${updateLogger.marginBlock(10, `
-            ${updateLogger.lineBlock(["Balance Changes / Other Improvements"])}
+            ${updateLogger.lineBlock(["Bots have access to motherships now", "New Shape(s): Ultimate Brown Pentagon, Blue Triangle, Pinkish-Red Heptagon, and Ultimate Brown Circle", "Balance Changes / Other Improvements"])}
             ${updateLogger.title("h2", `CHANGES`)}
             ${updateLogger.marginBlock(10, `
-                ${updateLogger.lineBlock(["Fengbao and Leiming: -15% Damage"])}
+                ${updateLogger.lineBlock(["Changed Bluebell's and Redbell's hangers", "Cyan Pentagon and Brown Pentagon: Removed Movement Dir Delay", "Cyan Pentagon: Shield Health: +200%", "Orange Heptagon: Ability Cooldown: 14 -> 12 seconds", "Reaper: gains the [Defense Breach] effect like DoT and Blast Effect", "Deceiver and Damper: +50% DoT Damage", "Toxin and Bane: +1000% DoT Damage", "Cyan Pentagon: Shield Regeneration Speed Increased", "Glacier and Rime: +100% Ammo", "Jaw and Talon: Increased fragility effectiveness", "Pyro and Inferno: Changed firing mechanic", "Pyro and Inferno: Increased Mothership Charge", "Pascal: Changes to On Threshold abilties", "Tan Circle: DoT Resistance: 60 -> 80%", "Damper, Deceiver, Trickster, and Tamer: Reduced Mothership Charge per Projectile", "Fengbao and Leiming: -15% Damage", "Minor changes"])}
             `)}
         `)}
     `);
@@ -423,6 +423,7 @@
             this.blind = false;
             this.isItem = true;
             this.x = 0;
+            this.bonds = [];
             this.y = 0;
             this.layer = 0;
             this.velx = 0;
@@ -509,9 +510,17 @@
                     this.ability.executionThreshold = data.ability.executionThresholdData ? data.ability.executionThresholdData.base : data.ability.executionThreshold;
                     this.ability.durabilityLimit = data.ability.durabilityLimitData ? data.ability.durabilityLimitData.base : data.ability.durabilityLimit;
                     this.ability.shieldHp = data.ability.shieldHpData ? data.ability.shieldHpData.base : data.ability.shieldHp;
-                } else if (data.ability.name == "Remote Assault" || data.ability.name == "Blink Assault") {
+                } else if (data.ability.name == "Active Support" || data.ability.name == "Remote Assault" || data.ability.name == "Blink Assault") {
                     this.ability.dmg = data.ability.damageData ? data.ability.damageData.base : data.ability.dmg;
                     this.ability.lastingTime = data.ability.lastingTime;
+                    this.ability.healingPercent = data.ability.healingPercentData ? data.ability.healingPercentData.base : data.ability.healingPercent;
+                    if (data.ability.abilityDefensePointsData) {
+                        this.ability.abilityDefensePoints = data.ability.abilityDefensePointsData.base;
+                    } else {
+                        this.ability.abilityDefensePoints = data.ability.abilityDefensePoints;
+                    }
+                    this.ability.charges = data.ability.charges;
+                    this.ability.maxcharge = data.ability.charges;
                 } else if (data.ability.name == "Cannonier") {
                     this.ability.lastingTime = data.ability.lastingTime;
                     this.ability.additionalHealth = data.ability.additionalHealthData ? data.ability.additionalHealthData.base : data.ability.additionalHealth;
@@ -597,13 +606,12 @@
                         this.ability.dotDamage = data.ability.dotData ? data.ability.dotData.base : data.ability.dotDamage;
                     }
                 } else {
-                    if (data.ability.name == "Clear Sky" || data.ability.name == "Divine Judgement" || data.ability.name == "Grand Fortitude" || data.ability.name == "Overload" || data.ability.name == "Cold Pulse" || data.ability.name == "Dragon Flight" || data.ability.name == "Retribution" || data.ability.name == "Stampede") {
+                    if (data.ability.name == "Nuclear Strike" || data.ability.name == "Skyward" || data.ability.name == "Clear Sky" || data.ability.name == "Divine Judgement" || data.ability.name == "Grand Fortitude" || data.ability.name == "Overload" || data.ability.name == "Cold Pulse" || data.ability.name == "Dragon Flight" || data.ability.name == "Retribution" || data.ability.name == "Stampede") {
                         this.ability.dmg = data.ability.damageData ? data.ability.damageData.base : data.ability.dmg;
-                        if (data.ability.name == "Clear Sky" || data.ability.name == "Divine Judgement" || data.ability.name == "Grand Fortitude" || data.ability.name == "Overload" || data.ability.name == "Stampede" || data.ability.name == "Dragon Flight" || data.ability.name == "Retribution") {
+                        if (data.ability.name == "Skyward" || data.ability.name == "Clear Sky" || data.ability.name == "Divine Judgement" || data.ability.name == "Grand Fortitude" || data.ability.name == "Overload" || data.ability.name == "Stampede" || data.ability.name == "Dragon Flight" || data.ability.name == "Retribution") {
                             this.ability.lastingTime = data.ability.lastingTime;
-                            if (data.ability.name == "Grand Fortitude" || data.ability.name == "Dragon Flight") {
+                            if (data.ability.name == "Clear Sky" || data.ability.name == "Grand Fortitude" || data.ability.name == "Dragon Flight") {
                                 this.ability.dotDamage = data.ability.dotData ? data.ability.dotData.base : data.ability.dotDamage;
-                            } else if (data.ability.name == "Clear Sky") {
                                 this.ability.projPerShot = data.ability.projPerShot;
                                 this.ability.fireRate = data.ability.fireRate;
                                 this.ability.effectIncrease = data.ability.effectIncreaseData ? data.ability.effectIncreaseData.base : data.ability.effectIncrease;
@@ -1447,7 +1455,7 @@
             base: 120e3,
             level: [0, 6e3, 12e3, 13e3, 15e3, 16e3, 18e3, 20e3, 22e3, 25e3, 25e3, 30e3],
         },
-        dotResistance: .4,
+        dotResistance: .2,
         ability: {
             name: "Stampede",
             desc: `
@@ -1456,7 +1464,7 @@
             DoT Duration (per stack): 7 seconds<br>
             Magnetic Field Range: 400PX<br>
             Speed Increase: +200%<br>
-            Duration: 14 seconds<br>
+            Duration: 12 seconds<br>
             Cooldown: 8 seconds
             `,
             iconSource: "./images/abilities/stampede.png",
@@ -1464,7 +1472,7 @@
                 base: 440,
                 level: [0, 270, 300, 330, 360, 390, 420, 450, 480, 510, 540, 570],
             },
-            lastingTime: 14e3,
+            lastingTime: 12e3,
             reload: 8e3
         },
         hardpoints: {
@@ -1796,9 +1804,9 @@
         `,
         shieldData: {
             type: "yellow",
-            base: 20600,
-            level: [0, 4200, 4200, 5600, 5600, 7000, 7000, 7000, 7000, 7700, 9100, 17500],
-            regen: 0.2
+            base: 40e3,
+            level: [0, 10e3, 10e3, 14e3, 14e3, 17500, 17500, 17500, 17500, 19250, 22750, 43750],
+            regen: 0.15
         },
         builtInDefensePoints: 50,
         revive: .5,
@@ -1812,12 +1820,12 @@
             <span style="font-width: bolder; color: #fff;">Shield Regeneration</span>
             The shape increases the regeneration rate of its shield and its movement speed.<br><br>
             Speed Increase: 150%<br>
-            Regeneration Increase: x10<br>
-            Duration: 12 seconds<br>
+            Regeneration Increase: x13<br>
+            Duration: 10 seconds<br>
             Cooldown: 6 seconds
             `,
             iconSource: "./images/abilities/shield_regen.png",
-            lastingTime: 12e3,
+            lastingTime: 10e3,
             reload: 6e3
         },
         hardpoints: {
@@ -2748,7 +2756,7 @@
                 base: 3e3,
                 level: [0, 500, 500, 1e3, 1500, 2e3, 2500, 2500, 2500, 2500, 2500, 2500]
             },
-            lastingTime: 2e3,
+            lastingTime: 1e3,
             charges: 3,
             reload: 15e3
         },
@@ -2871,18 +2879,190 @@
             desc: `
             <span style="font-width: bolder; color: #fff;">Blocking Matrix</span> The shape gains permanent effects of Block.<br><br>
             <span style="font-width: bolder; color: #fff;">Block</span> This effect blocks/ignores damage per stack of effect.<br><br>
-            Cooldown: 14 seconds
+            Cooldown: 12 seconds
             `,
             iconSource: "./images/icons/block.png",
             effectAccumulationData: {
                 base: 25,
                 level: [0, 12, 12, 12, 12, 12, 12, 12, 12, 22, 25, 32]
             },
-            reload: 14e3
+            reload: 12e3
         },
         builtInDefensePoints: 150,
         color: "#ffa500",
         moduleHardpoints: 6,
+        costParts: true
+    }, {
+        tier: 1,
+        name: "Pinkish-Red Heptagon",
+        speed: 0.001,
+        speedLevel: [0, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0002, 0.0004],
+        scale: 60,
+        fieldOfViewMulti: 1.55,
+        desc: `
+        This sniping shape is the pinnacle of Heptagon engineering and can stay in
+        flight indefinitely. On the ground, its defence system is enhanced;
+        while in flight, its speed is increased and all weapon slots are active.<br><br>
+        Recommended Equipment: x2 Reaper + x2 Lance / x2 Shocker + x2 Lance / x2 Glaive + x2 Lance
+        `,
+        healthData: {
+            base: 58e3,
+            level: [0, 3e3, 3e3, 6e3, 6e3, 6e3, 6e3, 6e3, 6e3, 9e3, 11e3, 13e3],
+        },
+        ability: {
+            name: "Shapeshift",
+            desc: `
+            <span style="font-width: bolder; color: #fff;">Shapeshift</span> The shape, upon activating the ability, switches between modes.<br><br>
+            <span style="font-width: bolder; color: #fff;">Ground Mode</span>: The shape only uses 2 out of its 4 weapons and gains a powerful defense system (+200 defense points).<br><br>
+            <span style="font-width: bolder; color: #fff;">Flight Mode</span>: The shape uses all weapons and flies up.<br><br>
+            Default Mode: Ground Mode<br>
+            Cooldown: 12 second
+            `,
+            iconSource: "./images/abilities/shapeshift.png",
+            reload: 12e3
+        },
+        hardpoints: {
+            light: 2,
+            heavy: 2
+        },
+        color: "#fc0072",
+        moduleHardpoints: 2,
+        cost: {
+            sliver: 0,
+            gold: 1500
+        }
+    }, {
+        tier: 3,
+        name: "White Octagon",
+        speed: 0.0018,
+        speedLevel: [0, 0, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0002],
+        scale: 65,
+        fieldOfViewMulti: 1.45,
+        desc: `
+        Death swoops down on [T5 shapes] upon great wings.
+        This shape was specifically created to fight T5.
+        The shape activates its weapons in flight,
+        striking enemies with a discharge of lasers.<br><br>
+        Recommended Equipment: x2 Reaper / x2 Tumultus / x2 Veyron / x2 Flux
+        `,
+        healthData: {
+            base: 78e3,
+            level: [0, 3e3, 5e3, 7e3, 7e3, 7e3, 7e3, 8e3, 8e3, 8e3, 8e3, 11e3]
+        },
+        hardpoints: {
+            light: 0,
+            heavy: 2
+        },
+        ability: {
+            name: "Skyward",
+            desc: `
+            <strong style="color: #fff">Skyward</strong> The shape takes flight and activites its built-in weapon. The weapon fires in a arc, the target closest to the cursor takes 100% of the damage while the rest only take half. It does 250% damage to T5 and bypasses reflector effects.<br><br>
+            <strong style="color: #fff">Forcefield</strong> Another type of defense which reduces damage taken. It cannot be mitigated by defense mitigation effect weapon but may be reduced. Forcefield is based on durability but not considered as a shield.<br><br>
+            Damage Reduction: 90% (MAX) to 50% (MIN)<br>
+            Durability: 100% of Max Health<br>
+            Regeneration Time: 10 seconds<br><br>
+            Duration: 8 seconds<br>
+            Built-in Weapon Range: 2000 PX<br>
+            Defense Mitigation: 100%<br>
+            Cooldown: 12 seconds
+            `,
+            damageData: {
+                base: 600,
+                level: [0, 150, 150, 250, 250, 250, 350, 350, 550, 550, 750, 1e3]
+            },
+            iconSource: "./images/abilities/shapeshift.png",
+            lastingTime: 8e3,
+            reload: 12e3
+        },
+        color: "#fff",
+        moduleHardpoints: 4,
+        costParts: true
+    }, {
+        dontSell: true,
+        tier: 4,
+        name: "Blue Triangle",
+        speed: 0.0016,
+        speedLevel: [0, 0.0001, 0.0001, 0.0001, 0, 0.0001, 0, 0.0001, 0.0001, 0.0001, 0, 0.0006],
+        scale: 80,
+        fieldOfViewMulti: 2.5,
+        desc: `
+        A ultimate healer. This shape can bond with itself or its allies to provide defense, healing, and speed boosts. Equipped with decent firepower, this shape can allow you and your allies to be always 100% repaired after battles.<br><br>
+        Recommended Equipment: x2 Decay + x1 Blight
+        `,
+        healthData: {
+            base: 100e3,
+            level: [0, 10e3, 15e3, 15e3, 20e3, 20e3, 20e3, 20e3, 20e3, 20e3, 25e3, 30e3],
+        },
+        builtInDefensePoints: 100,
+        ability: {
+            name: "Active Support",
+            desc: `
+            <span style="font-width: bolder; color: #fff;">Active Support</span> The shape bonds with an ally shape. When bonded, both shapes (if there is any allies) start repairing durability (gray damage as well). After when the bond ends, the bonded shape will gain extra durability for the entire battle.<br><br>
+            The shape can also bond with itself.<br><br>
+            Bond Distance: 2000 PX<br>
+            Bond Duration: 12 seconds<br>
+            Defense Points Duration (when bonded): 30 seconds<br>
+            Speed Increase (to the bonded): 100%<br>
+            Gray Durability Repair: 25%<br>
+            Extra Durability: 10%<br>
+            Charges: 3<br>
+            Cooldown (per charge): 12 seconds
+            `,
+            iconSource: "./images/abilities/self_heal.png",
+            healingPercentData: {
+                base: 0.1,
+                level: [0, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005]
+            },
+            abilityDefensePointsData: {
+                base: 5,
+                level: [0, 0, 5, 0, 5, 0, 5, 0, 5, 0, 5, 5]
+            },
+            lastingTime: 1e3,
+            charges: 3,
+            reload: 12e3
+        },
+        hardpoints: {
+            light: 1,
+            heavy: 2
+        },
+        color: "#00f",
+        moduleHardpoints: 4,
+        costParts: true
+    }, {
+        dontSell: true,
+        tier: 3,
+        name: "Dark Green Circle",
+        speed: 0.0018,
+        speedLevel: [0, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0002, 0.0002, 0.0002, 0.0002, 0.0002, 0.0002],
+        scale: 65,
+        fieldOfViewMulti: 1.55,
+        desc: ``,
+        healthData: {
+            base: 75e3,
+            level: [0, 2e3, 2e3, 2e3, 5e3, 5e3, 5e3, 10e3, 10e3, 15e3, 15e3, 20e3],
+        },
+        ability: {
+            name: "Nuclear Strike",
+            desc: `
+            <span style="font-width: bolder; color: #fff;">Nuclear Strike</span> Strikes a area with negative effects for a duration.<br><br>
+            Duration of Area: 8 second(s)<br>
+            Radius of Area: 600 PX<br>
+            Effect Duration: 6 second(s)<br>
+            Cooldown: 8 second(s)
+            `,
+            iconSource: "./images/weapons/decay.png",
+            damageData: {
+                base: 5e3,
+                level: [0, 400, 400, 400, 400, 600, 600, 600, 600, 600, 800, 1e3],
+            },
+            reload: 8e3
+        },
+        hardpoints: {
+            light: 0,
+            heavy: 3
+        },
+        color: "#009100",
+        moduleHardpoints: 4,
         costParts: true
     }];
     function defensePointsToResistance(defense) {
@@ -2940,6 +3120,14 @@
                 }
             }
         }
+    }
+    function addUltimateTextToWeapon(name) {
+        return `
+        ULTIMATE WEAPON VERSION<br>
+        The rarest modification of the ${name}.
+        Surpassing the original in all aspects,
+        it is a desirable weapon for any player.
+        `;
     }
     var weaponData = [{
         tier: 0,
@@ -3428,13 +3616,13 @@
             base: 150,
             level: [0, 20, 20, 20, 20, 25, 25, 28, 28, 30, 32, 32]
         },
-        motherShipCharge: 0.00072,
+        motherShipCharge: 0.00036,
         ammoEachReloadTick: 2,
         continuousReload: true,
         imageSource: "./images/weapons/rime.png",
         aoeRange: 50,
         fireRate: 25,
-        ammo: 35,
+        ammo: 70,
         reload: 350,
         range: 800,
         cost: {
@@ -3456,13 +3644,13 @@
             base: 300,
             level: [0, 40, 40, 40, 40, 50, 50, 55, 55, 60, 65, 65]
         },
-        motherShipCharge: 0.00072,
+        motherShipCharge: 0.00036,
         ammoEachReloadTick: 2,
         continuousReload: true,
         imageSource: "./images/weapons/glacier.png",
         aoeRange: 50,
         fireRate: 45,
-        ammo: 35,
+        ammo: 70,
         reload: 500,
         range: 800,
         cost: {
@@ -3597,8 +3785,9 @@
         desc: `
         Far ranged weapon used to target enemies at far distances.
         Bullets are coated with high layers of special material,
-        that makes it bypass [REFLECTOR] and 100% of all [DEFENSE POINTS].
-        `,
+        that makes it able to do high damage to heavily protected targets
+        because it bypass the defense systems.
+        `,//[REFLECTOR] and 100% of all [DEFENSE POINTS]
         damageData: {
             base: 2348,
             level: [0, 228, 228, 228, 228, 286, 286, 286, 382, 382, 382, 382],
@@ -3731,8 +3920,8 @@
             level: [0, 10, 15, 15, 20, 25, 25, 30, 35, 35, 45, 45]
         },
         dotData: {
-            base: 23,
-            level: [0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
+            base: 230,
+            level: [0, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30],
         },
         motherShipCharge: 0.00021,
         imageSource: "./images/weapons/toxin.png",
@@ -3758,8 +3947,8 @@
             level: [0, 18, 27, 27, 36, 45, 45, 54, 63, 63, 81, 81]
         },
         dotData: {
-            base: 46,
-            level: [0, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6]
+            base: 460,
+            level: [0, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60]
         },
         motherShipCharge: 0.00021,
         imageSource: "./images/weapons/bane.png",
@@ -3881,10 +4070,10 @@
             base: .05,
             level: [0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.1, 0.15],
         },
-        motherShipCharge: 0.0014,
+        motherShipCharge: 0.001,
         imageSource: "./images/rust.png",
         fireRate: 48,
-        ammo: 60,
+        ammo: 30,
         reload: 1500,
         range: 1400,
         cost: {
@@ -3912,10 +4101,10 @@
             base: .05,
             level: [0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.15, 0.15, 0.15, 0.15],
         },
-        motherShipCharge: 0.0014,
+        motherShipCharge: 0.001,
         imageSource: "./images/weapons/trickster.png",
         fireRate: 48,
-        ammo: 60,
+        ammo: 30,
         reload: 1500,
         range: 1400,
         cost: {
@@ -4009,17 +4198,17 @@
             level: [0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10]
         },
         dotData: {
-            base: 33,
-            level: [0, 16, 16, 16, 16, 16, 16, 16, 16, 33, 39, 39]
+            base: 50,
+            level: [0, 24, 24, 24, 24, 24, 24, 24, 24, 24, 49, 59]
         },
         defenseBypassData: {
             base: .05,
             level: [0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.1, 0.15],
         },
-        motherShipCharge: 0.0014,
+        motherShipCharge: 0.001,
         imageSource: "./images/weapons/deceiver.png",
         fireRate: 48,
-        ammo: 60,
+        ammo: 30,
         reload: 1500,
         range: 1400,
         cost: {
@@ -4043,17 +4232,17 @@
             level: [0, 10, 10, 10, 10, 10, 10, 20, 20, 20, 20, 40]
         },
         dotData: {
-            base: 65,
-            level: [0, 32, 32, 32, 32, 32, 32, 32, 32, 65, 78, 78]
+            base: 98,
+            level: [0, 48, 48, 48, 48, 48, 48, 48, 48, 48, 98, 117]
         },
         defenseBypassData: {
             base: .05,
             level: [0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.15, 0.15, 0.15, 0.15],
         },
-        motherShipCharge: 0.0014,
+        motherShipCharge: 0.001,
         imageSource: "./images/weapons/damper.png",
         fireRate: 48,
-        ammo: 60,
+        ammo: 30,
         reload: 1500,
         range: 1400,
         cost: {
@@ -4455,7 +4644,7 @@
         projType: "energy",
         desc: `
         Next generation of laser weapons, Fulgur is a light laser weapon that deals quick bursts of damage.
-        It is ideal weapon to use aganist T5 shapes since it deals extra 125% more damage.
+        It is ideal weapon to use aganist T5 shapes since it deals extra 225% more damage.
         `,
         damageData: {
             base: 796,
@@ -4484,7 +4673,7 @@
         projType: "energy",
         desc: `
         Next generation of laser weapons, Tonans is a heavy laser weapon that deals quick bursts of damage.
-        It is ideal weapon to use aganist T5 shapes since it deals extra 125% more damage.
+        It is ideal weapon to use aganist T5 shapes since it deals extra 225% more damage.
         `,
         damageData: {
             base: 1194,
@@ -4514,7 +4703,7 @@
         desc: `
         A heavy rocket weapon that shoots smart homing rockets that deal aoe damage.
         When enemies are directly hit,
-        it applies rust (0.8%) and fragility (0.8%) effects to the enemies.
+        it applies rust (1%) and fragility (2.5%) effects to the enemies.
         Effects last for 10 seconds.
         `,
         damageData: {
@@ -4542,7 +4731,7 @@
         desc: `
         A light rocket weapon that shoots smart homing rockets that deal aoe damage.
         When enemies are directly hit,
-        it applies rust (0.8%) and fragility (0.8%) effects to the enemies.
+        it applies rust (1%) and fragility (2.5%) effects to the enemies.
         Effects last for 10 seconds.
         `,
         damageData: {
@@ -4763,7 +4952,7 @@
         tier: 4,
         industryName: "Pentagon",
         name: "Inferno",
-        spread: 25,
+        spread: 6.25,
         type: "Heavy",
         projType: "energy",
         desc: `New heavy flamerthrower that has unlimited ammo. The longer you fire, the inaccurate the weapon becomes and the slower the projectiles travel.`,
@@ -4775,12 +4964,12 @@
             base: .05,
             level: [0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.15, 0.15, 0.15, 0.15],
         },
-        overheatTime: 10e3,
-        motherShipCharge: 0.00016,
+        overheatTime: 8e3,
+        motherShipCharge: 0.00024,
         imageSource: "./images/weapons/inferno.png",
-        fireRate: 35,
+        fireRate: 25,
         ammo: 1e300,
-        reload: 3e3,
+        reload: 0,
         range: 1e3,
         cost: {
             sliver: 60e6,
@@ -4792,7 +4981,7 @@
         tier: 4,
         industryName: "Pentagon",
         name: "Pyro",
-        spread: 7,
+        spread: 6.25,
         type: "Light",
         projType: "energy",
         desc: `New light flamerthrower that has unlimited ammo. The longer you fire, the inaccurate the weapon becomes and the slower the projectiles travel.`,
@@ -4804,16 +4993,120 @@
             base: .05,
             level: [0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.1, 0.15],
         },
-        overheatTime: 10e3,
-        motherShipCharge: 0.00016,
+        overheatTime: 8e3,
+        motherShipCharge: 0.00024,
         imageSource: "./images/weapons/pyro.png",
-        fireRate: 35,
+        fireRate: 25,
         ammo: 1e300,
-        reload: 3e3,
+        reload: 0,
         range: 1e3,
         cost: {
             sliver: 60e6,
             gold: 300e3,
+            workshopPoints: 100e3
+        }
+    }, {
+        tier: 3,
+        industryName: "Circle",
+        name: "Blight",
+        type: "Light",
+        projType: "energy",
+        desc: `A radiation gun which fires in short burst of 3 shots. Each shot following the first deals increased damaged up to 200%.`,
+        damageData: {
+            base: 4e3,
+            level: [0, 250, 250, 250, 375, 375, 375, 375, 375, 375, 400, 500]
+        },
+        motherShipCharge: 0.002,
+        imageSource: "./images/weapons/blight.png",
+        fireRate: [400, 75, 75],
+        ammo: 9,
+        reload: 2e3,
+        range: 2e3,
+        cost: {
+            sliver: 5e6,
+            gold: 3e3,
+            workshopPoints: 1e3
+        }
+    }, {
+        tier: 3,
+        industryName: "Circle",
+        name: "Decay",
+        type: "Heavy",
+        projType: "energy",
+        desc: `A radiation gun which fires in short burst of 3 shots. Each shot following the first deals increased damaged up to 200%.`,
+        damageData: {
+            base: 6e3,
+            level: [0, 375, 375, 375, 563, 563, 563, 563, 563, 563, 600, 750]
+        },
+        motherShipCharge: 0.002,
+        imageSource: "./images/weapons/decay.png",
+        fireRate: [400, 75, 75],
+        ammo: 9,
+        reload: 2e3,
+        range: 2e3,
+        cost: {
+            sliver: 5e6,
+            gold: 3e3,
+            workshopPoints: 1e3
+        }
+    }, {
+        //dontShow: true,
+        dontSell: true,
+        tier: 4,
+        industryName: "Circle",
+        spread: 4.5,
+        name: "Ultimate Punisher",
+        type: "Light",
+        projType: "normal",
+        desc: `
+        ${addUltimateTextToWeapon("Punisher")}<br><br>
+        Multi-barreled machine gun with a high rate of fire. Great at close range. Projectiles fired deal structural damage.
+        `,
+        damageData: {
+            base: 80,
+            level: [0, 10, 10, 20, 20, 40, 40, 50, 50, 60, 60, 80],
+        },
+        defenseBypass: .5,
+        motherShipCharge: 0.0001,
+        imageSource: "./images/weapons/ultimate_punisher.png",
+        fireRate: 50,
+        ammo: 600,
+        reload: 4e3,
+        range: 2e3,
+        cost: {
+            sliver: 50e6,
+            gold: 100e3,
+            workshopPoints: 100e3
+        }
+    }, {
+        //dontShow: true,
+        dontSell: true,
+        tier: 4,
+        industryName: "Circle",
+        spread: 4.5,
+        name: "Ultimate Destroyer",
+        type: "Heavy",
+        projType: "normal",
+        desc: `
+        ${addUltimateTextToWeapon("Destroyer")}<br><br>
+        Large heavy multi-barreled machine gun. 
+        Great at close range since bullets disperse due to high fire rate. 
+        Each round shoots 4 projectiles. Projectiles fired deal structural damage.
+        `,
+        damageData: {
+            base: 80,
+            level: [0, 10, 10, 20, 20, 40, 40, 50, 50, 60, 60, 80],
+        },
+        defenseBypass: .75,
+        motherShipCharge: 0.00007,
+        imageSource: "./images/weapons/ultimate_destroyer.png",
+        fireRate: 50,
+        ammo: 600,
+        reload: 4e3,
+        range: 2e3,
+        cost: {
+            sliver: 50e6,
+            gold: 100e3,
             workshopPoints: 100e3
         }
     }];
@@ -5378,7 +5671,7 @@
     }, "shape", "Ultimate");
     makeNewSpecialEdition("Brown Pentagon", {
         tier: 4,
-        health: 1.8,
+        health: 1.7,
         scale: 80,
         topDesc: `
         ULTIMATE SHAPE VERSION<br>
@@ -5403,17 +5696,66 @@
             <span style="font-width: bolder; color: #fff;">Travel Mode</span>: Robot activates its energy shield, drops its 2 heavy weapons, and moves faster.<br><br>
             <span style="font-width: bolder; color: #fff;">Tank Mode</span>: Robot disables its energy shield, activates its 2 heavy weapons, moves slower, and activates a defense system. During Tank Mode, the energy shield regens faster (1000%).<br><br>
             Default Mode: Travel Mode<br>
-            Cooldown: .5 second
+            Cooldown: 1 second
             `,
             iconSource: "./images/abilities/shapeshift.png",
             abilityDefensePointsData: {
                 base: 150,
                 level: [0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5]
             },
-            reload: 500
+            reload: 1e3
         },
         moduleHardpoints: 6,
         hullIntegrity: .25,
+        borderColor: "#ffff00"
+    }, "shape", "Ultimate");
+    makeNewSpecialEdition("Brown Circle", {
+        tier: 4,
+        health: 2,
+        topDesc: `
+        ULTIMATE SHAPE VERSION<br>
+        The rarest modification of the Brown Circle.
+        Surpassing the original in all aspects,
+        it is a desirable shape for any player.
+        `,
+        newDesc: `
+        Brown Circle is equipped with flight tech.<br><br>
+        Recommended Equipment: x2 Veyron + x2 Evora
+        `,
+        ability: {
+            name: "Dragon Flight",
+            desc: `
+            <span style="font-width: bolder; color: #fff;">Dragon Flight</span>
+            The shape flies up, ignoring all buildings while moving and activates a power built-in weapon.<br><br>
+            <strong style="color: #fff">Forcefield</strong> Another type of defense which reduces damage taken. It cannot be mitigated by defense mitigation effect weapon but may be reduced. Forcefield is based on durability but not considered as a shield.<br><br>
+            Damage Reduction: 99% (MAX) to 90% (MIN)<br>
+            Durability: X2 of Max Health<br>
+            Regeneration Time: 10 seconds<br><br>
+            Duration: 10 seconds<br>
+            Speed Increase: 200%<br>
+            Defense Mitigation: 75%<br>
+            Cooldown: 12 seconds
+            `,
+            damageData: {
+                base: 155,
+                level: [0, 35, 43, 50, 58, 58, 65, 68, 73, 75, 80, 83]
+            },
+            dotData: {
+                base: 15,
+                level: [0, 13, 13, 13, 13, 13, 13, 25, 25, 25, 25, 50]
+            },
+            projPerShot: 4,
+            fireRate: 50,
+            effectIncreaseData: {
+                base: 1,
+                effect: "blast",
+                level: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            },
+            lastingTime: 10e3,
+            iconSource: "./images/abilities/dragon_flight.png",
+            reload: 12e3
+        },
+        moduleHardpoints: 4,
         borderColor: "#ffff00"
     }, "shape", "Ultimate");
     var activeModuleData = [{
@@ -5855,6 +6197,14 @@
                 image.style = "width: 225px; height: 225px;";
                 document.getElementById(`thingy${i}`).append(image);
             }
+        }
+        let ship = player.motherships.find(e => e.using);
+        if (ship) {
+            rating += (ship.tier + 1) * 25;
+            rating += ship.level * 5;
+            ship.turrets.forEach(e => {
+                rating += (e.tier + 1) * ship.turrets.length;
+            });
         }
         let index = 0;
         if (player.profile.dmg) {
@@ -7066,6 +7416,10 @@
             document.getElementById("sideDisplay").innerHTML = "";
         }
     }
+    document.getElementById("offersToggles").onclick = function() {
+        //document.getElementById("hangerUI").style.display = "none";
+        //document.getElementById("sideDisplay").innerHTML = ``;
+    }
     var shapeImagesSpecial = {};
     function getShapeImage(obj) {
         let tmp = shapeImagesSpecial[obj.specialOf];
@@ -7187,7 +7541,7 @@
         </div>
         <div style="position: absolute; top: 2px; width: 260px; left: 45px; color: #fff; font-size: 24px;">
         <strong>
-        ${weapon.name}
+        ${returnStyledName(weapon, weapon.name)}
         ${weapon.level >= 13 ? `<span style="color: #${levelToMKColor(weapon.level)};">${levelToMKText(weapon.level)}</span>` : ""}
         </strong>
         </div>
@@ -7743,7 +8097,7 @@
             </div>
             `;
             let inInventory = true;
-            let filteredShopItems = weaponData.filter(e => (typeof weapon == "string" ? e.type == weapon : e.type == weapon.type));
+            let filteredShopItems = weaponData.filter(e => !e.dontShow && (typeof weapon == "string" ? e.type == weapon : e.type == weapon.type));
             let diiiisbled = false;
             document.getElementById("inventoryButton").onclick = function () {
                 if (!diiiisbled) {
@@ -8933,26 +9287,27 @@
         keysPressed[e.keyCode] = 0;
     });
     var blueBell = [{
-        "name": "Dark Tan Circle",
+        "name": "Ultimate Brown Pentagon",
         "weapons": {
-            "heavy": "Subduer",
-            "light": "Fulgur"
+            "heavy": "Fengbao",
+            "light": "Leiming"
         },
         "modules": [
-            "Defense Amplifier",
-            "Nuclear Amplifier",
-            "Repair Amplifier",
-            "Immune Amplifier"
+            "Defense Amplifier","Defense Amplifier",
+            "Nuclear Amplifier","Nuclear Amplifier",
+            "Repair Amplifier","Repair Amplifier",
+            "Immune Amplifier","Immune Amplifier",
+            "Anti Control"
         ],
-        "drone": "Kestrel",
-        "pilotName": "Xavier Sinclair",
+        "drone": "Pascal",
+        "pilotName": "Bernadette",
         "skills": [
             "Armor Expert",
             "Tough Guy",
             "Cautious Pilot",
-            "Deft Survivor",
-            "Wonderworker",
-            "Destroyer",
+            "Gunsmith",
+            "Road Hog",
+            "Stuborn Warrior",
             "Mechanic"
         ],
         "activeModuleIndex": 3
@@ -8963,10 +9318,11 @@
             "light": "Fulgur"
         },
         "modules": [
-            "Defense Amplifier",
-            "Nuclear Amplifier",
-            "Repair Amplifier",
-            "Immune Amplifier"
+            "Defense Amplifier","Defense Amplifier",
+            "Nuclear Amplifier","Nuclear Amplifier",
+            "Repair Amplifier","Repair Amplifier",
+            "Immune Amplifier","Immune Amplifier","Immune Amplifier",
+            "Anti Control"
         ],
         "drone": "Pascal",
         "pilotName": "Xavier Sinclair",
@@ -8983,14 +9339,14 @@
     }, {
         "name": "Blue-Outlined Tan Circle",
         "weapons": {
-            "heavy": "Gangantua",
-            "light": "Pantagruel"
+            "heavy": "Fengbao",
+            "light": "Leiming"
         },
         "modules": [
-            "Repair Amplifier",
-            "Nuclear Amplifier",
-            "Immune Amplifier",
-            "Last Stand"
+            "Repair Amplifier","Repair Amplifier",
+            "Nuclear Amplifier","Nuclear Amplifier",
+            "Immune Amplifier","Immune Amplifier",
+            "Defense Amplifier", "Defense Amplifier", "Anti Control", "Last Stand"
         ],
         "drone": "Kestrel",
         "pilotName": "Mosi Kristoffer",
@@ -9008,8 +9364,8 @@
     }, {
         "name": "Magenta Hexagon",
         "weapons": {
-            "heavy": "Maha Vajra",
-            "light": "Vajra"
+            "heavy": "Fengbao",
+            "light": "Leiming"
         },
         "modules": [
             "Repair Amplifier",
@@ -9055,26 +9411,27 @@
         ],
         "activeModuleIndex": 3
     }, {
-        "name": "Dark Tan Circle",
+        "name": "Ultimate Brown Pentagon",
         "weapons": {
-            "heavy": "Subduer",
-            "light": "Fulgur"
+            "heavy": "Inferno",
+            "light": "Pyro"
         },
         "modules": [
-            "Defense Amplifier",
-            "Nuclear Amplifier",
-            "Repair Amplifier",
-            "Immune Amplifier"
+            "Defense Amplifier","Defense Amplifier",
+            "Nuclear Amplifier","Nuclear Amplifier",
+            "Repair Amplifier","Repair Amplifier",
+            "Immune Amplifier","Immune Amplifier",
+            "Anti Control"
         ],
         "drone": "Kestrel",
-        "pilotName": "Xavier Sinclair",
+        "pilotName": "Bernadette",
         "skills": [
             "Armor Expert",
             "Tough Guy",
             "Cautious Pilot",
-            "Deft Survivor",
-            "Wonderworker",
-            "Destroyer",
+            "Gunsmith",
+            "Road Hog",
+            "Stuborn Warrior",
             "Mechanic"
         ],
         "activeModuleIndex": 3
@@ -9085,84 +9442,86 @@
             "light": "Fulgur"
         },
         "modules": [
-            "Defense Amplifier",
-            "Nuclear Amplifier",
-            "Repair Amplifier",
-            "Immune Amplifier"
-        ],
-        "drone": "Kestrel",
-        "pilotName": "Xavier Sinclair",
-        "skills": [
-            "Armor Expert",
-            "Tough Guy",
-            "Cautious Pilot",
-            "Deft Survivor",
-            "Wonderworker",
-            "Destroyer",
-            "Mechanic"
-        ],
-        "activeModuleIndex": 3
-    }, {
-        "name": "Dark Tan Circle",
-        "weapons": {
-            "heavy": "Subduer",
-            "light": "Fulgur"
-        },
-        "modules": [
-            "Defense Amplifier",
-            "Nuclear Amplifier",
-            "Repair Amplifier",
-            "Immune Amplifier"
-        ],
-        "drone": "Kestrel",
-        "pilotName": "Xavier Sinclair",
-        "skills": [
-            "Armor Expert",
-            "Tough Guy",
-            "Cautious Pilot",
-            "Deft Survivor",
-            "Wonderworker",
-            "Destroyer",
-            "Mechanic"
-        ],
-        "activeModuleIndex": 2
-    }];
-    var redBell = [{
-        "name": "Purple Heptagon",
-        "weapons": {
-            "heavy": "Tonans",
-            "light": "Fulgur"
-        },
-        "modules": [
-            "Nuclear Amplifier",
-            "Nuclear Amplifier",
-            "Repair Amplifier",
+            "Defense Amplifier","Defense Amplifier",
+            "Nuclear Amplifier","Nuclear Amplifier",
+            "Repair Amplifier","Repair Amplifier",
+            "Immune Amplifier","Immune Amplifier",
             "Last Stand"
         ],
-        "drone": "Kestrel",
-        "pilotName": "Eleanor Thorne",
+        "drone": "Pascal",
+        "pilotName": "Xavier Sinclair",
         "skills": [
-            "Thorne's Precision",
             "Armor Expert",
-            "Thrill Hunter",
-            "Thrill Seeker",
-            "Master Gunsmith",
+            "Tough Guy",
+            "Cautious Pilot",
+            "Deft Survivor",
             "Wonderworker",
-            "Stubborn Warrior",
+            "Destroyer",
             "Mechanic"
         ],
-        "activeModuleIndex": 2
+        "activeModuleIndex": 3
+    }, {
+        "name": "Ultimate Brown Pentagon",
+        "weapons": {
+            "heavy": "Fengbao",
+            "light": "Leiming"
+        },
+        "modules": [
+            "Defense Amplifier","Defense Amplifier",
+            "Nuclear Amplifier","Nuclear Amplifier",
+            "Repair Amplifier","Repair Amplifier",
+            "Immune Amplifier","Immune Amplifier",
+            "Anti Control"
+        ],
+        "drone": "Kestrel",
+        "pilotName": "Bernadette",
+        "skills": [
+            "Armor Expert",
+            "Tough Guy",
+            "Cautious Pilot",
+            "Gunsmith",
+            "Road Hog",
+            "Stuborn Warrior",
+            "Mechanic"
+        ],
+        "activeModuleIndex": 3
+    }];
+    var redBell = [{
+        "name": "Ultimate Brown Pentagon",
+        "weapons": {
+            "heavy": "Fengbao",
+            "light": "Leiming"
+        },
+        "modules": [
+            "Defense Amplifier",
+            "Nuclear Amplifier",
+            "Repair Amplifier","Repair Amplifier",
+            "Immune Amplifier","Immune Amplifier",
+            "Anti Control"
+        ],
+        "drone": "Pascal",
+        "pilotName": "Bernadette",
+        "skills": [
+            "Armor Expert",
+            "Tough Guy",
+            "Cautious Pilot",
+            "Gunsmith",
+            "Road Hog",
+            "Stuborn Warrior",
+            "Mechanic"
+        ],
+        "activeModuleIndex": 3
     }, {
         "name": "Light Blue Heptagon",
         "weapons": {
-            "heavy": "Tumultus",
-            "light": "Discordia"
+            "heavy": "Inferno",
+            "light": "Pyro"
         },
         "modules": [
-            "Repair Amplifier",
-            "Nuclear Amplifier",
-            "Immune Amplifier",
-            "Last Stand"
+            "Repair Amplifier","Repair Amplifier",
+            "Nuclear Amplifier", "Nuclear Amplifier",
+            "Immune Amplifier","Immune Amplifier",
+            "Defense Amplifier", "Last Stand"
         ],
         "drone": "Pascal",
         "pilotName": "Sebastian Wren",
@@ -9180,14 +9539,14 @@
     }, {
         "name": "Blue-Outlined Tan Circle",
         "weapons": {
-            "heavy": "Gangantua",
-            "light": "Pantagruel"
+            "heavy": "Fengbao",
+            "light": "Leiming"
         },
         "modules": [
-            "Repair Amplifier",
-            "Nuclear Amplifier",
-            "Immune Amplifier",
-            "Last Stand"
+            "Repair Amplifier","Repair Amplifier",
+            "Nuclear Amplifier","Nuclear Amplifier",
+            "Immune Amplifier", "Immune Amplifier",
+            "Defense Amplifier", "Last Stand", "Anti Control"
         ],
         "drone": "Kestrel",
         "pilotName": "Mosi Kristoffer",
@@ -9209,10 +9568,10 @@
             "light": "Vajra"
         },
         "modules": [
-            "Repair Amplifier",
-            "Nuclear Amplifier",
-            "Immune Amplifier",
-            "Last Stand"
+            "Repair Amplifier","Repair Amplifier",
+            "Nuclear Amplifier","Nuclear Amplifier",
+            "Immune Amplifier","Immune Amplifier",
+            "Defense Amplifier", "Last Stand"
         ],
         "drone": "Kestrel",
         "pilotName": "Indra",
@@ -9284,12 +9643,11 @@
             "light": "Vajra"
         },
         "modules": [
-            "Repair Amplifier",
-            "Nuclear Amplifier",
-            "Immune Amplifier",
-            "Immune Amplifier",
-            "Damage Controller",
-            "Damage Controller"
+            "Repair Amplifier","Repair Amplifier",
+            "Nuclear Amplifier","Nuclear Amplifier",
+            "Immune Amplifier","Immune Amplifier",
+            "Anti Control", "Defense Amplifier", "Defense Amplifier",
+            "Damage Controller", "Damage Controller"
         ],
         "drone": "Pascal",
         "pilotName": "Everest Oded",
@@ -9305,21 +9663,20 @@
         ],
         "activeModuleIndex": 3
     }, {
-        "name": "Cyan Hexagon",
+        "name": "Dark Tan Circle",
         "weapons": {
             "heavy": "Veyron",
             "light": "Punisher"
         },
         "modules": [
-            "Repair Amplifier",
-            "Nuclear Amplifier",
-            "Immune Amplifier",
-            "Last Stand"
+            "Repair Amplifier","Repair Amplifier",
+            "Nuclear Amplifier","Nuclear Amplifier",
+            "Immune Amplifier","Immune Amplifier",
+            "Defense Amplifier", "Last Stand"
         ],
         "drone": "Pascal",
-        "pilotName": "Elijah Forge",
+        "pilotName": "Xavier Sinclair",
         "skills": [
-            "Forge's Breakthrough",
             "Road Hog",
             "Mechanic",
             "Wonderworker",
@@ -9469,6 +9826,8 @@
                 checked++;
                 newWeapon.targetedWeaponsToUse = true;
                 newWeapon.notActive = true;
+            } else if (robot.name == "Pinkish-Red Heptagon" && newWeapon.type == "Light") {
+                newWeapon.notActive = true;
             } else if (newWeapon.name == "Cinder" && robot.name == "Orange Pentagon") {
                 newWeapon.dmg *= 2;
             }
@@ -9595,6 +9954,7 @@
         if (skill.getAbilityBackAtHalfHealth) {
             robot.canGetAbilityBackAtHalfHealth = true;
         }
+        if (skill.skywardV2) robot.skywardV2 = skill.skywardV2;
         if (skill.chargeIncrease) {
             if (skill.name == "Forge's Breakthrough") {
                 robot.ability.reload *= .8;
@@ -9752,6 +10112,28 @@
                 weapon.dotDamage *= dmg;
             }
         }
+        if (robot.name == "White Octagon") {
+            let newWeapon = new weapon({
+                tier: 4,
+                industryName: "Octagon",
+                name: "Skyward",
+                type: "Heavy",
+                projType: "energy",
+                desc: "",
+                dmg: robot.ability.dmg,
+                imageSource: "./images/weapons/flux.png",
+                fireRate: 100,
+                ammo: 101,
+                reload: robot.ability.reload,
+                range: 2e3,
+                cost: { sliver: 1e300, gold: 1e300 }
+            });
+            newWeapon.level = robot.level;
+            newWeapon.slot = 2;
+            newWeapon.unbreakable = true;
+            newWeapon.notActive = true;
+            robot.weapons.push(newWeapon);
+        }
     }
     function setUpBotData(orginalRobot, weapons, modules, microchips, isAlly, gameMode, spawnLocations, isBluebell, drone) {
         let robot = new shape(orginalRobot, null, true);
@@ -9846,7 +10228,7 @@
         "drone": "Hiruko",
         "activeModuleIndex": 2
     }, {
-        "name": "Tan Circle",
+        "name": "White Octagon",
         "weapons": {
             "heavy": "Tonans",
             "light": "Fulgur"
@@ -9945,6 +10327,41 @@
         return null;
     }
     const colors = ["Blue", "Green", "Yellow", "Orange", "Purple", "Pink", "Brown", "Black", "White", "Gray", "Cyan", "Magenta", "Teal", "Maroon", "Navy", "Olive", "Silver", "Gold", "Indigo"];
+    function makeMothershipData(name) {
+        let shape = undefined;
+        if (name.includes("bell") && !name.includes("Red")) {
+            shape = new mothership(mothershipData.find(e => e.name == "Purple Rectangle"));
+            for (let i = 0; i < shape.maxlevel - 1; i++) {
+                upgradeMothership(shape);
+            }
+            shape.turrets.push({ ...turretsData.find(e => e.name == "Nuclear Attack Cannon") });
+            shape.turrets.push({ ...turretsData.find(e => e.name == "Nuclear Attack Cannon") });
+            shape.turrets.push({ ...turretsData.find(e => e.name == "Durability Extender") });
+            shape.turrets.push({ ...turretsData.find(e => e.name == "Durability Extender") });
+        } else if (name.includes("Redbell")) {
+            shape = new mothership(mothershipData.find(e => e.name == "Gray Oval"));
+            for (let i = 0; i < shape.maxlevel - 1; i++) {
+                upgradeMothership(shape);
+            }
+            shape.turrets.push({ ...turretsData.find(e => e.name == "Life Saver") });
+            shape.turrets.push({ ...turretsData.find(e => e.name == "Yellow Shield Self System") });
+            shape.turrets.push({ ...turretsData.find(e => e.name == "Durability Extender") });
+        } else {
+            if (player.league >= 5e3) {
+                if (player.league >= 6e3) {
+                    shape = new mothership(mothershipData.find(e => e.name == "Gray Oval"));
+
+                } else {
+                    shape = new mothership(mothershipData.find(e => e.name == (Math.random() > .5 ? "Green Oval" : "Gray Oval")));
+                }
+            } else if (player.league >= 4e3) {
+                shape = new mothership(mothershipData.find(e => e.name == "Green Oval"));
+            } else if (player.league >= 3e3) {
+                shape = new mothership(mothershipData.find(e => e.name == "Black Rectangle"));
+            }
+        }
+        return shape;
+    }
     function setUpPlayersData(gameMode, spawnLocations) {
         inGameSids = -1;
         document.getElementById("money3Display").style.display = "none";
@@ -10084,7 +10501,7 @@
                 if (player.league >= 5e3 && Math.random() < .25) {
                     onlyPreselect = true;
                 }
-                let amounnnt = Math.randInt(1, 3);
+                let amounnnt = 5;
                 for (let i = 0; i < amount; i++) {
                     let isAlly = gameMode == 4 ? false : i < 5 ? true : false;
                     let name = generateRandomName();
@@ -10105,7 +10522,7 @@
                         name = "Bluebell";
                         isBluebell = true;
                         preselectBots.Bluebell++;
-                    } else if (player.league >= 5e3 && preselectBots.Redbell == 0 && !isAlly && gameMode == 4) {
+                    } else if (player.league >= 5e3 && preselectBots.Redbell == 0 && isAlly) {
                         name = "Redbell";
                         isBluebell = true;
                         preselectBots.Redbell++;
@@ -10115,7 +10532,11 @@
                         isBluebell: isBluebell,
                         isAlly: gameMode == 4 ? (name + i) : isAlly,
                         robotIndex: 0,
-                        robots: []
+                        robots: [],
+                        mothership: {
+                            current: 0,
+                            data: makeMothershipData(name)
+                        }
                     };
                 }
                 for (let tt = 0; tt < amount; tt++) {
@@ -10160,8 +10581,7 @@
                                 }
                             }
                             let modules = [];
-                            let moduleHardpoints = orginalRobot.moduleHardpoints;
-                            for (let i = 0; i < moduleHardpoints; i++) {
+                            for (let i = 0; i < data.modules.length; i++) {
                                 let Module = new module(moduleData.find(e => e.name == (data.modules[i] || "Balance Unit")), null, null);
                                 for (let t = 0; t < 5; t++) {
                                     upgradeModule(Module, null, null, true);
@@ -11559,6 +11979,27 @@
             </div>
             </div>
             `;
+        } else if (type == "healingPercent" && Shape.ability && Shape.ability.healingPercentData) {
+            let maxhealth = Shape.ability.healingPercentData.base;
+            for (let i = 0; i < Shape.ability.healingPercentData.level.length; i++) {
+                maxhealth += Shape.ability.healingPercentData.level[i];
+            }
+            let indexAdjust = ((shape.ability.healingPercent / maxhealth) * maxwidth) / maxwidth;
+            let indexAdjusted = (((shape.ability.healingPercent + (Shape.ability.healingPercentData.level[shape.level])) / maxhealth) * maxwidth) / maxwidth;
+            text = `
+            <div style="position: relative; width: ${maxwidth}px;">
+            Ability Repair Power: ${shape.ability.healingPercent * 100}%
+            <div style="display: ${Shape.ability.healingPercentData.level[shape.level] ? "block" : "none"};position: absolute; top: 0px; right: 0px; color: #00ff00;">
+            +${Shape.ability.healingPercentData.level[shape.level] * 100}%
+            </div>
+            </div>
+            <div style="position: relative; width: ${maxwidth}px; height: 3px; background-color: #fff;">
+            <div style="position: absolute; top: 0px; left: 0px; height: 3px; width: ${indexAdjusted * 100}%; background-color: #02de02;">
+            </div>
+            <div style="position: absolute; top: 0px; left: 0px; height: 3px; width: ${indexAdjust * 100}%; background-color: #00fcec;">
+            </div>
+            </div>
+            `;
         }
         return text;
     }
@@ -11606,6 +12047,11 @@
                 } else {
                     shape.ability.shieldHp *= shape.level == 13 ? 1.05 : 1.2;
                 }
+            }
+            if (Shape.ability.healingPercentData && shape.level < 12) {
+                let increase = Shape.ability.healingPercentData.level[shape.level];
+                shape.ability.healingPercent += increase;
+                shape.ability.healingPercent = Math.round(shape.ability.healingPercent * 1000) / 1000;
             }
             if (Shape.ability.effectAccumulationData && shape.level < 12) {
                 let increase = Shape.ability.effectAccumulationData.level[shape.level];
@@ -11888,7 +12334,46 @@
             onlyFor: "Brown Pentagon",
             imageSource: "./images/modules/heavy_armor_plating.png",
             desc: "Brown Pentagon gains extra durability but loses its shield.",
-            healthIncrease: .75
+            healthIncrease: .5
+        }
+    }, {
+        tier: 3,
+        name: "Alexander Davis",
+        industryName: "Heptagon",
+        story: [],
+        legendarySkill: {
+            name: "Cooling Matrix",
+            main: "abilitySpeedDecrease",
+            onlyFor: "Orange Heptagon",
+            imageSource: "./images/abilities/shapeshift.png",
+            desc: "Orange Heptagon has a decreased ability cooldown.",
+            abilitySpeedDecrease: .34
+        }
+    }, {
+        tier: 3,
+        name: "Victoria",
+        industryName: "Octagon",
+        story: [],
+        legendarySkill: {
+            name: "Forcefield",
+            main: "skywardV2",
+            onlyFor: "White Octagon",
+            imageSource: "./images/abilities/shapeshift.png",
+            desc: "White Octagon has increased forcefield durability.",
+            skywardV2: 3.5
+        }
+    }, {
+        tier: 3,
+        name: "Chris",
+        industryName: "Triangle",
+        story: [],
+        legendarySkill: {
+            name: "Chris's Kindliness",
+            main: "chargeIncrease",
+            onlyFor: "Blue Triangle",
+            imageSource: "./images/abilities/shapeshift.png",
+            desc: "Blue Triangle gains additional ability charges.",
+            chargeIncrease: 2
         }
     }];
     class skill {
@@ -12092,7 +12577,7 @@
         return text;
     }
     function getDisplayPilotSkill(skill) {
-        if (["domainRangeIncrease", "abilitySpeedDecrease", "dmgPercentage", "onAbilityUseSpeed", "extraShieldHealth", "extraAbilityDamage", "increaseDurationOfPositiveEffects", "speedIncrease", "onLowSpeed", "dmgIncrease", "mechanicHeal", "onAbilityUseFix", "healthIncrease", "dmgIncrease"].includes(skill.main)) {
+        if (["skywardV2", "domainRangeIncrease", "abilitySpeedDecrease", "dmgPercentage", "onAbilityUseSpeed", "extraShieldHealth", "extraAbilityDamage", "increaseDurationOfPositiveEffects", "speedIncrease", "onLowSpeed", "dmgIncrease", "mechanicHeal", "onAbilityUseFix", "healthIncrease", "dmgIncrease"].includes(skill.main)) {
             if (skill[skill.main] == .007) {
                 return `0.7%`;
             } else if (skill[skill.main] == .07) {
@@ -13200,7 +13685,7 @@
             icon: "./images/modules/fortifier.png",
             main: "defenseIncrease",
             reload: 5e3,
-            defenseIncrease: 15
+            defenseIncrease: 30
         }]
     }, {
         tier: 3,
@@ -13265,7 +13750,7 @@
             desc: "The shape restores a percentage of its durability and gray damage once, upon reaching a threshold of 70%/50%/30% durability.",
             icon: "./images/modules/self_fix_unit.png",
             main: ["healPower", "grayDamageHeal_p"],
-            reload: 5e3,
+            reload: 20e3,
             healPowerData: {
                 base: .05,
                 level: [0, .01, .01, .01, .01, .01, .01, .01, .01, .01, .01, .01, .02, .02, .02]
@@ -13300,10 +13785,10 @@
             name: "On Threshold: Resist",
             desc: "The power of the shape's defense system is increased upon reaching a threshold of 70%/50%/30% durability.",
             unlockAtLevel: 15,
-            reload: 5e3,
+            reload: 20e3,
             icon: "./images/modules/heavy_armor_plating.png",
             main: "defenseIncrease",
-            defenseIncrease: 200
+            defenseIncrease: 100
         }]
     }, {
         tier: 4,
@@ -14107,6 +14592,7 @@
         ${shape.ability && shape.ability.durabilityLimit ? `Ability Durability Bonus Limit: ${abbreviateNumber(shape.ability.durabilityLimit)}<br>` : ""}
         ${shape.ability && shape.ability.executionThreshold ? `Ability Execution Threshold: ${shape.ability.executionThreshold * 100}%<br>` : ""}
         ${shape.ability && shape.ability.effectAccumulation ? `Ability Effect Accumulation: ${shape.ability.effectAccumulation}<br>` : ""}
+        ${shape.ability && shape.ability.healingPercent ? `Ability Repair Power: ${shape.ability.healingPercent * 100}%<br>` : ""}
         `;
         document.getElementById("sideDisplay").innerHTML = `
         <div style="position: absolute; top: 0px; left: 0px; width: 100%; height: 100%; background-image: linear-gradient(rgb(0, 0, 0, 0), ${tierColor(shape)});">
@@ -14357,7 +14843,7 @@
                     document.getElementById(elementId).appendChild(weaponIcon);
                     document.getElementById(elementId).innerHTML += `
                     <div style="position: absolute; color: ${tierColor(weapon)}; top: 5px; left: 135px; font-size: 24px;">
-                    ${weapon.level >= 13 ? `${weapon.name} <span style="color: ${weapon.level == 13 ? "#0f0" : "#ffff00"};">${weapon.level == 13 ? "MK2" : "MK3"}</span>` : `Lvl ${weapon.level} ${weapon.name}`}
+                    ${weapon.level >= 13 ? `${returnStyledName(weapon, weapon.name)} <span style="color: ${weapon.level == 13 ? "#0f0" : "#ffff00"};">${weapon.level == 13 ? "MK2" : "MK3"}</span>` : `Lvl ${weapon.level} ${returnStyledName(weapon, weapon.name)}`}
                     <div style="color: #fff; font-size: 14px; margin-top: -5px;">${elementId.includes("LIGHT") ? "Light" : "Heavy"}</div>
                     </div>
                     `;
@@ -14468,6 +14954,7 @@
             ${enterBarForShape("additionalHealthData", shape)}
             ${enterBarForShape("executionThresholdData", shape)}
             ${enterBarForShape("effectAccumulationData", shape)}
+            ${enterBarForShape("healingPercent", shape)}
             </div>
             <div id="leaveUpgrade" style="position: absolute; cursor: pointer; right: 10px; top: 10px;">
             X
@@ -14564,6 +15051,7 @@
         ${shape.ability && shape.ability.durabilityLimit ? `Ability Durability Bonus Limit: ${abbreviateNumber(shape.ability.durabilityLimit)}<br>` : ""}
         ${shape.ability && shape.ability.executionThreshold ? `Ability Execution Threshold: ${shape.ability.executionThreshold * 100}%<br>` : ""}
         ${shape.ability && shape.ability.effectAccumulation ? `Ability Effect Accumulation: ${shape.ability.effectAccumulation}<br>` : ""}
+        ${shape.ability && shape.ability.healingPercent ? `Ability Repair Power: ${shape.ability.healingPercent * 100}%<br>` : ""}
         `;
         document.getElementById("WEAPONdisplay").innerHTML = `
         <div style="position: absolute; top: 0px; left: 0px; width: 100%; height: 100%; background-image: linear-gradient(rgb(0, 0, 0, 0), ${tierColor(shape)});">
@@ -14971,7 +15459,7 @@
                     document.getElementById(elementId).appendChild(weaponIcon);
                     document.getElementById(elementId).innerHTML += `
                     <div style="position: absolute; color: ${tierColor(weapon)}; top: 5px; left: 135px; font-size: 24px;">
-                    ${weapon.level >= 13 ? `${weapon.name} <span style="color: ${weapon.level == 13 ? "#0f0" : "#ffff00"};">${weapon.level == 13 ? "MK2" : "MK3"}</span>` : `Lvl ${weapon.level} ${weapon.name}`}
+                    ${weapon.level >= 13 ? `${returnStyledName(weapon, weapon.name)} <span style="color: ${weapon.level == 13 ? "#0f0" : "#ffff00"};">${weapon.level == 13 ? "MK2" : "MK3"}</span>` : `Lvl ${weapon.level} ${returnStyledName(weapon, weapon.name)}`}
                     <div style="color: #fff; font-size: 14px; margin-top: -5px;">${elementId.includes("LIGHT") ? "Light" : "Heavy"}</div>
                     </div>
                     `;
@@ -15077,6 +15565,7 @@
             ${enterBarForShape("additionalHealthData", shape)}
             ${enterBarForShape("executionThresholdData", shape)}
             ${enterBarForShape("effectAccumulationData", shape)}
+            ${enterBarForShape("healingPercent", shape)}
             </div>
             <div id="leaveUpgrade" style="position: absolute; cursor: pointer; right: 10px; top: 10px;">
             X
@@ -15511,6 +16000,8 @@
             type: "module", rarity: "Epic", name: "Defense Amplifier"
         }, {
             type: "drone", rarity: "Epic", name: "Kestrel"
+        }, {
+            type: "drone", rarity: "Epic", name: "Bulwark"
         }]
     }, {
         name: "MK1 Data Box",
@@ -15693,11 +16184,11 @@
         }, {
             type: "shape", rarity: "Epic", name: "Magenta Hexagon"
         }, {
-            type: "shape", rarity: "Legendary", name: "Dark Green Pentagon"
+            type: "shape", rarity: "Epic", name: "Dark Green Pentagon"
         }, {
-            type: "shape", rarity: "Legendary", name: "Dark Tan Circle"
+            type: "shape", rarity: "Epic", name: "Dark Tan Circle"
         }, {
-            type: "shape", rarity: "Legendary", name: "Red Octagon"
+            type: "shape", rarity: "Epic", name: "Red Octagon"
         }, {
             type: "shape", rarity: "Epic", name: "Light Blue Triangle"
         }, {
@@ -16901,7 +17392,9 @@
     };
     function getMothershipUpgradeCost(level) {
         let index = level + 1;
-        if (index >= 50) {
+        if (index >= 55) {
+            return 1800 * index;
+        } else if (index >= 50) {
             return 1320 * index;
         } else if (index >= 35) {
             return 960 * index;
@@ -16921,6 +17414,8 @@
             this.level = 1;
             this.name = data.name;
             this.desc = data.desc;
+            this.grayHealing = data.grayHealingData ? data.grayHealingData.base : data.grayHealing;
+            this.healingPercent = data.healingPercentData ? data.healingPercentData.base : data.healingPercent;
             this.effectDuration = data.effectDurationData ? data.effectDurationData.base : data.effectDuration;
             this.dmg = data.dmgData ? data.dmgData.base : data.dmg;
             this.repair = data.repairData ? data.repairData.base : data.repair;
@@ -16936,17 +17431,43 @@
         }
     }
     var mothershipCost = [2e3, 12e3, 45e3, 95e3, 155e3];
-    function mothershipDataThingyPlsSendMod() {
+    function mothershipDataThingyPlsSendMod(t) {
         let levels = [];
-        levels.push(0);
-        for (let i = 0; i < 39; i++) {
-            levels.push(75);
-        }
-        for (let i = 0; i < 10; i++) {
-            levels.push(125);
-        }
-        for (let i = 0; i < 10; i++) {
-            levels.push(150);
+        if (t == "a") {
+            levels.push(0);
+            for (let i = 0; i < 39; i++) {
+                levels.push(0.0025);
+            }
+            for (let i = 0; i < 10; i++) {
+                levels.push(0.0035);
+            }
+            for (let i = 0; i < 9; i++) {
+                levels.push(0.005);
+            }
+            levels.push(0.0225);
+        } else if (t == "am") {
+            levels.push(0);
+            for (let i = 0; i < 39; i++) {
+                levels.push(0.0025);
+            }
+            for (let i = 0; i < 10; i++) {
+                levels.push(0.0035);
+            }
+            for (let i = 0; i < 9; i++) {
+                levels.push(0.005);
+            }
+            levels.push(0.0225);
+        } else {
+            levels.push(0);
+            for (let i = 0; i < 39; i++) {
+                levels.push(75);
+            }
+            for (let i = 0; i < 10; i++) {
+                levels.push(125);
+            }
+            for (let i = 0; i < 10; i++) {
+                levels.push(150);
+            }
         }
         return levels;
     }
@@ -17054,7 +17575,7 @@
         The ship was created by the Circle Industries to hide in enemy terrain. Equipped with the ability to disable the main systems of enemy shapes, it can provide help in any situation.<br><br>
         <span style="color: #fff">Blind</span> Prevents the enemy radars from rendering any targets.<br><br>
         <span style="color: #fff">EMP</span> Prevents the enemy from activating their shape's special ability.<br><br>
-        Effect Radius: 500 PX<br>
+        Effect Radius: 600 PX<br>
         Effects Applied: Bline and EMP<br>
         Strike Delay: 1 second
         `,
@@ -17070,6 +17591,31 @@
         chargeLevel: { ...univeralMothershipChargeData },
         maxlevel: 60,
         color: "#800080",
+        cost: mothershipCost[4]
+    }, {
+        industryName: "Triangle",
+        tier: 4,
+        name: "Black Oval",
+        desc: `
+        Developed by leading Triangle engineers, the cutting edge defensive systems of this ship help neutralize some negative effects and restore robot's durability and grey damage.<br><br>
+        The ship removes these effects: Slowdown, EMP, Blind, Rust, and Suppression
+        `,
+        healingPercentData: {
+            base: 0.1,
+            level: mothershipDataThingyPlsSendMod("a")
+        },
+        grayHealingData: {
+            base: 0.05,
+            level: mothershipDataThingyPlsSendMod("am")
+        },
+        hardpoints: {
+            attack: 1,
+            defense: 2,
+            support: 1
+        },
+        chargeLevel: { ...univeralMothershipChargeData },
+        maxlevel: 60,
+        color: "#000",
         cost: mothershipCost[4]
     }];
     var turretsCost = [1e3, 5500, 15e3, 30e3, 65e3];
@@ -17136,6 +17682,24 @@
         durabilityIncrease: .1,
         imageSource: "./images/modules/heavy_armor_plating.png",
         cost: turretsCost[3]
+    }, {
+        tier: 3,
+        type: "defense",
+        name: "Anti-Jamming Support",
+        desc: "This turret instantly removes the effects of Suppression, EMP and Blind from your shape and provides you with long-term immunity from them.",
+        strikeDelay: 2e3,
+        imageSource: "./images/icons/anti_jamming_support.png",
+        cost: turretsCost[3]
+    }, {
+        tier: 4,
+        type: "attack",
+        name: "Nuclear Attack Cannon",
+        strikeDelay: 1,
+        desc: "Instantly strikes the target with a powerful blast of damage and DoT. Deals increased damage to T4 (150%) and T5 (200%).",
+        dmg: 80e3,
+        imageSource: "./images/weapons/decay.png",
+        scale: 450,
+        cost: turretsCost[4]
     }];
     function getMothershipImage(obj) {
         let tmpCanvas = document.createElement("canvas");
@@ -17368,6 +17932,9 @@
             ${enterBarForShip("repair", shape)}
             ${enterBarForShip("yellow shield", shape)}
             ${enterBarForShip("effect duration", shape)}
+            ${enterBarForShip("healingPercent", shape)}
+            ${enterBarForShip("grayHealing", shape)}
+
             ${enterBarForShip("charge", shape)}
             </div>
             <div id="leaveUpgrade" style="position: absolute; cursor: pointer; right: 10px; top: 10px;">
@@ -17459,6 +18026,8 @@
         ${shape.dmg ? `Strike Damage: ${abbreviateNumber(shape.dmg)}<br>` : ""}
         ${shape.effectDuration ? `Effect Duration: ${shape.effectDuration / 1e3} second(s)<br>` : ""}
         ${shape.yellowShield ? `Energy Shield Health: ${abbreviateNumber(shape.yellowShield)}<br>` : ""}
+        ${shape.healingPercent ? `Durability Repair: ${Math.round(shape.healingPercent * 10000)/100}%<br>` : ""}
+        ${shape.grayHealing ? `Gray Damage Repair: ${Math.round(shape.grayHealing * 10000)/100}%<br>` : ""}
         Charge Speed Modifier: ${Math.round(shape.chargeSpeed * 100)}%
         `;
     }
@@ -17467,8 +18036,14 @@
         if (data.dmgData && data.dmgData.level[shape.level]) {
             shape.dmg += data.dmgData.level[shape.level];
         }
+        if (data.grayHealingData && data.grayHealingData.level[shape.level]) {
+            shape.grayHealing += data.grayHealingData.level[shape.level];
+        }
         if (data.effectDurationData && data.effectDurationData.level[shape.level]) {
             shape.effectDuration += data.effectDurationData.level[shape.level];
+        }
+        if (data.healingPercentData && data.healingPercentData.level[shape.level]) {
+            shape.healingPercent += data.healingPercentData.level[shape.level];
         }
         if (data.yellowShieldData && data.yellowShieldData.level[shape.level]) {
             shape.yellowShield += data.yellowShieldData.level[shape.level];
@@ -17582,6 +18157,48 @@
             Effect Duration: ${weapon.effectDuration / 1e3} second(s)
             <div style="display: ${Weapon.effectDurationData.level[weapon.level] ? "block" : "none"};position: absolute; top: 0px; right: 0px; color: #00ff00;">
             +${Weapon.effectDurationData.level[weapon.level] / 1e3} second(s)
+            </div>
+            </div>
+            <div style="position: relative; width: ${maxwidth}px; height: 3px; background-color: #fff;">
+            <div style="position: absolute; top: 0px; left: 0px; height: 3px; width: ${indexAdjusted * 100}%; background-color: #02de02;">
+            </div>
+            <div style="position: absolute; top: 0px; left: 0px; height: 3px; width: ${indexAdjust * 100}%; background-color: #00fcec;">
+            </div>
+            </div>
+            `;
+        } else if (type == "healingPercent" && Weapon.healingPercentData) {
+            let maxdmg = Weapon.healingPercentData.base;
+            for (let i = 0; i < Weapon.healingPercentData.level.length; i++) {
+                maxdmg += Weapon.healingPercentData.level[i];
+            }
+            let indexAdjust = ((weapon.healingPercent / maxdmg) * maxwidth) / maxwidth;
+            let indexAdjusted = (((weapon.healingPercent + (Weapon.healingPercentData.level[weapon.level])) / maxdmg) * maxwidth) / maxwidth;
+            text = `
+            <div style="position: relative; width: ${maxwidth}px;">
+            Durability Repair: ${Math.round(weapon.healingPercent * 10000)/100}%
+            <div style="display: ${Weapon.healingPercentData.level[weapon.level] ? "block" : "none"};position: absolute; top: 0px; right: 0px; color: #00ff00;">
+            +${Math.round(Weapon.healingPercentData.level[weapon.level] * 10000)/100}%
+            </div>
+            </div>
+            <div style="position: relative; width: ${maxwidth}px; height: 3px; background-color: #fff;">
+            <div style="position: absolute; top: 0px; left: 0px; height: 3px; width: ${indexAdjusted * 100}%; background-color: #02de02;">
+            </div>
+            <div style="position: absolute; top: 0px; left: 0px; height: 3px; width: ${indexAdjust * 100}%; background-color: #00fcec;">
+            </div>
+            </div>
+            `;
+        } else if (type == "grayHealing" && Weapon.grayHealingData) {
+            let maxdmg = Weapon.grayHealingData.base;
+            for (let i = 0; i < Weapon.grayHealingData.level.length; i++) {
+                maxdmg += Weapon.grayHealingData.level[i];
+            }
+            let indexAdjust = ((weapon.grayHealing / maxdmg) * maxwidth) / maxwidth;
+            let indexAdjusted = (((weapon.grayHealing + (Weapon.grayHealingData.level[weapon.level])) / maxdmg) * maxwidth) / maxwidth;
+            text = `
+            <div style="position: relative; width: ${maxwidth}px;">
+            Gray Damage Repair: ${Math.round(weapon.grayHealing * 10000)/100}%
+            <div style="display: ${Weapon.grayHealingData.level[weapon.level] ? "block" : "none"};position: absolute; top: 0px; right: 0px; color: #00ff00;">
+            +${Math.round(Weapon.grayHealingData.level[weapon.level] * 10000)/100}%
             </div>
             </div>
             <div style="position: relative; width: ${maxwidth}px; height: 3px; background-color: #fff;">
@@ -17918,6 +18535,9 @@
             ${enterBarForShip("repair", shape)}
             ${enterBarForShip("yellow shield", shape)}
             ${enterBarForShip("effect duration", shape)}
+            ${enterBarForShip("healingPercent", shape)}
+            ${enterBarForShip("grayHealing", shape)}
+
             ${enterBarForShip("charge", shape)}
             </div>
             <div id="leaveUpgrade" style="position: absolute; cursor: pointer; right: 10px; top: 10px;">
@@ -18764,6 +19384,19 @@
             ctx.rotate(-(dir + Math.PI / 2));
         } else if (robot.name.includes("Octagon")) {
             ctx.rotate(dir + Math.PI / 2);
+            if (robot.effects) {
+                let force = robot.effects.find(e => e.name == "forcefield");
+                if (force) {
+                    let percent = 1 - (force.data.health / force.data.maxhealth);
+                    let startColor = "#00ffff";
+                    let endColor = "#ff0000";
+                    let interpolatedColor = interpolateColor(startColor, endColor, percent);
+                    ctx.strokeStyle = interpolatedColor;
+                    ctx.lineWidth = 15;
+                    renderStar(ctx, 4, robot.scale + 10, robot.scale + 10);
+                    ctx.stroke();
+                }
+            }
             ctx.strokeStyle = robot.isFREEZE ? "#fff" : "#000";
             ctx.lineWidth = w;
             ctx.fillStyle = robot.color;
@@ -18790,6 +19423,13 @@
                 changeHealth(robot, {
                     amount: healing
                 }, false, robot);
+            } else if (bond.name == "Active Support") {
+                if (bond.target.activeSupportIncreaseHealthHAHAHAHA == null) {
+                    bond.target.activeSupportIncreaseHealthHAHAHAHA = bond.target.normalMaxHealth * .1;
+                }
+                bond.target.health += bond.target.activeSupportIncreaseHealthHAHAHAHA;
+                bond.target.normalMaxHealth += bond.target.activeSupportIncreaseHealthHAHAHAHA;
+                bond.target.maxhealth += bond.target.activeSupportIncreaseHealthHAHAHAHA;
             }
             robot.bonds.splice(i, 1);
         }
@@ -18867,8 +19507,8 @@
                         if (bond) {
                             ctx.save();
                             ctx.translate(-(robot.x - offset.x), -(robot.y - offset.y));
-                            ctx.lineWidth = 32;
-                            ctx.strokeStyle = bond.isAlly ? "rgb(255, 0, 255, .6)" : "rgb(255, 0, 0, .6)";
+                            ctx.lineWidth = bond.name == "Active Support" ? 16 : 32;
+                            ctx.strokeStyle = bond.name == "Active Support" ? "rgb(1, 50, 32, .6)" : bond.isAlly ? "rgb(255, 0, 255, .6)" : "rgb(255, 0, 0, .6)";
                             ctx.lineCap = "round";
                             ctx.beginPath();
                             ctx.moveTo(robot.x - offset.x, robot.y - offset.y);
@@ -18997,8 +19637,8 @@
                         level: weapon.level
                     }
                 });
-            } else if (weapon.name == "Punisher") {
-                projectiles.push({
+            } else if (weapon.name == "Punisher" || weapon.name == "Ultimate Punisher") {
+                for (let i = 0; i < (weapon.name == "Ultimate Punisher" ? 2 : 1); i++) projectiles.push({
                     x: x,
                     y: y,
                     oldX: x,
@@ -19015,6 +19655,7 @@
                     color: "./images/bullets/bullet.png",
                     avoidBuildings: shape.avoidBuildings,
                     motherShipCharge: weapon.motherShipCharge,
+                    defensePointsBypass: (1 - weapon.defenseBypass),
                     owner: shape,
                     weaponOwner: {
                         name: weapon.name,
@@ -19101,12 +19742,12 @@
                     },
                     rustEffect: {
                         name: "rust",
-                        power: 0.009,
+                        power: 0.01,
                         last: 10e3
                     },
                     fragEffect: {
                         name: "frag",
-                        power: 0.009,
+                        power: 0.025,
                         last: 10e3
                     },
                     motherShipCharge: weapon.motherShipCharge,
@@ -19207,12 +19848,12 @@
                     isAlly: isAlly,
                     rustEffect: {
                         name: "rust",
-                        power: 0.002125,
+                        power: 0.005,
                         last: 5e3
                     },
                     dotEffect: {
                         name: "dot",
-                        last: 5e3,
+                        last: 10e3,
                         dmg: weapon.dotDamage,
                         owner: shape
                     },
@@ -19469,6 +20110,33 @@
                         level: weapon.level
                     }
                 });
+            } else if (weapon.name == "Blight" || weapon.name == "Decay") {
+                let ammoFired = weapon.ammoFired;
+                let index = Math.floor(ammoFired / 3) % 3;
+                let dmgMulti = [1, 1.5, 2];
+                projectiles.push({
+                    projType: weapon.projType,
+                    x: x,
+                    y: y,
+                    oldX: x,
+                    avoidBuildings: shape.avoidBuildings,
+                    oldY: y,
+                    velx: 0,
+                    vely: 0,
+                    scale: scale * dmgMulti[index],
+                    speed: .25,
+                    dmg: weapon.dmg * dmgMulti[index],
+                    range: weapon.range,
+                    dir: dir,
+                    isAlly: isAlly,
+                    color: index == 2 ? "#f00" : index == 1 ? "#ffff00" : "#0f0",
+                    owner: shape,
+                    motherShipCharge: weapon.motherShipCharge,
+                    weaponOwner: {
+                        name: weapon.name,
+                        level: weapon.level
+                    }
+                });
             } else if (weapon.name == "Shocker" || weapon.name == "Reaper") {
                 projectiles.push({
                     projType: weapon.projType,
@@ -19551,7 +20219,6 @@
                     }
                 });
             } else if (weapon.name == "Inferno" || weapon.name == "Pyro") {
-                let mathp = (weapon.firedTime / weapon.overheatTime);
                 for (let i = 0; i < (Math.random() > .5 ? 2 : 1); i++) projectiles.push({
                     projType: weapon.projType,
                     x: x,
@@ -19562,11 +20229,11 @@
                     vely: 0,
                     scale: scale,
                     avoidBuildings: shape.avoidBuildings,
-                    speed: ((1-mathp) * 0.1) + 0.035,
+                    speed: 0.1,
                     dmg: weapon.dmg,
                     range: weapon.range,
                     aoeRange: scale * 2.5,
-                    dir: dir + getRandomOffset((weapon.spread * mathp) + 2),
+                    dir: dir + getRandomOffset(weapon.spread),
                     isAlly: isAlly,
                     color: `rgb(0, ${(Math.random() < .5 ? 255 : 0)}, 255, ${Math.randInt(8, 10) / 10})`,
                     owner: shape,
@@ -19632,8 +20299,8 @@
                         level: weapon.level
                     }
                 });
-            } else if (weapon.name == "Destroyer") {
-                for(let i = 0; i < 2; i++) projectiles.push({
+            } else if (weapon.name == "Destroyer" || weapon.name == "Ultimate Destroyer") {
+                for(let i = 0; i < (weapon.name == "Ultimate Destroyer" ? 4 : 2); i++) projectiles.push({
                     projType: weapon.projType,
                     x: x,
                     y: y,
@@ -19651,6 +20318,7 @@
                     color: "./images/bullets/bullet.png",
                     owner: shape,
                     motherShipCharge: weapon.motherShipCharge,
+                    defensePointsBypass: (1 - weapon.defenseBypass),
                     weaponOwner: {
                         name: weapon.name,
                         level: weapon.level
@@ -20578,7 +21246,8 @@
     }
     var deltaTimer = 0;
     var shieldEffects = [];
-    function addGrayDamage(shape, amount, graydmg, isDotDamage) {
+    function addGrayDamage(shape, amount, graydmg, isDotDamage, maxhealthDamage) {
+        if (maxhealthDamage) return;
         let grayDamageMulti = 1;
         if (shape.modules && shape.modules.length) {
             shape.modules.forEach(e => {
@@ -20736,14 +21405,14 @@
             }
             if (moveDir == undefined || moveDir == null) return;
             robot.targetDir = moveDir;
-            if ((hasStampede && hasStampede.lastTime > 4e3) || robot.name == "Brown Pentagon" || robot.name == "Cyan Pentagon") {
+            if (hasStampede && hasStampede.lastTime > 4e3) {
                 if (robot.movedir == null) {
                     robot.movedir = moveDir;
                 }
                 if (robot.movedir != moveDir) {
                     robot.movedir %= (Math.PI * 2);
                     let netAngle = (robot.movedir - moveDir + (Math.PI * 2)) % (Math.PI * 2);
-                    let amnt = Math.min(Math.abs(netAngle - (Math.PI * 2)), netAngle, (robot.name == "Brown Pentagon" ? 0.01 : robot.name == "Cyan Pentagon" ? 0.0052 : 0.0018) * delta);
+                    let amnt = Math.min(Math.abs(netAngle - (Math.PI * 2)), netAngle, 0.0018 * delta);
                     let sign = (netAngle - Math.PI) >= 0 ? 1 : -1;
                     if (!isNaN(netAngle)) {
                         robot.movedir += sign * amnt + (Math.PI * 2);
@@ -21029,8 +21698,9 @@
                         defensePointsBypass: bullet.defensePointsBypass,
                         bypassReflector: bullet.bypassReflector,
                         motherShipCharge: bullet.motherShipCharge,
-                        execute: bullet.execute
-                    }, bullet.owner.isMe, bullet.owner);
+                        execute: bullet.execute,
+                        maxhealthDamage: bullet.weaponOwner && ["Ultimate Punisher", "Ultimate Destroyer"].includes(bullet.weaponOwner.name) ? true : false
+                    }, bullet.owner.isMe, bullet.owner, (bullet.weaponOwner && ["Reaper"].includes(bullet.weaponOwner.name) ? true : false));
                 } else {
                     for (let t = 0; t < players.length; t++) {
                         let player = players[t].robots[players[t].robotIndex];
@@ -21101,6 +21771,8 @@
                     }
                 }
             }
+        } else if (robot.ability && robot.ability.name == "Active Support") {
+            return [robot];
         } else {
             if ((robot.name == "Remote Repair" || robot.name == "healfield") && dist(robot.owner, robot) <= abilityRange + robot.owner.scale) {
                 return [robot.owner];
@@ -21157,6 +21829,9 @@
         let hasSlowdownImmune = robot.effects.find(e => e.name == "slowdown immune");
         let hasFreezeImmune = robot.effects.find(e => e.name == "freeze immune");
         let hasRustImmune = robot.effects.find(e => e.name == "rust immune");
+        let hasEMPImmune = robot.effects.find(e => e.name == "anti emp");
+        let hasBlindImmune = robot.effects.find(e => e.name == "anti blind");
+        let hasSuppressionImmune = robot.effects.find(e => e.name == "anti suppression");
         let DoTEffects = robot.effects.filter(e => e.name == "dot" && !e.AdditionalDamageDependingDoT);
         if (DoTEffects.length && robot.drone) {
             let hi = robot.drone.abilities.find(e => e.name == "Additional Damage Depending DoT");
@@ -21177,7 +21852,7 @@
         for (let i = 0; i < robot.effects.length; i++) {
             let effect = robot.effects[i];
             if (effect) {
-                if (effect.neg && !effect.LMAOOOOOKAOSDKASOIDKASDIOAS && robot.negEffectReduction) {
+                if (effect.neg && effect.name != "dot" && !effect.LMAOOOOOKAOSDKASOIDKASDIOAS && robot.negEffectReduction) {
                     effect.LMAOOOOOKAOSDKASOIDKASDIOAS = true;
                     effect.lastTime *= robot.negEffectReduction;
                 } else if (effect.name != "cooldown_timer" && !effect.abilityEffect && !effect.neg && !effect.LMAOOOOOKAOSDKASOIDKASDIOAS && robot.increaseDurationOfPositiveEffects) {
@@ -21197,6 +21872,15 @@
                         effect.lastTime = 0;
                         continue;
                     } else if (effect.name == "slowdown" && hasSlowdownImmune) {
+                        effect.lastTime = 0;
+                        continue;
+                    } else if (effect.name == "blind" && hasBlindImmune) {
+                        effect.lastTime = 0;
+                        continue;
+                    } else if (effect.name == "emp" && hasEMPImmune) {
+                        effect.lastTime = 0;
+                        continue;
+                    } else if (effect.name == "suppression" && hasSuppressionImmune) {
                         effect.lastTime = 0;
                         continue;
                     } else {
@@ -21260,7 +21944,7 @@
                     } else if (effect.name == "dot") {
                         if (effect.dmgOverTime == null) effect.dmgOverTime = 0;
                         effect.dmgOverTime -= delta;
-                        robot.dotDamage += (Math.floor(effect.lastTime / 1000) * effect.dmg) * (robot.dotResistance ? robot.dotResistance : 1);
+                        robot.dotDamage += (Math.floor(effect.lastTime / 1e3) * effect.dmg) * (robot.dotResistance ? robot.dotResistance : 1);
                         if (effect.dmgOverTime <= 0) {
                             if (effect.owner) {
                                 changeHealth(robot, {
@@ -21286,9 +21970,6 @@
                                 });
                             }
                             effect.dmgOverTime = 1000;
-                        }
-                        if (robot.effects.find(e => e.name == "phase shift")) {
-                            effect.lastTime = 0;
                         }
                     } else if (effect.name == "last stand") {
                         if (effect.LOLOL == null) effect.LOLOL = 0;
@@ -21516,9 +22197,12 @@
                             if (effect.type == "percent") {
                                 amount = robot.maxhealth * effect.power;
                             }
+                            if (effect.grayDamage) {
+                                robot.grayDamage = Math.max(0, robot.grayDamage - (amount * effect.grayDamage));
+                            }
                             changeHealth(robot, {
                                 amount: amount
-                            }, false, robot);
+                            }, false, effect.owner ? effect.owner : robot);
                         }
                     } else if (effect.name == "Blink Support") {
                         speedMulti += .5;
@@ -21605,11 +22289,23 @@
                         robot.blind = true;
                     } else if (effect.name == "emp") {
                         robot.emp = true;
+                    } else if (effect.name == "forcefield") {
+                        if (effect.abilityEffect == "Skyward") {
+                            robot.avoidBuildings = true;
+                            robot.abilitySpeedMulti += 1.5;
+                        }
                     }
                 }
                 if (effect.lastTime <= 0) {
                     if (effect.name == "Clain Blink") {
                         doAbilityEndFunction(robot, 0, effect);
+                    }
+                    if (effect.name == "forcefield") {
+                        if (effect.abilityEffect == "Skyward") {
+                            let weapon = robot.weapons.find(e => e.name == "Skyward");
+                            weapon.notActive = true;
+                            weapon.ammo = 0;
+                        }
                     }
                     if (effect.name == "Cannonier" || effect.name == "extra health") {
                         if (effect.name == "extra health" && robot.name == "Dark Tan Circle") {
@@ -21620,14 +22316,16 @@
                             robot.grayDamage -= (effect.grayDamage || 0);
                             effect.health = 0;
                         }
-                        if (robot.isMe) {
-                            transitionProgress = 0;
-                        }
-                        robot.flightVisualData = 0.0001;
-                        for (let i = 0; i < robot.weapons.length; i++) {
-                            let weapon = robot.weapons[i];
-                            if (weapon.targetedWeaponsToUse && !weapon.weaponIsBroken) {
-                                weapon.notActive = true;
+                        if (effect.abilityEffect) {
+                            if (robot.isMe) {
+                                transitionProgress = 0;
+                            }
+                            robot.flightVisualData = 0.0001;
+                            for (let i = 0; i < robot.weapons.length; i++) {
+                                let weapon = robot.weapons[i];
+                                if (weapon.targetedWeaponsToUse && !weapon.weaponIsBroken) {
+                                    weapon.notActive = true;
+                                }
                             }
                         }
                     }
@@ -21660,14 +22358,6 @@
                                 lastTime: 10e3
                             });
                         });
-                    }
-                    if (effect.onEndDecrease) {
-                        let healthIncreased = effect.onEndDecrease[0];
-                        let grayIncreased = effect.onEndDecrease[1];
-                        robot.grayDamage -= grayIncreased;
-                        let multi = robot.health / robot.maxhealth;
-                        robot.maxhealth -= healthIncreased;
-                        robot.health = multi * robot.maxhealth;
                     }
                     if (effect.name == "Blink Support") {
                         let healthIncreased = effect.healthIncreased;
@@ -21750,9 +22440,10 @@
                     }
                 }
             }
+            let gameMode = player.gameMode;
             for (let t = 0; t < players.length; t++) {
                 let player = players[t].robots[players[t].robotIndex];
-                if (player && players[t].isAlly == isAlly) {
+                if (player && (gameMode == 4 ? player != blastEffectOwner : players[t].isAlly == isAlly)) {
                     if (Math.hypot(robot.y - player.y, robot.x - player.x) <= 300 + robot.scale + player.scale) {
                         doDamageToPhysicalShields(player.shields, damage, blastEffectOwner);
                         changeHealth(player, {
@@ -21760,7 +22451,7 @@
                             graydmg: 0,
                             bypassReflector: true,
                             damageTypeName: "BLAST EFFECT"
-                        }, blastEffectOwner.isMe, blastEffectOwner);
+                        }, blastEffectOwner.isMe, blastEffectOwner, true);
                     }
                 }
             }
@@ -21916,50 +22607,74 @@
             return "./images/modules/heavy_armor_plating.png";
         } else if (index == "blind") {
             return "./images/icons/blind.png";
+        } else if (index == "anti blind") {
+            return "./images/icons/anti_blind.png";
         } else if (index == "emp") {
             return "./images/icons/emp.png";
+        } else if (index == "anti emp") {
+            return "./images/icons/anti_emp.png";
+        } else if (index == "anti suppression") {
+            return "./images/icons/anti_suppression.png";
         } else if (index == "block") {
             return "./images/icons/block.png";
         } else {
             return "./images/abilities/cold_pulse.png";
         }
     }
+    function drawEffect(MATH1HA___, effect, i, INDEXXXXXX) {
+        let string = (effect.duration / 1000).toString();
+        let DOTINDEXXX = string.indexOf('.');
+        if (DOTINDEXXX == -1) {
+            string += ".0";
+        } else string = string.slice(0, DOTINDEXXX + 2);
+        if (effect.duration >= 1e100) {
+            string = "";
+        }
+        if (i == "dot") {
+            effect.neg = true;
+        }
+        document.getElementById("LMAOLMAOLMAOLMAO").innerHTML += `
+        <div style="position: absolute; left: 20px; width: 125px; height: 43px; background-color: rgb(0, 0, 0, 0.35); bottom: ${(48 * INDEXXXXXX) + (MATH1HA___ + 15)}px; ${effect.amount > 1 ? `background-repeat: no-repeat; background-size: 100px 43px; background-image: linear-gradient(to right, ${effect.neg ? "rgba(255, 0, 0, 0.6)" : "rgba(0, 0, 255, 0.6)"}, rgba(0, 0, 0, 0));` : ""} border-radius: 2px; overflow: hidden;">
+        <div style="position: absolute; top: 0px; left: ${effect.amount >= 100 ? 40 : effect.amount >= 10 ? 30 : effect.amount > 1 ? 20 : 5}px; height: 40px; width: 40px; background-size: 40px 40px; ${typeof getEffectIcon(i) == "object" ? "" : `background-image: url('${getEffectIcon(i)}');`}">
+        ${typeof getEffectIcon(i) == "object" ? `
+        <span class="material-symbols-outlined" style="color: #fff; font-size: 40px;">
+        ${getEffectIcon(i).name}
+        </span>
+        ` : ""}
+        </div>
+        <div style="position: absolute; display: ${effect.amount <= 1 ? "none" : "block"}; top: 9px; left: 5px; color: #fff;">
+        ${effect.amount}
+        </div>
+        <div style="position: absolute; display: ${effect.lastForever ? "none" : "block"}; top: 9px; right: 5px; color: #fff;">
+        ${!string.includes("-") ? string : ""}
+        </div>
+        <div style="position: absolute; bottom: 0px; left: 0px; height: 3px; width: 100%; background-color: ${effect.thingyX != null || effect.thingyX != undefined ? "rgb(255, 255, 255, 0.4)" : "rgb(255, 255, 255, 0.6)"};">
+        <div style="position: absolute; bottom: 0px; left: ${effect.thingyX || 0}px; height: 3px; width: ${effect.thingyX != null || effect.thingyX != undefined ? 55 : ((effect.duration / effect.orginal) * 100)}%; ${effect.thingyX != undefined || effect.thingyX != null ? `background-image: linear-gradient(to right, rgba(255, 255, 255, 0.3), ${!effect.neg ? "#00ffff" : "#f00"}, rgba(255, 255, 255, .3));` : `background-color: ${!effect.neg ? "#00f" : "#f00"};`}">
+        </div>
+        </div>
+        </div>
+        `;
+    }
     function drawEffects(MATH1HA___, effectNames) {
         let INDEXXXXXX = 0;
+        let negativeEffects = {};
+        let nonNegativeEffects = {};
         for (let i in effectNames) {
+            if (effectNames[i].neg) {
+                negativeEffects[i] = effectNames[i];
+            } else {
+                nonNegativeEffects[i] = effectNames[i];
+            }
+        }
+        for (let i in negativeEffects) {
             if (INDEXXXXXX < 6) {
-                let string = (effectNames[i].duration / 1000).toString();
-                let DOTINDEXXX = string.indexOf('.');
-                if (DOTINDEXXX == -1) {
-                    string += ".0";
-                } else string = string.slice(0, DOTINDEXXX + 2);
-                if (effectNames[i].duration >= 1e100) {
-                    string = "";
-                }
-                if (i == "dot") {
-                    effectNames[i].neg = true;
-                }
-                document.getElementById("LMAOLMAOLMAOLMAO").innerHTML += `
-                <div style="position: absolute; left: 20px; width: 125px; height: 43px; background-color: rgb(0, 0, 0, 0.35); bottom: ${(48 * INDEXXXXXX) + (MATH1HA___ + 15)}px; ${effectNames[i].amount > 1 ? `background-repeat: no-repeat; background-size: 100px 43px; background-image: linear-gradient(to right, ${effectNames[i].neg ? "rgba(255, 0, 0, 0.6)" : "rgba(0, 0, 255, 0.6)"}, rgba(0, 0, 0, 0));` : ""} border-radius: 2px; overflow: hidden;">
-                <div style="position: absolute; top: 0px; left: ${effectNames[i].amount >= 100 ? 40 : effectNames[i].amount >= 10 ? 30 : effectNames[i].amount > 1 ? 20 : 5}px; height: 40px; width: 40px; background-size: 40px 40px; ${typeof getEffectIcon(i) == "object" ? "" : `background-image: url('${getEffectIcon(i)}');`}">
-                ${typeof getEffectIcon(i) == "object" ? `
-                <span class="material-symbols-outlined" style="color: #fff; font-size: 40px;">
-                ${getEffectIcon(i).name}
-                </span>
-                ` : ""}
-                </div>
-                <div style="position: absolute; display: ${effectNames[i].amount <= 1 ? "none" : "block"}; top: 9px; left: 5px; color: #fff;">
-                ${effectNames[i].amount}
-                </div>
-                <div style="position: absolute; display: ${effectNames[i].lastForever ? "none" : "block"}; top: 9px; right: 5px; color: #fff;">
-                ${!string.includes("-") ? string : ""}
-                </div>
-                <div style="position: absolute; bottom: 0px; left: 0px; height: 3px; width: 100%; background-color: ${effectNames[i].thingyX != null || effectNames[i].thingyX != undefined ? "rgb(255, 255, 255, 0.4)" : "rgb(255, 255, 255, 0.6)"};">
-                <div style="position: absolute; bottom: 0px; left: ${effectNames[i].thingyX || 0}px; height: 3px; width: ${effectNames[i].thingyX != null || effectNames[i].thingyX != undefined ? 55 : ((effectNames[i].duration / effectNames[i].orginal) * 100)}%; ${effectNames[i].thingyX != undefined || effectNames[i].thingyX != null ? `background-image: linear-gradient(to right, rgba(255, 255, 255, 0.3), ${!effectNames[i].neg ? "#00ffff" : "#f00"}, rgba(255, 255, 255, .3));` : `background-color: ${!effectNames[i].neg ? "#00f" : "#f00"};`}">
-                </div>
-                </div>
-                </div>
-                `;
+                drawEffect(MATH1HA___, negativeEffects[i], i, INDEXXXXXX);
+            }
+            INDEXXXXXX++;
+        }
+        for (let i in nonNegativeEffects) {
+            if (INDEXXXXXX < 6) {
+                drawEffect(MATH1HA___, nonNegativeEffects[i], i, INDEXXXXXX);
             }
             INDEXXXXXX++;
         }
@@ -21987,14 +22702,16 @@
             }
             let thingy = undefined;
             if (weapon.name == "Veyron" || weapon.name == "Evora") {
-                thingy = (weapon.firedTime / 500) * 100;
+                thingy = (weapon.firedTime / 2e3) * 100;
             } else if (weapon.name == "Discordia" || weapon.name == "Tumultus") {
-                thingy = (weapon.firedTime / 1e3) * 100;
+                thingy = (weapon.firedTime / 2e3) * 100;
             } else if (weapon.name == "Sorrow" || weapon.name == "Grief") {
                 thingy = (weapon.firedTime / 4e3) * 100;
+            } else if (weapon.name == "Ultimate Punisher" || weapon.name == "Ultimate Destroyer") {
+                thingy = (weapon.firedTime / 2e3) * 100;
             }
             document.getElementById("weaponThing").innerHTML += `
-            <div style="opacity: ${weapon.weaponIsBroken ? .1 : weapon.notActive ? .4 : 1}; position: absolute; bottom: ${80 * (index >= 4 ? index - 4 : index)}px; left: ${index >= 4 ? 320 : 0}px; width: 200px; height: 75px; margin-top: 20px;">
+            <div style="opacity: ${weapon.weaponIsBroken ? .1 : (weapon.disabled || weapon.notActive ? .4 : 1)}; position: absolute; bottom: ${80 * (index >= 4 ? index - 4 : index)}px; left: ${index >= 4 ? 320 : 0}px; width: 200px; height: 75px; margin-top: 20px;">
             <div id="weaponICON${i}" style="position: absolute; z-index: 2; top: 0px; left: 0px; background-color: #404040; border-radius: 100%; width: 75px; height: 75px;">
             </div>
             <div style="display: ${thingy != undefined ? "block" : "none"}; position: absolute; top: 33px; left: 50px; background-color: #404040; border-radius: 12px; width: 210px; height: 30px;">
@@ -22003,6 +22720,8 @@
             </div>
             <div style="position: absolute; top: 23px; left: 60px; background-color: #404040; border-radius: 12px; width: 250px; height: 30px;">
             <div style="width: ${weapon.overheatTime ? ((weapon.firedTime / weapon.overheatTime) * 100) : ((weapon.ammo / weapon.maxammo) * 100)}%; height: 100%; border-radius: 12px; background-color: ${(weapon.overheatTime || weapon.name == "Lance" || weapon.name == "Glaive") ? rgb : "#fff"};">
+            </div>
+            <div id="weaponReloadNumber${i}" style="position: absolute; right: 5px; top: 5.5px; font-size: 12px; color: #ffff00;">
             </div>
             </div>
             </div>
@@ -22014,7 +22733,8 @@
         let angleDifference = Math.abs(b - a) % (2 * Math.PI);
         return angleDifference > Math.PI ? (2 * Math.PI) - angleDifference : angleDifference;
     };
-    function doLaserDamage(robot, weapon, taker) {
+    function doLaserDamage(robot, weapon, taker, dmgMulti) {
+        dmgMulti = dmgMulti || 1;
         if (weapon.weaponIsBroken) return;
         if (["Leiming", "Fengbao"].includes(weapon.name) ? false : taker.invis) return;
         if (taker.shields) {
@@ -22045,14 +22765,19 @@
         }
         let hasHealth = taker.health > 0;
         let dmgIncrease = 1;
-        if ((weapon.name == "Fulgur" || weapon.name == "Tonans") && taker.tier == 4) {
-            dmgIncrease = 2.25;
+        if (taker.tier == 4) {
+            if ((weapon.name == "Fulgur" || weapon.name == "Tonans")) {
+                dmgIncrease = 3.25;
+            } else if (weapon.name == "Skyward") {
+                dmgIncrease = 2.5;
+            }
         }
         changeHealth(taker, {
-            amount: -(weapon.dmg * dmgIncrease),
-            defensePointsBypass: (1 - weapon.defenseBypass),
+            amount: -(weapon.dmg * dmgIncrease * dmgMulti),
+            defensePointsBypass: (weapon.name == "Skyward" ? 0 : (1 - weapon.defenseBypass)),
             onDamageHealBack: weapon.healBackOnDamage,
-            motherShipCharge: weapon.motherShipCharge
+            motherShipCharge: weapon.motherShipCharge,
+            bypassReflector: weapon.name == "Skyward"
         }, false, robot);
         if (taker.health <= 0 && hasHealth) {
             let player1 = findPlayerBySid(robot.inGameSid);
@@ -22073,9 +22798,39 @@
                     doLaserDamage(robot, weapon, target);
                 }
             }
+        } else if (weapon.name == "Skyward") {
+            let direction = robot.dir;
+            let angle = 0.72;
+            if (weapon.target || robot.target) {
+                let target = weapon.target || robot.target;
+                if (target && dist(target, robot) <= weapon.range) {
+                    doLaserDamage(robot, weapon, target);
+                }
+            }
+            if (hasPlayers()) {
+                for (let i = 0; i < players.length; i++) {
+                    let player = players[i].robots[players[i].robotIndex];
+                    if (player && players[i].isAlly != isAlly) {
+                        let dir = Math.atan2(player.y - robot.y, player.x - robot.x);
+                        if ((["Leiming", "Fengbao"].includes(weapon.name) ? true : !player.invis) && Math.getAngleDist(direction, dir) <= angle && dist(player, robot) <= weapon.range + player.scale) {
+                            doLaserDamage(robot, weapon, player);
+                        }
+                    }
+                }
+            } else {
+                for (let i = 0; i < enemies.length; i++) {
+                    let player = enemies[i];
+                    if (player) {
+                        let dir = Math.atan2(player.y - robot.y, player.x - robot.x);
+                        if (Math.getAngleDist(direction, dir) <= angle && dist(player, robot) <= weapon.range + player.scale) {
+                            doLaserDamage(robot, weapon, player, .5);
+                        }
+                    }
+                }
+            }
         } else {
             let direction = robot.dir;
-            let angle = ["Leiming", "Fengbao"].includes(weapon.name) ? Math.PI : 0.72;
+            let angle = ["Leiming", "Fengbao"].includes(weapon.name) ? (Math.PI / 2) : 0.72;
             if (hasPlayers()) {
                 for (let i = 0; i < players.length; i++) {
                     let player = players[i].robots[players[i].robotIndex];
@@ -22154,12 +22909,12 @@
                 if (weapon.lastFire == null) weapon.lastFire = 0;
                 if (weapon.name == "Discordia" || weapon.name == "Tumultus") {
                     if ((robot.isMe ? spacePressed : robot.fireWeapon)) {
-                        increaseFireTime(weapon, delta, 1e3);
+                        increaseFireTime(weapon, delta, 2e3);
                     } else { 
                         increaseFireTime(weapon, -delta);
                     }
                 }
-                let fireRateMulti = (weapon.firedTime / 1e3 == 1 ? 0.5 : 1);
+                let fireRateMulti = (weapon.firedTime / 2e3 == 1 ? 0.5 : 1);
                 if (!weapon.notActive && weapon.ammo > 0 && !robot.isFREEZE && (robot.isMe ? spacePressed : robot.fireWeapon) && Date.now() - weapon.lastFire >= (weapon.fireRate * fireRateMulti)) {
                     weapon.lastFire = Date.now();
                     if (weapon.name == "Cinder") {
@@ -22206,6 +22961,14 @@
                         robot.reloadMoveMulti = 1;
                     }
                     if (weapon.lastChange == null) weapon.lastChange = 0;
+                    if (robot.isMe) {
+                        let reloadTime = ((weapon.reload * robot.reloadMoveMulti) - (Date.now() - weapon.lastChange)) / 1e3;
+                        if (reloadTime <= 0) reloadTime = 0;
+                        let string = reloadTime.toString();
+                        document.getElementById(`weaponReloadNumber${i}`).innerHTML = `
+                        ${string.includes(".") ? string.slice(0, string.indexOf(".") + 2) : string}s
+                        `;
+                    }
                     if (Date.now() - weapon.lastChange >= (weapon.reload * robot.reloadMoveMulti)) {
                         weapon.lastChange = Date.now();
                         if (weapon.ammoEachReloadTick) {
@@ -22225,14 +22988,19 @@
                             increaseFireTime(weapon, -(delta * 10));
                         }
                     } else if (weapon.name == "Inferno" || weapon.name == "Pyro") {
-                        if ((robot.isMe ? spacePressed : robot.fireWeapon)) {
+                        if ((robot.isMe ? spacePressed : robot.fireWeapon) && !weapon.disabled) {
                             increaseFireTime(weapon, delta, weapon.overheatTime, -(delta * 4));
                         } else {
-                            increaseFireTime(weapon, -(delta * 4));
+                            increaseFireTime(weapon, -(delta * (weapon.disabled ? .75 : 4)));
                         }
-                    } else if (weapon.name == "Evora" || weapon.name == "Veyron") {
+                        if (weapon.firedTime >= weapon.overheatTime) {
+                            weapon.disabled = true;
+                        } else if (weapon.disabled && weapon.firedTime == 0) {
+                            weapon.disabled = false;
+                        }
+                    } else if (weapon.name == "Evora" || weapon.name == "Veyron" || weapon.name == "Ultimate Punisher" || weapon.name == "Ultimate Destroyer") {
                         if ((robot.isMe ? spacePressed : robot.fireWeapon)) {
-                            increaseFireTime(weapon, delta, 500);
+                            increaseFireTime(weapon, delta, 2e3);
                         } else {
                             increaseFireTime(weapon, -delta);
                         }
@@ -22244,20 +23012,22 @@
                         }
                     }
                 }
-                if (weapon.name == "Fulgur" || weapon.name == "Tonans") {
+                if (weapon.name == "Skyward" || weapon.name == "Fulgur" || weapon.name == "Tonans") {
                     doWeaponTargetStuff(weapon, robot, isAlly);
                 }
-                if (weapon.canFire && !weapon.notActive) {
+                if (weapon.canFire && !weapon.notActive && !weapon.disabled) {
                     weapon.ammo = Math.floor(weapon.ammo);
                     if (weapon.lastFire == null) weapon.lastFire = 0;
                     robot.reloadMoveMulti = 1;
                     let fireRateMulti = 1;
                     if (weapon.name == "Evora" || weapon.name == "Veyron") {
-                        fireRateMulti = (weapon.firedTime / 500) == 1 ? 0.25 : 1;
+                        fireRateMulti = (weapon.firedTime / 2e3) == 1 ? 0.25 : 1;
                     } else if (weapon.name == "Atomizer" || weapon.name == "Nucleon") {
                         fireRateMulti = 1 + (weapon.firedTime / 10000);
                     } else if (weapon.name == "Sorrow" || weapon.name == "Grief") {
                         fireRateMulti = (weapon.firedTime / 4e3) == 1 ? .25 : 1;
+                    } else if (weapon.name == "Ultimate Punisher" || weapon.name == "Ultimate Destroyer") {
+                        fireRateMulti = (weapon.firedTime / 2e3) == 1 ? 0 : 1;
                     }
                     if (((robot.isMe ? spacePressed : robot.fireWeapon) || weapon.continueToFire) && !robot.isFREEZE) {
                         if (typeof weapon.fireRate == "object") {
@@ -22309,7 +23079,7 @@
                                 if (nearestEnemies.length) {
                                     weapon.ammo--;
                                 }
-                            } else if (weapon.name == "Fulgur" || weapon.name == "Tonans") {
+                            } else if (weapon.name == "Skyward" || weapon.name == "Fulgur" || weapon.name == "Tonans") {
                                 doLaserStuff(robot, weapon, isAlly);
                                 weapon.ammo--;
                             } else {
@@ -22321,7 +23091,7 @@
                     if (weapon.ammo <= 0) {
                         weapon.canFire = false;
                     }
-                } else if (!weapon.weaponIsBroken) {
+                } else if (!weapon.weaponIsBroken && !weapon.disabled) {
                     if ((robot.isMe ? rPressed : false) && !robot.isFREEZE) {
                         robot.reloadMoveMulti = .5;
                     } else {
@@ -22329,6 +23099,13 @@
                     }
                     if (weapon.name == "Fulgur" || weapon.name == "Tonans") {
                         weapon.continueToFire = false;
+                    }
+                    if (!weapon.overheatTime && robot.isMe) {
+                        let reloadTime = (((weapon.maxammo - weapon.ammo) / weapon.maxammo) * weapon.reload) / 1e3;
+                        let string = reloadTime.toString();
+                        document.getElementById(`weaponReloadNumber${i}`).innerHTML = `
+                        ${string.includes(".") ? string.slice(0, string.indexOf(".") + 2) : string}s
+                        `;
                     }
                     weapon.ammo += ((weapon.maxammo / weapon.reload) * delta) * (robot.isMe && keysPressed[82] ? 2 : 1);
                     if (weapon.ammo >= weapon.maxammo) {
@@ -22506,37 +23283,39 @@
             if (robot.isMe) transitionProgress = 0;
             if (robot.ability.mode == 0) {
                 robot.flightVisualData = {
-                    scale: robot.oldScale * 1.3,
+                    scale: robot.oldScale * (robot.name == "Pinkish-Red Heptagon" ? 1.4 : 1.3),
                     fov: {
-                        x: 1980 * robot.fieldOfViewMulti * 1.2,
-                        y: 1080 * robot.fieldOfViewMulti * 1.2
+                        x: 1980 * robot.fieldOfViewMulti * (robot.name == "Pinkish-Red Heptagon" ? 1.8 : 1.2),
+                        y: 1080 * robot.fieldOfViewMulti * (robot.name == "Pinkish-Red Heptagon" ? 1.8 : 1.2)
                     }
                 };
-                let doStuff = robot.weapons.sort((a, b) => a.slot - b.slot);
+                let doStuff = robot.weapons.filter(e => e.type == (robot.name == "Pinkish-Red Heptagon" ? "Light" : "Heavy")).sort((a, b) => a.slot - b.slot);
                 for (let i = 0; i < doStuff.length; i++) {
                     let e = doStuff[i];
                     if (e) {
-                        e.notActive = true;
+                        e.notActive = (robot.name == "Pinkish-Red Heptagon" ? false : true);
                         indexx++;
                         if (indexx >= 2) {
                             break;
                         }
                     }
                 }
-                robot.ability.weaponMulti = 1;
-                robot.shields.push({
-                    type: "purple",
-                    health: 0,
-                    lastTime: 5e3
-                });
+                if (robot.name != "Pinkish-Red Heptagon") {
+                    robot.ability.weaponMulti = 1;
+                    robot.shields.push({
+                        type: "purple",
+                        health: 0,
+                        lastTime: 5e3
+                    });
+                }
                 robot.ability.mode = 1;
             } else {
                 robot.flightVisualData = .15;
-                let doStuff = robot.weapons.filter(e => !e.weaponIsBroken).sort((a, b) => a.slot - b.slot);
+                let doStuff = robot.weapons.filter(e => e.type == (robot.name == "Pinkish-Red Heptagon" ? "Light" : "Heavy") && !e.weaponIsBroken).sort((a, b) => a.slot - b.slot);
                 for (let i = 0; i < doStuff.length; i++) {
                     let e = doStuff[i];
                     if (e) {
-                        e.notActive = false;
+                        e.notActive = (robot.name == "Pinkish-Red Heptagon" ? true : false);
                         indexx++;
                         if (indexx >= 2) {
                             break;
@@ -22665,7 +23444,7 @@
                     robot.abilityLast = 1;
                 }
             }
-        } else if (robot.ability.name == "Ferocity" || robot.ability.name == "Barrier Field" || robot.ability.name == "Blink Assault" || (robot.ability.name == "Clain Blink" && !robot.ability.maxcharge) || robot.ability.name == "Remote Assault" || robot.ability.name == "Cannonier" || robot.ability.name == "Long Shot" || robot.ability.name == "Support" || robot.ability.name == "Matrix" || robot.ability.name == "Reflector" || robot.ability.name == "Clear Sky" || robot.ability.name == "Reinforce Hull" || robot.ability.name == "Ultimate Mending" || robot.ability.name == "Divine Judgement" || robot.ability.name == "Grand Fortitude" || robot.ability.name == "Paladin" || robot.ability.name == "Overload" || robot.ability.name == "Stampede" || robot.ability.name == "Stealth" || robot.ability.name == "Retribution" || robot.ability.name == "Ultimate Defense" || robot.ability.name == "Self Heal" || robot.ability.name == "Dragon Flight" || robot.ability.name == "Shield Regeneration" || robot.ability.name == "Full Action") {
+        } else if (robot.ability.name == "Skyward" || robot.ability.name == "Ferocity" || robot.ability.name == "Barrier Field" || robot.ability.name == "Blink Assault" || (robot.ability.name == "Clain Blink" && !robot.ability.maxcharge) || robot.ability.name == "Remote Assault" || robot.ability.name == "Cannonier" || robot.ability.name == "Long Shot" || robot.ability.name == "Support" || robot.ability.name == "Matrix" || robot.ability.name == "Reflector" || robot.ability.name == "Clear Sky" || robot.ability.name == "Reinforce Hull" || robot.ability.name == "Ultimate Mending" || robot.ability.name == "Divine Judgement" || robot.ability.name == "Grand Fortitude" || robot.ability.name == "Paladin" || robot.ability.name == "Overload" || robot.ability.name == "Stampede" || robot.ability.name == "Stealth" || robot.ability.name == "Retribution" || robot.ability.name == "Ultimate Defense" || robot.ability.name == "Self Heal" || robot.ability.name == "Dragon Flight" || robot.ability.name == "Shield Regeneration" || robot.ability.name == "Full Action") {
             if (robot.abilityReload == 0 && robot.abilityLast == 0) {
                 robot.abilityLast = robot.ability.lastingTime;
                 doWonderworkerSkill(robot);
@@ -22684,8 +23463,22 @@
                     });
                 } else if (robot.ability.name == "Dragon Flight") {
                     if (robot.isMe) transitionProgress = 0;
+                    if (robot.name.includes("Ultimate")) {
+                        robot.effects.push({
+                            name: "forcefield",
+                            data: {
+                                resistance: .99,
+                                min: .9,
+                                maxhealth: robot.maxhealth * 2,
+                                health: robot.maxhealth * 2
+                            },
+                            abilityEffect: robot.ability.name,
+                            rechargeTime: robot.ability.lastingTime,
+                            lastTime: robot.ability.lastingTime
+                        });
+                    }
                     robot.flightVisualData = {
-                        scale: robot.oldScale * 1.75,
+                        scale: robot.oldScale * (robot.name.includes("Ultimate") ? 1.35 : 1.75),
                         speed: 0.1,
                         fov: {
                             x: 1980 * robot.fieldOfViewMulti * 1.5,
@@ -22931,6 +23724,31 @@
                         limit: robot.ability.durabilityLimit,
                         lastTime: robot.ability.lastingTime
                     });
+                } else if (robot.ability.name == "Skyward") {
+                    if (robot.isMe) transitionProgress = 0;
+                    robot.flightVisualData = {
+                        scale: robot.oldScale * 1.2,
+                        speed: 0.1,
+                        fov: {
+                            x: 1980 * robot.fieldOfViewMulti * 1.4,
+                            y: 1080 * robot.fieldOfViewMulti * 1.4
+                        }
+                    };
+                    robot.effects.push({
+                        name: "forcefield",
+                        data: {
+                            resistance: .9,
+                            min: .8,
+                            maxhealth: 250e3 * (1 + (robot.skywardV2 || 0)),
+                            health: 250e3 * (1 + (robot.skywardV2 || 0))
+                        },
+                        abilityEffect: robot.ability.name,
+                        rechargeTime: robot.ability.lastingTime,
+                        lastTime: robot.ability.lastingTime
+                    });
+                    let builtInWeapon = robot.weapons.find(e => e.name == "Skyward");
+                    builtInWeapon.notActive = false;
+                    builtInWeapon.ammo = builtInWeapon.maxammo;
                 }
             }
         } else if (robot.ability.name == "Cold Pulse") {
@@ -23154,6 +23972,57 @@
                         duration: 20e3,
                         isAlly: isAlly
                     });
+                } else if (robot.ability.name == "Active Support") {
+                    let tmpx = (robot.cursorLocation ? robot.cursorLocation.x : robot.target ? robot.target.x : robot.x);
+                    let tmpy = (robot.cursorLocation ? robot.cursorLocation.y : robot.target ? robot.target.y : robot.y);
+                    let near = getNearest(robot, 2e3, isAlly, true);
+                    let nearest = near.sort((a, b) => dist(a, {
+                        x: tmpx,
+                        y: tmpy
+                    }) - dist(b, {
+                        x: tmpx,
+                        y: tmpy
+                    }))[0];
+                    if (nearest) {
+                        robot.bonds.push({
+                            target: nearest,
+                            name: "Active Support",
+                            duration: 12e3,
+                            owner: robot
+                        });
+                        robot.effects.push({
+                            name: "defense points",
+                            amount: robot.ability.defensePointsIncrease,
+                            lastTime: 30e3
+                        });
+                        nearest.effects.push({
+                            name: "healing",
+                            type: "percent",
+                            grayDamage: .25,
+                            power: robot.ability.healingPercent,
+                            owner: robot,
+                            rate: 500,
+                            lastTime: 12e3
+                        });
+                        nearest.effects.push({
+                            name: "defense points",
+                            amount: robot.ability.defensePointsIncrease,
+                            lastTime: 12e3
+                        });
+                        nearest.effects.push({
+                            name: "speed",
+                            power: 1,
+                            lastTime: 12e3
+                        });
+                    }
+                    robot.effects.push({
+                        name: "healing",
+                        type: "percent",
+                        grayDamage: .25,
+                        power: robot.ability.healingPercent,
+                        rate: 500,
+                        lastTime: 12e3
+                    });
                 }
             } else if (robot.ability.name == "Clain Blink") {
                 let effect = robot.effects.find(e => e.name == "Clain Blink");
@@ -23181,10 +24050,20 @@
                     }
                 }
             }
-        } else if (robot.ability.name == "Domain Expansion: Infinite Void" || robot.ability.name == "Dismantle") {
+        } else if (robot.ability.name == "Nuclear Strike" || robot.ability.name == "Domain Expansion: Infinite Void" || robot.ability.name == "Dismantle") {
             if (robot.abilityReload == 0) {
                 doWonderworkerSkill(robot);
-                if (robot.ability.name == "Dismantle") {
+                if (robot.ability.name == "Nuclear Strike") {
+                    domains.push({
+                        x: robot.cursorLocation ? robot.cursorLocation.x : robot.target.x,
+                        y: robot.cursorLocation ? robot.cursorLocation.y : robot.target.y,
+                        scale: 600,
+                        isAlly: isAlly,
+                        owner: robot,
+                        name: "Nuclear Strike",
+                        lastingTime: 6e3
+                    });
+                } else if (robot.ability.name == "Dismantle") {
                     domains.push({
                         x: robot.x,
                         y: robot.y,
@@ -23303,7 +24182,7 @@
                         velx: 0,
                         vely: 0,
                         scale: 25,
-                        speed: 0.15,
+                        speed: 0.2,
                         projType: "energy",
                         dmg: robot.ability.dmg * dmgMulti,
                         range: robot.name == "Ultimate Tan Pentagon" ? 1600 : 800,
@@ -23331,12 +24210,12 @@
             }
         } else if (robot.ability.name == "Dragon Flight") {
             robot.avoidBuildings = true;
-            robot.builtInDefensePoints = 9000;
+            if (!robot.name.includes("Ultimate")) robot.builtInDefensePoints = 9000;
             robot.abilitySpeedMulti = 3;
             (!robot.isMe ? robot.deltaTimer -= delta : deltaTimer -= delta);
             if ((!robot.isMe ? robot.deltaTimer <= 0 : deltaTimer <= 0)) {
                 (!robot.isMe ? robot.deltaTimer = 50 : deltaTimer = 50);
-                for (let asdasd = 0; asdasd < 2; asdasd++) projectiles.push({
+                for (let asdasd = 0; asdasd < (robot.name.includes("Ultimate") ? 4 : 2); asdasd++) projectiles.push({
                     x: robot.x,
                     y: robot.y,
                     oldX: robot.x,
@@ -23344,23 +24223,30 @@
                     velx: 0,
                     vely: 0,
                     scale: 25,
-                    speed: 0.15,
+                    speed: robot.name.includes("Ultimate") ? 0.25 : 0.15,
                     avoidBuildings: true,
                     dmg: robot.ability.dmg,
                     range: 1200,
                     projType: "normal",
                     dir: robot.dir + getRandomOffset(5),
-                    color: "#ff0000",
+                    color: robot.name.includes("Ultimate") ? `rgb(0, ${Math.random() > .5 ? 0 : 255}, 255)` : "#ff0000",
                     isAlly: isAlly,
                     dotEffect: {
                         name: "dot",
-                        last: 1e3,
+                        last: robot.name.includes("Ultimate") ? 10e3 : 3e3,
                         dmg: robot.ability.dotDamage,
                         owner: robot
                     },
+                    blastEffect: robot.ability.effectIncrease ? {
+                        name: "blast",
+                        last: 7e3,
+                        power: robot.ability.effectIncrease
+                    } : undefined,
+                    aoeRange: 50,
+                    defensePointsBypass: .25,
                     owner: robot,
                     weaponOwner: {
-                        name: "Dragon Breathe",
+                        name: `${robot.name.includes("Ultimate") ? "<span style='color: #ffff00;'>ULTIMATE</span> " : ""}Dragon Breathe`,
                         level: robot.level
                     }
                 });
@@ -23368,7 +24254,7 @@
         } else if (robot.ability.name == "Full Action") {
             robot.builtInDefensePoints = robot.name == "Teal Circle" ? 200 : 60;
         } else if (robot.ability.name == "Shield Regeneration") {
-            robot.shieldRegen = .1;
+            robot.shieldRegen = robot.name == "Cyan Pentagon" ? 0.075 : .1;
             if (robot.name == "Cyan Pentagon") {
                 robot.abilitySpeedMulti = 1.5;
             }
@@ -23424,7 +24310,7 @@
                     vely: 0,
                     scale: scale,
                     speed: 0.25,
-                    dmg: robot.ability.dmg * Math.min((1 + (Math.floor(shieldDmg / 10e3) * .15)), 20),
+                    dmg: robot.ability.dmg * (1 + (Math.floor(shieldDmg / 15e3) * .05)),
                     range: 1600,
                     dir: dir,
                     isAlly: isAlly,
@@ -23434,7 +24320,7 @@
                     blastEffect: {
                         name: "blast",
                         last: 7e3,
-                        power: (robot.ability.effectIncrease * (1 + Math.min(Math.floor(shieldDmg / 7500) * .1, 2)))
+                        power: robot.ability.effectIncrease * Math.min(1 + (Math.floor(shieldDmg / 10e3) * .025), 10)
                     },
                     aoeRange: 45,
                     owner: robot,
@@ -23513,11 +24399,11 @@
                 }
             });
         }
-        if (robot.ability.name == "Dragon Flight") {
+        if (robot.ability.name == "Dragon Flight" || robot.ability.name == "Skyward") {
             if (robot.isMe) {
                 transitionProgress = 0;
             }
-            robot.flightVisualData = 0.0001;
+            robot.flightVisualData = robot.ability.name == "Skyward" ? 0.0005 : 0.0001;
         }
         if (robot.ability.name == "Reinforce Hull") {
             let healthIncreased = robot.normalMaxHealth * (robot.ability.abilityHealthMulti - 1);
@@ -23570,21 +24456,7 @@
     }
     function doOnDamageTakeStuff(robot) {
         if (robot.lastHealth == null) robot.lastHealth = robot.maxhealth;
-        if (robot.lastHealth - robot.health > 0) {
-            if (robot.name == "Cyan Pentagon") {
-                let cooldownEffect = robot.effects.find(e => e.name == "cooldown_timer" && e.onDamageHealShield == robot.name);
-                if (!cooldownEffect) {
-                    let baseShield = robot.shields.find(e => e.baseShield);
-                    baseShield.maxhealth += baseShield.maxhealth * .125;
-                    baseShield.health += baseShield.maxhealth * .25;
-                    robot.effects.push({
-                        name: "cooldown_timer",
-                        onDamageHealShield: robot.name,
-                        lastTime: 6e3
-                    });
-                }
-            }
-        }
+        if (robot.lastHealth - robot.health > 0) {}
         robot.lastHealth = robot.health;
     }
     function doPassiveAuraHealing(robot, isAlly, delta) {
@@ -23632,12 +24504,16 @@
         }
         return true;
     }
-    function doOtherBotStuff(robot, isAlly) {
+    function doOtherBotStuff(robot, isAlly, delta) {
         let possibleTargets = [];
+        let posT = [];
         for (let i = 0; i < players.length; i++) {
             let player = players[i].robots[players[i].robotIndex];
-            if (player && players[i].isAlly != isAlly && (robot.isBluebell ? (player.invis || robot.blind) ? (dist(player, robot) <= 200 + robot.scale + player.scale) : true : !player.invis && !robot.blind)) {
-                possibleTargets.push(player);
+            if (player && players[i].isAlly != isAlly) {
+                posT.push(player);
+                if ((robot.isBluebell ? (player.invis || robot.blind) ? (dist(player, robot) <= 200 + robot.scale + player.scale) : true : !player.invis && !robot.blind)) {
+                    possibleTargets.push(player);
+                }
             }
         }
         robot.target = null;
@@ -23659,7 +24535,22 @@
                 let lowestRange = robot.weapons.sort((a, b) => a.range - b.range)[0];
                 if (checkIfCanReachTarget(robot, Math.hypot(closest.y - robot.y, closest.x - robot.x), Math.min(dist(closest, robot), lowestRange.range)) && Math.hypot(robot.y - closest.y, robot.x - closest.x) <= lowestRange.range) {
                     if (robot.isBluebell && (closest.effects.find(e => e.name == "Ultimate Reflecting Dash") || closest.shields.find(e => e.type == "purple"))) {
-                        robot.fireWeapon = false;
+                        let glame = robot.weapons.find(e => e.name == "Inferno" || e.name == "Pyro");
+                        if (glame) {
+                            if (glame.firedTime == 0 && robot.rechargeGlgamehahahhahah________saoidjsoijdj) {
+                                robot.rechargeGlgamehahahhahah________saoidjsoijdj = false;
+                            }
+                            if (glame.firedTime + (delta * 2) >= glame.overheatTime) {
+                                robot.fireWeapon = false;
+                                robot.rechargeGlgamehahahhahah________saoidjsoijdj = true;
+                            } else if (robot.rechargeGlgamehahahhahah________saoidjsoijdj) {
+                                robot.fireWeapon = false;
+                            } else {
+                                robot.fireWeapon = true;
+                            }
+                        } else {
+                            robot.fireWeapon = true;
+                        }
                     } else {
                         robot.fireWeapon = true;
                     }
@@ -23674,7 +24565,7 @@
         }
         if (robot.ability) {
             let abilityName = robot.ability.name;
-            if (["Barrier Field", "Clain Blink", "Dismantle", "Blink Assault", "Support", "Ultimate Defense", "Matrix", "Blink Support", "Reflector", "Stampede", "Clear Sky", "Reinforce Hull", "Cold Pulse", "Divine Judgement", "Full Action", "Stealth", "Domain Expansion: Infinite Void", "Paladin", "Dragon Flight", "Phase Shift", "Ultimate Mending", "Self Heal", "Retribution"].includes(abilityName) && Date.now() - robot.damagedTime <= 50) {
+            if (["Skyward", "Barrier Field", "Clain Blink", "Dismantle", "Blink Assault", "Support", "Ultimate Defense", "Matrix", "Blink Support", "Reflector", "Stampede", "Clear Sky", "Reinforce Hull", "Cold Pulse", "Divine Judgement", "Full Action", "Stealth", "Domain Expansion: Infinite Void", "Paladin", "Dragon Flight", "Phase Shift", "Ultimate Mending", "Self Heal", "Retribution"].includes(abilityName) && Date.now() - robot.damagedTime <= 50) {
                 if (abilityName == "Clain Blink" && robot.movementTarget) {
                     robot.useAbility = true;
                 } else if (abilityName != "Clain Blink") {
@@ -23746,6 +24637,24 @@
                 }
             }
         }
+        robot.useMothership = false;
+        let Player = players[robot.playersIndexSid];
+        if (Player && Player.mothership && Player.mothership.data) {
+            if (Player.mothership.current >= 1 && robot.target) {
+                robot.motherTarget = robot.target;
+                let L = player.gameMode == 4 ? undefined : posT.find(e => e.isMe && dist(e, robot) <= 1500);
+                if (L && Math.random() <= .25) {
+                    robot.motherTarget = L;
+                }
+                if (Player.mothership.data.name == "Purple Rectangle") {
+                    if (!robot.motherTarget.effects.find(e => ["anti blind", "anti emp"].includes(e.name))) {
+                        robot.useMothership = true;
+                    }
+                } else {
+                    robot.useMothership = true;
+                }
+            }
+        } 
     }
     function doShapeStuffPassiveEffects(robot, delta, isAlly) {
         if (robot.ability && robot.ability.name == "Shapeshift") {
@@ -23755,41 +24664,43 @@
                 }
             } else {
                 if (robot.ability.mode == 0) {
-                    robot.builtInDefensePoints += 100;
+                    robot.builtInDefensePoints += (robot.name == "Pinkish-Red Heptagon" ? 200 : 100);
                 } else {
                     robot.avoidBuildings = true;
-                    robot.abilitySpeedMulti = 3;
-                    let shield = robot.shields.find(e => e.type == "purple");
-                    if (shield) {
-                        robot.ability.weaponMulti = 1 + (Math.floor(shield.health / 5e3) * .05);
-                    }
-                    (!robot.isMe ? robot.deltaTimer -= delta : deltaTimer -= delta);
-                    if ((!robot.isMe ? robot.deltaTimer <= 0 : deltaTimer <= 0)) {
-                        (!robot.isMe ? robot.deltaTimer = 75 : deltaTimer = 75);
-                        let dmg = robot.ability.dmg * robot.ability.weaponMulti;
-                        projectiles.push({
-                            x: robot.x,
-                            y: robot.y,
-                            oldX: robot.x,
-                            oldY: robot.y,
-                            velx: 0,
-                            vely: 0,
-                            scale: 60,
-                            speed: 0.3,
-                            avoidBuildings: true,
-                            dmg: dmg,
-                            range: 1200,
-                            defensePointsBypass: 0,
-                            projType: "energy",
-                            dir: robot.dir,
-                            color: "./images/bullets/energy_bullet.png",
-                            isAlly: isAlly,
-                            owner: robot,
-                            weaponOwner: {
-                                name: "Dragon's Wrath",
-                                level: robot.level
-                            }
-                        });
+                    robot.abilitySpeedMulti = (robot.name == "Pinkish-Red Heptagon" ? 1.5 : 3);
+                    if (robot.name != "Pinkish-Red Heptagon") {
+                        let shield = robot.shields.find(e => e.type == "purple");
+                        if (shield) {
+                            robot.ability.weaponMulti = 1 + (Math.floor(shield.health / 5e3) * .05);
+                        }
+                        (!robot.isMe ? robot.deltaTimer -= delta : deltaTimer -= delta);
+                        if ((!robot.isMe ? robot.deltaTimer <= 0 : deltaTimer <= 0)) {
+                            (!robot.isMe ? robot.deltaTimer = 75 : deltaTimer = 75);
+                            let dmg = robot.ability.dmg * robot.ability.weaponMulti;
+                            projectiles.push({
+                                x: robot.x,
+                                y: robot.y,
+                                oldX: robot.x,
+                                oldY: robot.y,
+                                velx: 0,
+                                vely: 0,
+                                scale: 60,
+                                speed: 0.3,
+                                avoidBuildings: true,
+                                dmg: dmg,
+                                range: 1200,
+                                defensePointsBypass: 0,
+                                projType: "energy",
+                                dir: robot.dir,
+                                color: "./images/bullets/energy_bullet.png",
+                                isAlly: isAlly,
+                                owner: robot,
+                                weaponOwner: {
+                                    name: "Dragon's Wrath",
+                                    level: robot.level
+                                }
+                            });
+                        }
                     }
                 }
             }
@@ -23862,12 +24773,14 @@
                         lastTime: module.lastTime
                     });
                 } else if (module.name == "Unstable Conduit") {
-                    let effect = robot.effects.find(e => e.name == "Cannonier" && e.health > 0);
-                    let moreHealth = (robot.health - (effect ? effect.health : 0)) * module.healthMulti;
-                    let moreGrayDamage = moreHealth * (robot.grayDamage / robot.maxhealth);
-                    robot.maxhealth += moreHealth;
-                    robot.health += moreHealth;
-                    robot.grayDamage += moreGrayDamage;
+                    robot.maxhealth += robot.normalMaxHealth * module.healthMulti;
+                    robot.health += robot.normalMaxHealth * module.healthMulti;
+                    robot.effects.push({
+                        name: "extra health",
+                        health: robot.normalMaxHealth * module.healthMulti,
+                        maxhealth: robot.normalMaxHealth * module.healthMulti,
+                        lastTime: module.lastTime
+                    });
                     changeHealth(robot, {
                         amount: module.instantFixPercent * robot.maxhealth
                     }, false, robot);
@@ -23877,7 +24790,6 @@
                         type: module.repairUnitPower.type,
                         power: module.repairUnitPower.power,
                         rate: module.repairUnitPower.rate,
-                        onEndDecrease: [moreHealth, moreGrayDamage],
                         lastTime: module.lastTime
                     });
                 } else if (module.name == "Nuclear Intensifier") {
@@ -24024,8 +24936,8 @@
         if (mothership.name == "Gray Rectangle" || mothership.name == "Black Rectangle") {
             domains.push({
                 name: "dmgfield",
-                x: robot.isMe ? robot.cursorLocation.x : robot.target.x,
-                y: robot.isMe ? robot.cursorLocation.y : robot.target.y,
+                x: robot.isMe ? robot.cursorLocation.x : robot.motherTarget.x,
+                y: robot.isMe ? robot.cursorLocation.y : robot.motherTarget.y,
                 dmg: mothership.dmg,
                 scale: 500,
                 lastingTime: 1e3,
@@ -24059,23 +24971,66 @@
         } else if (mothership.name == "Purple Rectangle") {
             domains.push({
                 name: "mutefield",
-                x: robot.isMe ? robot.cursorLocation.x : robot.target.x,
-                y: robot.isMe ? robot.cursorLocation.y : robot.target.y,
-                scale: 500,
+                x: robot.isMe ? robot.cursorLocation.x : robot.motherTarget.x,
+                y: robot.isMe ? robot.cursorLocation.y : robot.motherTarget.y,
+                scale: 600,
                 duration: mothership.effectDuration,
                 lastingTime: 1e3,
                 oldLast: 1e3,
                 isAlly: isAlly,
                 owner: robot
             });
+        } else if (mothership.name == "Black Oval") {
+            robot.effects.filter(e => ["slowdown", "emp", "blind", "rust", "suppression"].includes(e.name)).forEach(e => {
+                e.lastTime = 0;
+            });
+            robot.emp = false;
+            robot.blind = false;
+            let healing = robot.maxhealth * mothership.healingPercent;
+            robot.grayDamage = Math.max(robot.grayDamage - (healing * mothership.grayHealing), 0);
+            changeHealth(robot, {
+                amount: healing
+            }, false, robot);
         }
         for (let i = 0; i < mothership.turrets.length; i++) {
             let turret = mothership.turrets[i];
-            if (turret.name == "Laser Blast Cannon" || turret.name == "Target Ray Cannon") {
+            if (turret.name == "Nuclear Attack Cannon") {
+                let x = robot.isMe ? robot.cursorLocation.x : robot.motherTarget.x;
+                let y = robot.isMe ? robot.cursorLocation.y : robot.motherTarget.y;
+                let enemies = getNearest({
+                    x: x,
+                    y: y
+                }, turret.scale, isAlly);
+                enemies.forEach(e => {
+                    changeHealth(e, {
+                        amount: -(turret.dmg * (e.tier == 4 ? 2 : e.tier == 3 ? 1.5 : 1)),
+                        defensePointsBypass: .5,
+                        graydmg: 0
+                    }, false, robot);
+                    e.effects.push({
+                        name: "dot",
+                        neg: true,
+                        dmg: turret.dmg / 5,
+                        owner: robot,
+                        lastTime: 10e3
+                    });
+                });
                 domains.push({
                     name: "dmgfield",
-                    x: robot.isMe ? robot.cursorLocation.x : robot.target.x,
-                    y: robot.isMe ? robot.cursorLocation.y : robot.target.y,
+                    x: robot.isMe ? robot.cursorLocation.x : robot.motherTarget.x,
+                    y: robot.isMe ? robot.cursorLocation.y : robot.motherTarget.y,
+                    dmg: 0,
+                    scale: turret.scale,
+                    lastingTime: 100,
+                    oldLast: 100,
+                    isAlly: isAlly,
+                    owner: robot
+                });
+            } else if (turret.name == "Laser Blast Cannon" || turret.name == "Target Ray Cannon") {
+                domains.push({
+                    name: "dmgfield",
+                    x: robot.isMe ? robot.cursorLocation.x : robot.motherTarget.x,
+                    y: robot.isMe ? robot.cursorLocation.y : robot.motherTarget.y,
                     dmg: turret.dmg,
                     scale: turret.scale,
                     lastingTime: 1e3,
@@ -24127,16 +25082,25 @@
                     robot.maxhealth += robot.healthIncreaseFromDurabilityExtenderTurret;
                     robot.health += robot.healthIncreaseFromDurabilityExtenderTurret;
                 }, turret.strikeDelay);
+            } else if (turret.name == "Anti-Jamming Support") {
+                setTimeout(() => {
+                    let duration = 10e3;
+                    robot.effects.push({
+                        name: "anti blind",
+                        lastTime: duration
+                    });
+                    robot.effects.push({
+                        name: "anti emp",
+                        lastTime: duration
+                    });
+                    robot.effects.push({
+                        name: "anti suppression",
+                        lastTime: duration
+                    });
+                }, turret.strikeDelay);
             }
         }
     }
-    var inWindow = true;
-    window.onblur = function() {
-        inWindow = false;
-    };
-    window.onfocus = function() {
-        inWindow = true;
-    };
     function updateRobot(robot, isAlly, delta, index) {
         if (robot.deltaTimer == null) robot.deltaTimer = 0;
         robot.shieldRegen = 1;
@@ -24198,7 +25162,7 @@
             robot.turnDmgIntoDOT = false;
         }
         let { effectNames, lastStand, slowdownMulti, speedMulti } = doEffectStuff(robot, delta, isAlly);
-        if (!robot.isMe) doOtherBotStuff(robot, isAlly);
+        if (!robot.isMe) doOtherBotStuff(robot, isAlly, delta);
         doActiveModuleStuff(robot, robot.weapons.length, MATH1HA___, isAlly, delta);
         if (robot.ability && !robot.emp && (robot.ability.name == "Phase Shift" ? true : !robot.isFREEZE)) {
             if (robot.isMe) {
@@ -24331,6 +25295,11 @@
         doOnDamageTakeStuff(robot);
         let Player = players[robot.playersIndexSid];
         if (Player && Player.mothership && Player.mothership.data) {
+            if (Player.name.includes("bell") && !Player.name.includes("Redbell")) {
+                if (Player.mothership.current < .25) {
+                    Player.mothership.current = .25;
+                }
+            }
             if (Player.mothership.current >= 1) {
                 if (robot.isMe ? keysPressed[70] : robot.useMothership) {
                     useMothership(robot, Player.mothership.data, isAlly);
@@ -24364,7 +25333,7 @@
                 <div style="position: absolute; top: 0px; right: 0px; height: ${100 * mothershipData.current}%; width: 100%; background-color: #ffff00;">
                 </div>
                 <div style="position: absolute; display: flex; justify-content: center; align-items: center; top: 0px; right: 0px; height: 100%; width: 100%; font-size: 16px;">
-                ${Math.round(mothershipData.current*100)}%
+                ${Math.ceil(mothershipData.current*100)}%
                 </div>
                 `;
             } else {
@@ -24600,14 +25569,15 @@
             let data = robot.drone.abilities[i];
             if (data) {
                 if (data.name == "On Threshold: Resist" || data.name == "On Threshold: Fix%") {
-                    if (!robot.effects.find(e => e.name == "cooldown_timer" && e.reason == data.name)) {
-                        let thresholds = [robot.maxhealth * .7, robot.maxhealth * .5, robot.maxhealth * .3];
-                        for (let i = 0; i < thresholds.length; i++) {
-                            let threshold = thresholds[i];
+                    let thresholds = [robot.maxhealth * .7, robot.maxhealth * .5, robot.maxhealth * .3];
+                    for (let i = 0; i < thresholds.length; i++) {
+                        let threshold = thresholds[i];
+                        if (!robot.effects.find(e => e.name == "cooldown_timer" && e.threshold == (i + 1) && e.reason == data.name)) {
                             if (robot.health > threshold && health <= threshold) {
                                 robot.effects.push({
                                     name: "cooldown_timer",
                                     reason: data.name,
+                                    threshold: i + 1,
                                     lastTime: data.reload
                                 });
                                 if (data.name == "On Threshold: Fix%") {
@@ -24620,10 +25590,9 @@
                                     robot.effects.push({
                                         name: "defense points",
                                         amount: data.defenseIncrease,
-                                        lastTime: 10e3
+                                        lastTime: 5e3
                                     });
                                 }
-                                break;
                             }
                         }
                     }
@@ -24956,7 +25925,7 @@
             }
         }
     } 
-    function changeHealth(object, { amount, graydmg, noAmp, onDamageHealBack, isDotDamage, execute, defensePointsBypass, bypassReflector, damageTypeName, motherShipCharge }, isPlayer, doer, noDefense) {
+    function changeHealth(object, { amount, graydmg, noAmp, onDamageHealBack, maxhealthDamage, isDotDamage, execute, defensePointsBypass, bypassReflector, damageTypeName, motherShipCharge }, isPlayer, doer, noDefense) {
         try {
             amount = parseInt(removeDecimals(amount));
             if (object.killed && object.health <= 0) amount = 0;
@@ -25056,6 +26025,7 @@
                     if (force) {
                         if (force.data.health > 0) {
                             force.data.lastHit = Date.now();
+                            force.data.health = Math.max(force.data.health - Math.abs(amount), 0);
                             if (force.data.min) {
                                 let res = force.data.resistance;
                                 let p = force.data.health / force.data.maxhealth;
@@ -25067,7 +26037,6 @@
                                 resistance *= force.data.health / force.data.maxhealth;
                                 amount *= (1 - resistance);
                             }
-                            force.data.health = Math.max(force.data.health - Math.abs(amount), 0);
                         }
                     }
                 }
@@ -25142,11 +26111,11 @@
             if (amount >= 0 && object.effects) {
                 let amounts = 1;
                 object.effects.forEach(e => {
-                    if (e.name == "rust") {
+                    if (e.name == "rust" && e.lastTime > 0) {
                         amounts -= e.power;
                     }
                 });
-                amounts = Math.max(0.001, amounts);
+                amounts = Math.max(0, amounts);
                 amount *= amounts;
             }
             if (doer && (object.turnDmgIntoDOT ? isDotDamage : true)) {
@@ -25165,7 +26134,7 @@
                 amount *= milt;
             }
             if ((object.turnDmgIntoDOT ? isDotDamage : true) && amount < 0 && !object.LASTSTANDISON) {
-                addGrayDamage(object, amount, graydmg, isDotDamage);
+                addGrayDamage(object, amount, graydmg, isDotDamage, maxhealthDamage);
             }
             if (motherShipCharge && doer && doer.playersIndexSid != null) {
                 let player = players[doer.playersIndexSid];
@@ -25266,6 +26235,10 @@
                         }
                     }
                     object.health += amount;
+                    if (amount < 0 && maxhealthDamage) {
+                        object.maxhealth += amount * .5;
+                        object.normalMaxHealth += amount * .5;
+                    }
                     if (execute && object.health > 0 && object.health / object.maxhealth <= execute && !object.killed) {
                         object.kill = true;
                         let player1 = findPlayerBySid(object.inGameSid);
@@ -25279,6 +26252,9 @@
                     if (amount < 0 && object.effects && object.effects.find(e => ["Cannonier", "extra health"].includes(e.name) && e.health > 0)) {
                         let effect = object.effects.find(e => ["Cannonier", "extra health"].includes(e.name) && e.health > 0);
                         effect.health += amount;
+                        if (maxhealthDamage) {
+                            effect.maxhealth = Math.max(effect.maxhealth + (amount * .5), 0);
+                        }
                         if (effect.health <= 0) {
                             object.maxhealth -= effect.maxhealth;
                             object.grayDamage -= effect.grayDamage;
@@ -25295,7 +26271,7 @@
                 }
                 if (amount < 0 && object.health <= object.maxhealth * .2) {
                     if (object.weapons && !isDotDamage && damageTypeName != "REFLECTOR") {
-                        let weapons = object.weapons.filter(e => e.name != "Ancile" && !e.notActive && !e.weaponIsBroken);
+                        let weapons = object.weapons.filter(e => e.name != "Ancile" && !e.notActive && !e.unbreakable && !e.weaponIsBroken);
                         if (weapons.length > 1 && Math.random() < .01) {
                             if (object.lastWeaponsBreakHAHAHA___EZ_NOOB == null) object.lastWeaponsBreakHAHAHA___EZ_NOOB = 0;
                             if (Date.now() - object.lastWeaponsBreakHAHAHA___EZ_NOOB >= 10e3) {
@@ -25516,7 +26492,7 @@
                             graydmg: 0,
                             bypassReflector: true,
                             damageTypeName: "BLAST EFFECT"
-                        }, true, playerRobot);
+                        }, true, playerRobot, true);
                     });
                     bombeffect.push({
                         location: enemy,
@@ -26048,8 +27024,9 @@
                         graydmg: bullet.grayDamageAmount,
                         defensePointsBypass: bullet.defensePointsBypass,
                         motherShipCharge: bullet.motherShipCharge,
-                        execute: bullet.execute
-                    }, true, playerRobot);
+                        execute: bullet.execute,
+                        maxhealthDamage: bullet.weaponOwner && ["Ultimate Punisher", "Ultimate Destroyer"].includes(bullet.weaponOwner.name) ? true : false
+                    }, bullet.owner.isMe, bullet.owner, (bullet.weaponOwner && ["Reaper"].includes(bullet.weaponOwner.name) ? true : false));
                     if (bullet.dmg > 0) {
                         if (bullet.knockback) {
                             enemy.velx += Math.cos(bullet.dir) * bullet.knockback;
@@ -26592,8 +27569,8 @@
                             if (bond) {
                                 ctx.save();
                                 ctx.translate(-(robot.x - offset.x), -(robot.y - offset.y));
-                                ctx.lineWidth = 32;
-                                ctx.strokeStyle = bond.isAlly ? "rgb(255, 0, 255, .6)" : "rgb(255, 0, 0, .6)";
+                                ctx.lineWidth = bond.name == "Active Support" ? 16 : 32;
+                                ctx.strokeStyle = bond.name == "Active Support" ? "rgb(1, 50, 32, .6)" : bond.isAlly ? "rgb(255, 0, 255, .6)" : "rgb(255, 0, 0, .6)";
                                 ctx.lineCap = "round";
                                 ctx.beginPath();
                                 ctx.moveTo(robot.x - offset.x, robot.y - offset.y);
@@ -27329,6 +28306,9 @@
                 } else if (domain.name == "healfield") {
                     color1 = "rgb(0, 255, 0, .2)";
                     color2 = "rgb(0, 255, 0)";
+                } else if (domain.name == "Nuclear Strike") {
+                    color1 = "rgb(0, 145, 0, .6)";
+                    color2 = "rgb(0, 145, 0)";
                 }
                 renderCircle(0, 0, domain.tmpScale, ctx, false, false, color1 || "rgb(0, 0, 255, .4)", domain.isAlly == true ? "rgb(0, 0, 128)" : "rgb(255, 0, 0)", 16);
                 let multi = (domain.lastingTime / domain.oldLast);
@@ -27353,7 +28333,7 @@
                     let cando = false;
                     if (domain.effectThingy <= 0) {
                         cando = true;
-                        domain.effectThingy = 250 * (1 - domain.increaseSpeedOfPinkishRedAbility);
+                        domain.effectThingy = 100;
                     }
                     for (let t = 0; t < players.length; t++) {
                         let robot = players[t].robots[players[t].robotIndex];
@@ -27411,6 +28391,31 @@
                             });
                         }
                     }
+                } else if (domain.name == "Nuclear Strike") {
+                    let enemies = getNearest(domain, domain.scale, domain.isAlly);
+                    enemies.forEach(enemy => {
+                        if (enemy.lastHitByNuclearStrikeDomain == null) enemy.lastHitByNuclearStrikeDomain = 0;
+                        if (Date.now() - enemy.lastHitByNuclearStrikeDomain >= 200) {
+                            enemy.lastHitByNuclearStrikeDomain = Date.now();
+                            changeHealth(enemy, {
+                                amount: -domain.owner.ability.dmg
+                            }, false, domain.owner);
+                            enemy.effects.push({
+                                name: "frag",
+                                neg: true,
+                                power: 0.0025,
+                                lastForever: true,
+                                lastTime: 1
+                            });
+                            enemy.effects.push({
+                                name: "dot",
+                                neg: true,
+                                owner: domain.owner,
+                                dmg: domain.owner.ability.dmg / 8,
+                                lastTime: 16e3
+                            });
+                        }
+                    });
                 } else if (domain.name == "Dismantle") {
                     let enemies = getNearest(domain, domain.scale, domain.isAlly);
                     let dmgmmg = domain.owner.ability.dmg;
@@ -27621,7 +28626,7 @@
         if (shape.target && !shape.isMe) {
             shape.dir = Math.atan2(shape.target.y - shape.y, shape.target.x - shape.x);
         }
-        if (hardpoints == 1) {
+        if (hardpoints == 1 || weapon.name == "Skyward") {
             x = shape.x + Math.cos(shape.dir) * (shape.scale - hScale);
             y = shape.y + Math.sin(shape.dir) * (shape.scale - hScale);
         } else if (hardpoints == 2) {
@@ -27707,10 +28712,10 @@
                                 ctx.stroke();
                                 ctx.restore();
                             }
-                        } else if (["Leiming", "Fengbao", "Pantagruel", "Gangantua"].includes(weapon.name)) {
+                        } else if (["Skyward", "Leiming", "Fengbao", "Pantagruel", "Gangantua"].includes(weapon.name)) {
                             let Enemies = [];
                             let direction = player.dir;
-                            let angle = 0.72;
+                            let angle = ["Leiming", "Fengbao"].includes(weapon.name) ? (Math.PI / 2) : 0.72;
                             if (hasPlayers()) {
                                 for (let t = 0; t < players.length; t++) {
                                     let ROBOTBOTBT = players[t].robots[players[t].robotIndex];
@@ -27753,8 +28758,9 @@
                                 let color2 = players[i].isAlly == true ? "rgb(255, 255, 255)" : "rgb(0, 0, 0)";
                                 let color1 = players[i].isAlly == true ? "rgb(0, 150, 0, .6)" : "rgb(255, 165, 0, .6)";
                                 ctx.save();
-                                ctx.lineWidth = ["Leiming", "Fengbao"].includes(weapon.name) ? 8 : 16;
-                                ctx.strokeStyle = ["Leiming", "Fengbao"].includes(weapon.name) ? color2 : color1;
+                                ctx.lineWidth = ["Leiming", "Fengbao"].includes(weapon.name) ? 8 : weapon.name == "Skyward" ? weapon.target == item ? 32 : 20 : 16;
+                                ctx.strokeStyle = ["Skyward", "Leiming", "Fengbao"].includes(weapon.name) ? color2 : color1;
+                                if (weapon.name == "Skyward") ctx.lineCap = "round";
                                 ctx.beginPath();
                                 ctx.moveTo(Offset.x - offset.x, Offset.y - offset.y);
                                 ctx.lineTo(tmp.x - offset.x, tmp.y - offset.y);
@@ -27786,7 +28792,7 @@
                                 ctx.shadowColor = "#fff";
                                 ctx.lineWidth = 16;
                                 ctx.strokeStyle = players[i].isAlly ? "#fff" : "#f00";
-                                ctx.lineCap = "round";
+                                ctx.lineCap = "round";//"Skyward"
                                 ctx.beginPath();
                                 ctx.moveTo(Offset.x - offset.x, Offset.y - offset.y);
                                 ctx.lineTo(tmp.x - offset.x, tmp.y - offset.y);
@@ -27983,21 +28989,6 @@
                         }
                     }
                 }
-                ctx.textBaseline = "middle";
-                ctx.textAlign = "center";
-                for (let i = 0; i < text.length; i++) {
-                    let Text = text[i];
-                    if (Text && isOnScreen(Text.x - offset.x, Text.y - offset.y, 50)) {
-                        ctx.fillStyle = Text.color;
-                        ctx.strokeStyle = Text.color == "#ffff00" ? "#f00" : "#ffff00";
-                        ctx.font = "50px Open Sans";
-                        if (Text.stroke) {
-                            ctx.lineWidth = ctx.stroke;
-                            ctx.strokeText(abbreviateNumber(removeDecimals(Text.value)), Text.x - offset.x, Text.y - offset.y);
-                        }
-                        ctx.fillText(abbreviateNumber(removeDecimals(Text.value)), Text.x - offset.x, Text.y - offset.y);
-                    }
-                }
                 updatePlayer(delta);
                 if (hasPlayers()) updatePlayers(delta, isBlind);
                 ctx.globalAlpha = 1;
@@ -28037,6 +29028,21 @@
                     updateEnemies(delta);
                 }
                 updateDomains(delta);
+                ctx.textBaseline = "middle";
+                ctx.textAlign = "center";
+                for (let i = 0; i < text.length; i++) {
+                    let Text = text[i];
+                    if (Text && isOnScreen(Text.x - offset.x, Text.y - offset.y, 50)) {
+                        ctx.fillStyle = Text.color;
+                        ctx.strokeStyle = Text.color == "#ffff00" ? "#f00" : "#ffff00";
+                        ctx.font = "50px Open Sans";
+                        if (Text.stroke) {
+                            ctx.lineWidth = ctx.stroke;
+                            ctx.strokeText(abbreviateNumber(removeDecimals(Text.value)), Text.x - offset.x, Text.y - offset.y);
+                        }
+                        ctx.fillText(abbreviateNumber(removeDecimals(Text.value)), Text.x - offset.x, Text.y - offset.y);
+                    }
+                }
                 renderDomains(delta);
                 if (players[0] && players[0].robotIndex >= 0 || player.gameMode == 2) gameTimePlayed += delta;
                 renderGameDataThing(delta);
