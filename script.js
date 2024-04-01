@@ -335,12 +335,12 @@
             `)}
         `)}
     `);
-    updateLogger.newLog("V56 UPDATE NOTES (Mar 6, 2024)", `
+    updateLogger.newLog("V56 UPDATE NOTES (Apr 1, 2024)", `
         ${updateLogger.marginBlock(10, `
             ${updateLogger.lineBlock(["Bots have access to motherships now", "New Shape(s): Ultimate Brown Pentagon, Blue Triangle, Pinkish-Red Heptagon, and Ultimate Brown Circle", "Balance Changes / Other Improvements"])}
             ${updateLogger.title("h2", `CHANGES`)}
             ${updateLogger.marginBlock(10, `
-                ${updateLogger.lineBlock(["Changed Bluebell's and Redbell's hangers", "Cyan Pentagon and Brown Pentagon: Removed Movement Dir Delay", "Cyan Pentagon: Shield Health: +200%", "Orange Heptagon: Ability Cooldown: 14 -> 12 seconds", "Reaper: gains the [Defense Breach] effect like DoT and Blast Effect", "Deceiver and Damper: +50% DoT Damage", "Toxin and Bane: +1000% DoT Damage", "Cyan Pentagon: Shield Regeneration Speed Increased", "Glacier and Rime: +100% Ammo", "Jaw and Talon: Increased fragility effectiveness", "Pyro and Inferno: Changed firing mechanic", "Pyro and Inferno: Increased Mothership Charge", "Pascal: Changes to On Threshold abilties", "Tan Circle: DoT Resistance: 60 -> 80%", "Damper, Deceiver, Trickster, and Tamer: Reduced Mothership Charge per Projectile", "Fengbao and Leiming: -15% Damage", "Minor changes"])}
+                ${updateLogger.lineBlock(["Reflector is its separate defense system and not a defense point attribute; Reflector is immune from defense mitigation like the defense system: forcefield. The effects are stack-able.", "Changed Bluebell's and Redbell's hangers", "Cyan Pentagon and Brown Pentagon: Removed Movement Dir Delay", "Cyan Pentagon: Shield Health: +200%", "Orange Heptagon: Ability Cooldown: 14 -> 12 seconds", "Reaper: gains the [Defense Breach] effect like DoT and Blast Effect", "Deceiver and Damper: +50% DoT Damage", "Toxin and Bane: +1000% DoT Damage", "Cyan Pentagon: Shield Regeneration Speed Increased", "Glacier and Rime: +100% Ammo", "Jaw and Talon: Increased fragility effectiveness", "Pyro and Inferno: Changed firing mechanic", "Pyro and Inferno: Increased Mothership Charge", "Pascal: Changes to On Threshold abilties", "Tan Circle: DoT Resistance: 60 -> 80%", "Damper, Deceiver, Trickster, and Tamer: Reduced Mothership Charge per Projectile", "Fengbao and Leiming: -15% Damage", "Minor changes"])}
             `)}
         `)}
     `);
@@ -428,6 +428,7 @@
             this.layer = 0;
             this.velx = 0;
             this.tracers = [];
+            this.reflectorData = data.reflectorData;
             this.hullIntegrity = data.hullIntegrity;
             this.flightAnimationSpeed = data.flightAnimationSpeed;
             this.oldScale = data.scale;
@@ -457,7 +458,6 @@
             this.level = 1;
             if (!dontSID) shapeSids++;
             this.sellPrice = 0;
-            this.reflector = data.reflector;
             if (data.builtInDefensePoints) {
                 this.normalDefensePoints = data.builtInDefensePoints;
                 this.HAHAHAHHAHAHHANORMALDEFENENENNENENENNE = data.builtInDefensePoints;
@@ -500,7 +500,8 @@
                     desc: data.ability.desc,
                     reload: data.ability.reload,
                     iconSource: data.ability.iconSource,
-                    oldIconSource: data.ability.iconSource
+                    oldIconSource: data.ability.iconSource,
+                    defensePointToReflector: data.ability.defensePointToReflector
                 };
                 if (data.ability.name == "Blocking Matrix") {
                     this.ability.effectAccumulation = data.ability.effectAccumulationData ? data.ability.effectAccumulationData.base : data.ability.effectAccumulation;
@@ -928,8 +929,10 @@
         some of the damage taken will be redirected to the attacker.<br><br>
         Recommended Equipment: x3 Hawk / x3 Flux
         `,
-        reflector: .6,
-        builtInDefensePoints: 50,
+        reflectorData: {
+            resistance: .333,
+            return: .6
+        },
         healthData: {
             base: 77e3,
             level: [0, 5e3, 5e3, 7e3, 7e3, 7e3, 8e3, 8e3, 8e3, 10e3, 10e3, 15e3],
@@ -1176,8 +1179,10 @@
             lastingTime: 12e3,
             reload: 10e3
         },
-        reflector: .2,
-        builtInDefensePoints: 100,
+        reflectorData: {
+            resistance: .5,
+            return: .2
+        },
         color: "#ffa500",
         moduleHardpoints: 4,
         cost: {
@@ -1649,8 +1654,8 @@
             <span style="font-width: bolder; color: #fff;">Grand Fortitude</span>
             The shape leaps forward in a chosen direction and activates its defense system. After the shape stops, it emits a powerful blast that deals damage and emits DoT.<br><br>
             Duration of Defense: 16 seconds<br>
-            Defense Points: 50<br>
-            Reflector Power (not stackable): 15%<br>
+            Reflector Blocked: 33.3%<br>
+            Reflector Returned: 15%<br>
             Instant Heal on Ability: 10%<br>
             Cooldown: 6 seconds
             `,
@@ -2346,9 +2351,9 @@
             When enemies reach the max-suppression limit, it'll instead repenish all effect stacks instead of adding new ones.<br><br>
             Suppression Limit: 5<br>
             Suppression Power: depends on shape level<br>
-            Defense Points Increase during ability: depends on shape level<br>
+            Reflector Blocked: depends on shape level<br>
+            Reflector Returned: 75%<br>
             Duration: 8 seconds<br>
-            Reflect Power: 75%<br>
             Cooldown: 12 seconds
             `,
             iconSource: "./images/abilities/ultimate_reflecting_dash.png",
@@ -2356,6 +2361,7 @@
                 base: .05,
                 level: [0, .01, .01, .01, .01, .01, .02, .02, .02, .02, .02, .05]
             },
+            defensePointToReflector: true,
             abilityDefensePointsData: {
                 base: 75,
                 level: [0, 12.5, 0, 12.5, 0, 12.5, 0, 12.5, 0, 12.5, 12.5, 50]
@@ -5439,7 +5445,7 @@
         hardpoints,
         borderColor,
         tier,
-        reflector,
+        reflectorData,
         moduleSlots,
         ability,
         revive,
@@ -5467,6 +5473,7 @@
             newshape.healthData.base *= health;
             if (speed) newshape.speed *= health;
             if (scale) newshape.scale = scale;
+            if (reflectorData) newshape.reflectorData = reflectorData;
             if (!cantGet) newshape.dontSell = true;
             newshape.dontShow = true;
             if (dotResistance) newshape.dotResistance = dotResistance;
@@ -5479,7 +5486,6 @@
             if (hardpoints) newshape.hardpoints = hardpoints;
             if (borderColor) newshape.borderColor = borderColor;
             if (moduleSlots) newshape.moduleHardpoints = moduleSlots;
-            if (newshape.reflector && reflector) newshape.reflector = reflector;
             if (shieldData) newshape.shieldData = shieldData;
             if (moduleHardpoints) newshape.moduleHardpoints = moduleHardpoints;
             for (let i = 0; i < newshape.healthData.level.length; i++) {
@@ -5495,7 +5501,10 @@
     }
     makeNewSpecialEdition("Orange Circle", {
         health: 1.3,
-        reflector: .4,
+        reflectorData: {
+            resistance: .5,
+            return: .4
+        },
         moduleSlots: 5,
         cantGet: true
     }, "shape", "Pumpkin", "./images/special_addtiction/pumpkin_orange_circle.png");
@@ -10134,6 +10143,15 @@
             newWeapon.notActive = true;
             robot.weapons.push(newWeapon);
         }
+        if (robot.name == "Dark Gray Circle" || robot.name.includes("Orange Circle")) {
+            robot.effects.push({
+                name: "reflector",
+                return: robot.reflectorData.return,
+                block: robot.reflectorData.resistance,
+                lastForever: true,
+                lastTime: 1
+            });
+        }
     }
     function setUpBotData(orginalRobot, weapons, modules, microchips, isAlly, gameMode, spawnLocations, isBluebell, drone) {
         let robot = new shape(orginalRobot, null, true);
@@ -11818,7 +11836,7 @@
             let indexAdjusted = (((shape.ability.abilityDefensePoints + (Shape.ability.abilityDefensePointsData.level[shape.level])) / maxhealth) * maxwidth) / maxwidth;
             text = `
             <div style="position: relative; width: ${maxwidth}px;">
-            Ability Defense Points: ${shape.ability.abilityDefensePoints}
+            Ability ${shape.ability.defensePointToReflector ? "Reflector Blocked (In Defense Points)" : "Defense Points"}: ${shape.ability.abilityDefensePoints}
             <div style="display: ${Shape.ability.abilityDefensePointsData.level[shape.level] ? "block" : "none"};position: absolute; top: 0px; right: 0px; color: #00ff00;">
             +${Shape.ability.abilityDefensePointsData.level[shape.level]}
             </div>
@@ -14573,7 +14591,10 @@
         Speed: ${(shape.speed * 1000).toFixed(2)} PX/SEC<br>
         ${shape.baseShielding ? `${shape.baseShielding.type == "normal" ? "Shield" : "Energy Shield"} Health: ${abbreviateNumber(shape.baseShielding.health)}<br>` : ""}
         ${shape.baseDamageIncrease ? `Base Dmg Increase: ${shape.baseDamageIncrease * 100}%<br>` : ""}
-        ${shape.reflector ? `Damage Reflection: ${shape.reflector * 100}%<br>` : ""}
+        ${shape.reflectorData ? `
+        Reflector Blocked: ${Math.round(shape.reflectorData.resistance * 1e3) / 10}%<br>
+        Reflector Returned: ${Math.round(shape.reflectorData.return * 1e3) / 10}%<br>
+        ` : ""}
         ${shape.hullIntegrity ? `Hull Interity: ${shape.hullIntegrity * 100}%<br>` : ""}
         ${shape.ability && shape.ability.dmg ? `Ability Dmg: ${abbreviateNumber(shape.ability.dmg)}<br>` : ""}
         ${shape.ability && shape.ability.dotDamage ? `Ability DOT Dmg: ${abbreviateNumber(shape.ability.dotDamage)}<br>` : ""}
@@ -14583,7 +14604,7 @@
         ${shape.revive ? `Revival Amount: ${removeDecimals(shape.revive * 100)}%<br>` : ""}
         ${shape.healingAura ? `Healing Aura Power: ${abbreviateNumber(shape.healingAura)}<br>` : ""}
         ${shape.ability && shape.ability.showDuration ? `Ability Duration: ${(shape.ability.lastingTime / 1000)} sec<br>` : ""}
-        ${shape.ability && shape.ability.abilityDefensePoints ? `Ability Defense Points: ${shape.ability.abilityDefensePoints}<br>` : ""}
+        ${shape.ability && shape.ability.abilityDefensePoints ? `Ability ${shape.ability.defensePointToReflector ? "Reflector Blocked" : "Defense Points"}: ${shape.ability.defensePointToReflector ? Math.round((1 - defensePointsToResistance(shape.ability.abilityDefensePoints)) * 1e3) / 10 + "%" : shape.ability.abilityDefensePoints}<br>` : ""}
         ${shape.ability && shape.ability.abilityHealthMulti ? `Ability Health Multiplier: ${(shape.ability.abilityHealthMulti * 100).toFixed(4)}%<br>` : ""}
         ${shape.ability && shape.ability.effectIncrease ? `Effect Accumulation: ${shape.ability.effectIncrease} (${removeDecimals((shape.ability.effectIncrease / effectThresholds[shape.ability.effectIncreaseName]) * (shape.ability.projPerShot * (shape.ability.lastingTime / shape.ability.fireRate)) * 100)}% Max Acc.)<br>` : ""}
         ${shape.ability && shape.ability.suppressionPower ? `Ability Suppression Power: ${(shape.ability.suppressionPower * 100).toFixed(0)}%<br>` : ""}
@@ -15032,7 +15053,10 @@
         Speed: ${(shape.speed * 1000).toFixed(2)} PX/SEC<br>
         ${shape.baseShielding ? `${shape.baseShielding.type == "normal" ? "Shield" : "Energy Shield"} Health: ${abbreviateNumber(shape.baseShielding.health)}<br>` : ""}
         ${shape.baseDamageIncrease ? `Base Dmg Increase: ${shape.baseDamageIncrease * 100}%<br>` : ""}
-        ${shape.reflector ? `Damage Reflection: ${shape.reflector * 100}%<br>` : ""}
+        ${shape.reflectorData ? `
+        Reflector Blocked: ${Math.round(shape.reflectorData.resistance * 1e3) / 10}%<br>
+        Reflector Returned: ${Math.round(shape.reflectorData.return * 1e3) / 10}%<br>
+        ` : ""}
         ${shape.hullIntegrity ? `Hull Interity: ${shape.hullIntegrity * 100}%<br>` : ""}
         ${shape.ability && shape.ability.dmg ? `Ability Dmg: ${abbreviateNumber(shape.ability.dmg)}<br>` : ""}
         ${shape.ability && shape.ability.dotDamage ? `Ability DOT Dmg: ${abbreviateNumber(shape.ability.dotDamage)}<br>` : ""}
@@ -15042,8 +15066,7 @@
         ${shape.revive ? `Revival Amount: ${removeDecimals(shape.revive * 100)}%<br>` : ""}
         ${shape.healingAura ? `Healing Aura Power: ${abbreviateNumber(shape.healingAura)}<br>` : ""}
         ${shape.ability && shape.ability.showDuration ? `Ability Duration: ${(shape.ability.lastingTime / 1000)} sec<br>` : ""}
-        ${shape.ability && shape.ability.abilityDefensePoints ? `Ability Defense Points: ${shape.ability.abilityDefensePoints}<br>` : ""}
-        ${shape.ability && shape.ability.abilityHealthMulti ? `Ability Health Multiplier: ${(shape.ability.abilityHealthMulti * 100).toFixed(4)}%<br>` : ""}
+        ${shape.ability && shape.ability.abilityDefensePoints ? `Ability ${shape.ability.defensePointToReflector ? "Reflector Blocked" : "Defense Points"}: ${shape.ability.defensePointToReflector ? Math.round((1 - defensePointsToResistance(shape.ability.abilityDefensePoints)) * 1e3) / 10 + "%" : shape.ability.abilityDefensePoints}<br>` : ""}        ${shape.ability && shape.ability.abilityHealthMulti ? `Ability Health Multiplier: ${(shape.ability.abilityHealthMulti * 100).toFixed(4)}%<br>` : ""}
         ${shape.ability && shape.ability.effectIncrease ? `Effect Accumulation: ${shape.ability.effectIncrease} (${removeDecimals((shape.ability.effectIncrease / effectThresholds[shape.ability.effectIncreaseName]) * (shape.ability.projPerShot * (shape.ability.lastingTime / shape.ability.fireRate)) * 100)}% Max Acc.)<br>` : ""}
         ${shape.ability && shape.ability.suppressionPower ? `Ability Suppression Power: ${(shape.ability.suppressionPower * 100).toFixed(0)}%<br>` : ""}
         ${shape.ability && shape.ability.healingPower ? `Ability Healing Power: ${abbreviateNumber(shape.ability.healingPower)}<br>` : ""}
@@ -19282,7 +19305,7 @@
     function renderShapeBody(ctx, robot, w) {
         if (w == undefined && !robot.name.includes("Circle")) w = 12;
         let asd = Math.random() * 360;
-        if (robot.reflector && settingToggles.renderReflector) {
+        if (robot.effects && robot.effects.find(e => e.name == "reflector") && settingToggles.renderReflector) {
             ctx.rotate(asd);
             ctx.strokeStyle = "#fff";
             ctx.lineWidth = 12;
@@ -22058,13 +22081,9 @@
                         }
                     } else if (effect.name == "defense points") {
                         robot.builtInDefensePoints += effect.amount;
-                        if (effect.reflector) {
-                            robot.reflector = effect.reflector;
-                        }
                     } else if (effect.name == "Ultimate Reflecting Dash") {
                         robot.builtInDefensePoints += effect.amount;
                         if (effect.delta == null) effect.delta = 0;
-                        robot.reflector = .75;
                         effect.delta += delta;
                         if (effect.delta <= 1000 && !effect.pressed) {
                             robot.avoidBuildings = true;
@@ -22331,9 +22350,6 @@
                     }
                     if (effect.name == "Castling") {
                         doAbilityEndFunction(robot);
-                    }
-                    if (effect.reflector || effect.name == "Ultimate Reflecting Dash") {
-                        robot.reflector = 0;
                     }
                     if (effect.name == "Matrix") {
                         let near = getNearest(robot, 800, isAlly);
@@ -22617,6 +22633,8 @@
             return "./images/icons/anti_suppression.png";
         } else if (index == "block") {
             return "./images/icons/block.png";
+        } else if (index == "reflector") {
+            return "./images/icons/reflector.png";
         } else {
             return "./images/abilities/cold_pulse.png";
         }
@@ -23414,10 +23432,15 @@
                 robot.effects.push({
                     name: "Ultimate Reflecting Dash",
                     abilityEffect: robot.ability.name,
-                    amount: robot.ability.abilityDefensePoints,
                     lastTime: robot.ability.lastingTime,
                     dir: (robot.isMe ? robot.dir : moveDir),
                     touchLast: Date.now()
+                });
+                robot.effects.push({
+                    name: "reflector",
+                    block: (1 - defensePointsToResistance(robot.ability.abilityDefensePoints)),
+                    return: .75,
+                    lastTime: robot.ability.lastingTime
                 });
             } else if (robot.effects.find(e => e.name == robot.ability.name)) {
                 let effect = robot.effects.find(e => e.name == robot.ability.name);
@@ -23515,9 +23538,9 @@
                     }, false, robot);
                     robot.abilityReload = robot.ability.reload;
                     robot.effects.push({
-                        name: "defense points",
-                        amount: 50,
-                        reflector: .15,
+                        name: "reflector",
+                        block: 0.333,
+                        return: .15,
                         lastTime: 16e3
                     });
                     robot.effects.push({
@@ -25464,7 +25487,6 @@
             this.layer = 0;
             inGameSids++;
             if (!isBoss) {
-                this.reflector = data.reflector;
                 this.dmg = data.dmg * multi;
                 this.range = data.range;
                 this.health = this.maxhealth = data.health * multi;
@@ -26145,13 +26167,6 @@
             }
             if (amount != 0) {
                 if (doer && amount < 0) {
-                    if (object.reflector && !bypassReflector && !isDotDamage) {
-                        changeHealth(doer, {
-                            amount: ((amount / (defense || 1)) * object.reflector),
-                            bypassReflector: true,
-                            damageTypeName: "REFLECTOR"
-                        }, object.isMe, object);
-                    }
                     if (object.effects && object.effects.find(e => e.name == "Ultimate Reflecting Dash") && !isDotDamage) {
                         if (doer.effects.filter(e => e.name == "suppression" && e.uhEz == "Ultimate Reflecting Dash").length < 5) {
                             doer.effects.push({
@@ -26165,6 +26180,22 @@
                             doer.effects.filter(e => e.name == "suppression" && e.uhEz == "Ultimate Reflecting Dash").forEach(e => {
                                 e.lastTime = 10e3;
                             });
+                        }
+                    }
+                }
+                if (amount < 0 && !noDefense && object.effects) {
+                    let normalDmg = amount;
+                    for (let i = 0; i < object.effects.length; i++) {
+                        let effect = object.effects[i];
+                        if (effect.name == "reflector") {
+                            if (doer && !bypassReflector && !isDotDamage) {
+                                changeHealth(doer, {
+                                    amount: normalDmg * effect.return,
+                                    bypassReflector: true,
+                                    damageTypeName: "REFLECTOR"
+                                }, object.isMe, object);
+                            }
+                            amount *= (1 - effect.block);
                         }
                     }
                 }
