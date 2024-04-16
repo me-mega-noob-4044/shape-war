@@ -1,5 +1,5 @@
 (function () {
-    //window.isDev = true;
+   // window.isDev = true;
     Math.randInt = function (min, max) {
         return Math.floor(Math.random() * (max - min + 1)) + min;
     };
@@ -356,6 +356,15 @@
             `)}
         `)}
     `);
+    updateLogger.newLog("V57 UPDATE NOTES (Apr 13, 2024)", `
+        ${updateLogger.marginBlock(10, `
+            ${updateLogger.lineBlock(["New Shape(s): Teal Pentagon", "New Weapon(s): Mace and Hammer", "Balance Changes / Other Improvements"])}
+            ${updateLogger.title("h2", `CHANGES`)}
+            ${updateLogger.marginBlock(10, `
+                ${updateLogger.lineBlock(["Total modules rebalance", "Total pilot skills rebalance", "Total drone rebalance", "Total shape rebalance", "Total weapon rebalance (not built-in weapons from shapes)"])}
+            `)}
+        `)}
+    `);
     var mainDisplayText = updateLogger.grabHTML();
     document.getElementById("sideDisplay").innerHTML = "";
     function getValue(id) {
@@ -383,6 +392,11 @@
         workshopPoints: 0,
         league: 0,
         league2: 0,
+        lootboxSpecialPrize: {
+            mk1: Math.randInt(12, 25),
+            mk2: Math.randInt(25, 50),
+            mk3: Math.randInt(37, 50)
+        },
         profile: {
             level: 1,
             xp: {
@@ -428,6 +442,9 @@
         shapes: [0, 5.625e6, 28.125e6, 56.25e6, 112.5e6, 225e6, 450e6, 675e6, 675e6, 843.75e6, 1012.5e6, 1406.25e6],
         weapons: [0, 3375e3, 16875e3, 3375e4, 675e5, 135e6, 27e6, 405e6, 405e6, 50625e4, 6075e5, 84375e4]
     }];
+    sliverUpgradesByTier[10] = {
+        shapes: [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    };
     var unlockedAtTier = [1, 6, 13, 21, 30];
     var shapeSids = 0;
     class shape {
@@ -506,6 +523,7 @@
             }
             this.healingAura = data.healingAuraData ? data.healingAuraData.base : data.healingAura;
             this.ability = null;
+            this.indexRole = data.indexRole;
             if (data.ability) {
                 this.ability = {
                     name: data.ability.name,
@@ -619,9 +637,9 @@
                         this.ability.dotDamage = data.ability.dotData ? data.ability.dotData.base : data.ability.dotDamage;
                     }
                 } else {
-                    if (data.ability.name == "Nuclear Strike" || data.ability.name == "Skyward" || data.ability.name == "Clear Sky" || data.ability.name == "Divine Judgement" || data.ability.name == "Grand Fortitude" || data.ability.name == "Overload" || data.ability.name == "Cold Pulse" || data.ability.name == "Dragon Flight" || data.ability.name == "Retribution" || data.ability.name == "Stampede") {
+                    if (data.ability.name == "Absorption" || data.ability.name == "Nuclear Strike" || data.ability.name == "Skyward" || data.ability.name == "Clear Sky" || data.ability.name == "Divine Judgement" || data.ability.name == "Grand Fortitude" || data.ability.name == "Overload" || data.ability.name == "Cold Pulse" || data.ability.name == "Dragon Flight" || data.ability.name == "Retribution" || data.ability.name == "Stampede") {
                         this.ability.dmg = data.ability.damageData ? data.ability.damageData.base : data.ability.dmg;
-                        if (data.ability.name == "Skyward" || data.ability.name == "Clear Sky" || data.ability.name == "Divine Judgement" || data.ability.name == "Grand Fortitude" || data.ability.name == "Overload" || data.ability.name == "Stampede" || data.ability.name == "Dragon Flight" || data.ability.name == "Retribution") {
+                        if (data.ability.name == "Absorption" || data.ability.name == "Skyward" || data.ability.name == "Clear Sky" || data.ability.name == "Divine Judgement" || data.ability.name == "Grand Fortitude" || data.ability.name == "Overload" || data.ability.name == "Stampede" || data.ability.name == "Dragon Flight" || data.ability.name == "Retribution") {
                             this.ability.lastingTime = data.ability.lastingTime;
                             if (data.ability.name == "Clear Sky" || data.ability.name == "Grand Fortitude" || data.ability.name == "Dragon Flight") {
                                 this.ability.dotDamage = data.ability.dotData ? data.ability.dotData.base : data.ability.dotDamage;
@@ -641,6 +659,7 @@
     var shapeData = [{
         tier: 0,
         name: "Gray Circle",
+        indexRole: 1,
         speed: 0.0018,
         speedLevel: [0, 0, 0.0001, 0.0001, 0, 0.0001, 0.0001, 0, 0.0001, 0.0002, 0.0003, 0.0004],
         scale: 55,
@@ -658,7 +677,7 @@
             heavy: 0
         },
         color: "#808080",
-        moduleHardpoints: 1,
+        moduleHardpoints: 0,
         cost: {
             sliver: 75e3,
             gold: 0
@@ -666,6 +685,7 @@
     }, {
         tier: 0,
         name: "Black Circle",
+        indexRole: 1,
         speed: 0.0012,
         speedLevel: [0, 0, 0.0001, 0.0001, 0, 0, 0, 0, 0.0001, 0.0001, 0.0002, 0.0002],
         scale: 75,
@@ -685,7 +705,7 @@
             heavy: 0
         },
         color: "#000",
-        moduleHardpoints: 1,
+        moduleHardpoints: 0,
         cost: {
             sliver: 570e3,
             gold: 0
@@ -694,6 +714,7 @@
         tier: 0,
         name: "Light Gray Circle",
         speed: 0.0028,
+        indexRole: 2,
         speedLevel: [0, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0002, 0.0002, 0.0004],
         scale: 45,
         fieldOfViewMulti: 1.35,
@@ -711,7 +732,7 @@
             heavy: 0
         },
         color: "#bababa",
-        moduleHardpoints: 1,
+        moduleHardpoints: 0,
         cost: {
             sliver: 0,
             gold: 250
@@ -720,6 +741,7 @@
         tier: 1,
         name: "Yellow Circle",
         speed: 0.0012,
+        indexRole: 1,
         speedLevel: [0, 0, 0, 0.0001, 0, 0.0002, 0, 0.0001, 0.0001, 0, 0.0001, 0.0003],
         scale: 85,
         fieldOfViewMulti: 2.3,
@@ -737,7 +759,7 @@
             heavy: 3
         },
         color: "#ffff00",
-        moduleHardpoints: 2,
+        moduleHardpoints: 1,
         cost: {
             sliver: 0,
             gold: 1e3
@@ -746,6 +768,7 @@
         tier: 1,
         name: "Green Circle",
         speed: 0.0021,
+        indexRole: 1,
         speedLevel: [0, 0.0001, 0.0001, 0, 0.0001, 0.0001, 0, 0.0001, 0.0002, 0.0002, 0.0002, 0.0002],
         scale: 55,
         fieldOfViewMulti: 1.2,
@@ -776,7 +799,7 @@
             heavy: 1
         },
         color: "#00ff00",
-        moduleHardpoints: 2,
+        moduleHardpoints: 1,
         cost: {
             sliver: 0,
             gold: 15e2
@@ -785,6 +808,7 @@
         tier: 2,
         name: "Purple Circle",
         speed: 0.0014,
+        indexRole: 0,
         speedLevel: [0, 0, 0, 0, 0.0001, 0.0001, 0, 0.0001, 0, 0.0001, 0.0001, 0.0002],
         scale: 55,
         fieldOfViewMulti: 1.4,
@@ -803,7 +827,7 @@
             heavy: 1
         },
         color: "#800080",
-        moduleHardpoints: 3,
+        moduleHardpoints: 2,
         cost: {
             sliver: 0,
             gold: 35e2
@@ -812,6 +836,7 @@
         tier: 1,
         name: "Blue Circle",
         speed: 0.0018,
+        indexRole: 2,
         speedLevel: [0, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0002, 0.0002, 0.0002, 0.0002, 0.0002],
         scale: 45,
         fieldOfViewMulti: 1.25,
@@ -842,7 +867,7 @@
             heavy: 0
         },
         color: "#0000ff",
-        moduleHardpoints: 2,
+        moduleHardpoints: 1,
         cost: {
             sliver: 3e6,
             gold: 0
@@ -851,6 +876,7 @@
         tier: 2,
         name: "Teal Circle",
         speed: 0.001,
+        indexRole: 0,
         speedLevel: [0, 0.0001, 0, 0.0001, 0, 0.0001, 0.0001, 0, 0.0001, 0.0001, 0.0002, 0.0002],
         scale: 65,
         fieldOfViewMulti: 1.45,
@@ -881,7 +907,7 @@
             heavy: 2
         },
         color: "#008080",
-        moduleHardpoints: 4,
+        moduleHardpoints: 3,
         cost: {
             sliver: 0,
             gold: 3e3
@@ -890,6 +916,7 @@
         tier: 2,
         name: "White Circle",
         speed: 0.0018,
+        indexRole: 1,
         speedLevel: [0, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001],
         scale: 55,
         fieldOfViewMulti: 1.25,
@@ -924,7 +951,7 @@
             heavy: 2
         },
         color: "#fff",
-        moduleHardpoints: 3,
+        moduleHardpoints: 2,
         cost: {
             sliver: 1e6,
             gold: 3750
@@ -933,6 +960,7 @@
         tier: 3,
         name: "Dark Gray Circle",
         speed: 0.0016,
+        indexRole: 0,
         speedLevel: [0, 0, 0, 0, 0.0001, 0.0001, 0, 0.0001, 0, 0.0002, 0.0002, 0.0002],
         scale: 65,
         fieldOfViewMulti: 1.3,
@@ -954,7 +982,7 @@
             heavy: 0
         },
         color: "#4e4e4e",
-        moduleHardpoints: 4,
+        moduleHardpoints: 3,
         cost: {
             sliver: 0,
             gold: 75e2
@@ -963,6 +991,7 @@
         tier: 3,
         name: "Red Circle",
         speed: 0.0014,
+        indexRole: 1,
         speedLevel: [0, 0, 0, 0, 0, 0, 0.0001, 0.0001, 0.0001, 0.0001, 0.0002, 0.0002],
         scale: 75,
         fieldOfViewMulti: 2,
@@ -981,7 +1010,7 @@
             heavy: 4
         },
         color: "#f00",
-        moduleHardpoints: 4,
+        moduleHardpoints: 3,
         cost: {
             sliver: 0,
             gold: 75e2
@@ -990,6 +1019,7 @@
         tier: 1,
         name: "Red Pentagon",
         speed: 0.0014,
+        indexRole: 1,
         speedLevel: [0, 0, 0, 0, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0002, 0.0002, 0.0002],
         scale: 55,
         fieldOfViewMulti: 1.3,
@@ -1014,7 +1044,7 @@
             heavy: 1
         },
         color: "#f00",
-        moduleHardpoints: 2,
+        moduleHardpoints: 1,
         cost: {
             sliver: 0,
             gold: 15e2
@@ -1023,6 +1053,7 @@
         tier: 3,
         name: "Pink Circle",
         speed: 0.0021,
+        indexRole: 0,
         speedLevel: [0, 0.0001, 0.0001, 0, 0.0001, 0.0001, 0, 0.0001, 0.0002, 0.0002, 0.0002, 0.0003],
         scale: 65,
         fieldOfViewMulti: 1.6,
@@ -1055,12 +1086,13 @@
             heavy: 0
         },
         color: "#ffc0cb",
-        moduleHardpoints: 4,
+        moduleHardpoints: 3,
         costParts: true
     }, {
         tier: 2,
         name: "Blue Pentagon",
         speed: 0.0016,
+        indexRole: 0,
         speedLevel: [0, 0, 0, 0, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0002, 0.0002, 0.0002],
         scale: 65,
         fieldOfViewMulti: 1.3,
@@ -1072,8 +1104,8 @@
         `,
         shieldData: {
             type: "energy",
-            base: 70e3,
-            level: [0, 6e3, 6e3, 8e3, 8e3, 10e3, 10e3, 12e3, 15e3, 17e3, 20e3, 20e3],
+            base: 45500,
+            level: [0, 3900, 3900, 5200, 5200, 6500, 6500, 7800, 9750, 11050, 13000, 13000],
             regen: 0.1
         },
         healthData: {
@@ -1098,7 +1130,7 @@
             heavy: 2
         },
         color: "#00f",
-        moduleHardpoints: 3,
+        moduleHardpoints: 2,
         cost: {
             sliver: 500e3,
             gold: 5e3
@@ -1107,6 +1139,7 @@
         tier: 3,
         name: "Brown Circle",
         speed: 0.0016,
+        indexRole: 1,
         flightAnimationSpeed: 10e3,
         speedLevel: [0, 0, 0, 0, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0002, 0.0002, 0.0002],
         scale: 65,
@@ -1146,7 +1179,7 @@
             heavy: 2
         },
         color: "#964b00",
-        moduleHardpoints: 4,
+        moduleHardpoints: 3,
         cost: {
             sliver: 10e6,
             gold: 75e2
@@ -1155,6 +1188,7 @@
         tier: 4,
         name: "Orange Circle",
         speed: 0.0012,
+        indexRole: 0,
         speedLevel: [0, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0002],
         scale: 75,
         fieldOfViewMulti: 1.6,
@@ -1165,11 +1199,10 @@
         <br><br>
         Recommended Equipment: x1 Storm + x2 Thunder
         `,
-
         hullIntegrity: .25,
         healthData: {
-            base: 207e3,
-            level: [0, 21600, 21600, 21600, 23650, 23650, 23650, 25600, 25625, 25625, 27600, 29575]
+            base: 100e3,
+            level: [0, 11e3, 12e3, 13e3, 14e3, 16e3, 18e3, 18e3, 18e3, 18e3, 20e3, 25e3]
         },
         hardpoints: {
             light: 1,
@@ -1184,11 +1217,11 @@
             DoT Duration: 15 seconds<br>
             Healing Power: 2.5%<br>
             Healing Rate: .5 seconds<br>
-            Duration: 12 seconds<br>
-            Cooldown: 12 seconds
+            Duration: 8 seconds<br>
+            Cooldown: 10 seconds
             `,
             iconSource: "./images/abilities/shield_regen.png",
-            lastingTime: 12e3,
+            lastingTime: 8e3,
             reload: 10e3
         },
         reflectorData: {
@@ -1196,7 +1229,7 @@
             return: .2
         },
         color: "#ffa500",
-        moduleHardpoints: 4,
+        moduleHardpoints: 3,
         cost: {
             sliver: 900e6,
             gold: 100e3,
@@ -1206,6 +1239,7 @@
         tier: 2,
         name: "White Pentagon",
         speed: 0.0014,
+        indexRole: 2,
         speedLevel: [0, 0, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0002, 0.0002, 0.0002],
         scale: 65,
         fieldOfViewMulti: 1.25,
@@ -1221,28 +1255,28 @@
             regen: 0.05
         },
         healthData: {
-            base: 76e3,
-            level: [0, 4e3, 4e3, 4e3, 6e3, 6e3, 6e3, 8e3, 8e3, 10e3, 12e3, 15e3],
+            base: 56e3,
+            level: [0, 2e3, 2e3, 4e3, 4e3, 4e3, 6e3, 6e3, 8e3, 8e3, 10e3, 12e3],
         },
         ability: {
             name: "Stealth",
             desc: `
             <span style="font-width: bolder; color: #fff;">Stealth</span>
             Removes the shape from all enemy radars.<br><br>
-            Duration: 8 seconds<br>
+            Duration: 4 seconds<br>
             Speed Increase: 100%<br>
-            Cooldown: 14 seconds
+            Cooldown: 12 seconds
             `,
             iconSource: "./images/stealth.png",
-            lastingTime: 8e3,
-            reload: 14e3
+            lastingTime: 4e3,
+            reload: 12e3
         },
         hardpoints: {
             light: 2,
             heavy: 1
         },
         color: "#fff",
-        moduleHardpoints: 3,
+        moduleHardpoints: 2,
         cost: {
             sliver: 2e6,
             gold: 5e3
@@ -1250,6 +1284,7 @@
     }, {
         tier: 3,
         name: "Tan Pentagon",
+        indexRole: 1,
         speed: 0.0024,
         speedLevel: [0, 0, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0002, 0.0002, 0.0002],
         scale: 65,
@@ -1287,7 +1322,7 @@
             heavy: 0
         },
         color: "#d2b48c",
-        moduleHardpoints: 4,
+        moduleHardpoints: 3,
         cost: {
             sliver: 2e6,
             gold: 75e2
@@ -1296,6 +1331,7 @@
         tier: 3,
         name: "Purple Hexagon",
         speed: 0.0018,
+        indexRole: 2,
         speedLevel: [0, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0002, 0.0002, 0.0002],
         scale: 65,
         fieldOfViewMulti: 1.35,
@@ -1313,21 +1349,21 @@
             desc: `
             <span style="font-width: bolder; color: #fff;">Stealth Dash</span>
             The shape leaps forward in a chosen direction. During that, the shape activates stealth that lasts during and after the dash.<br><br>
-            Max Charges: 4<br>
+            Max Charges: 3<br>
             Usage Interval: .75 seconds<br>
-            Cooldown (per charge): 5 seconds
+            Cooldown (per charge): 8 seconds
             `,
             iconSource: "./images/abilities/stealth_dash.png",
-            charges: 4,
+            charges: 3,
             lastingTime: 750,
-            reload: 5e3
+            reload: 8e3
         },
         hardpoints: {
             light: 2,
             heavy: 1
         },
         color: "#800080",
-        moduleHardpoints: 4,
+        moduleHardpoints: 3,
         cost: {
             sliver: 1e6,
             gold: 5e3,
@@ -1337,6 +1373,7 @@
         tier: 3,
         name: "Yellow Hexagon",
         speed: 0.0012,
+        indexRole: 2,
         speedLevel: [0, 0, 0.0001, 0, 0.0001, 0.0001, 0, 0.0001, 0, 0, 0.0001, 0.0002],
         scale: 75,
         fieldOfViewMulti: 1.35,
@@ -1354,14 +1391,14 @@
             desc: `
             <span style="font-width: bolder; color: #fff;">Phase Shift</span>
             The shape activates a powerful matrix that allows it not to take any damage. Negative Effects are all nullfied during the ability.<br><br>
-            Duration: 1.5 seconds<br>
-            Max Charges: 3<br>
+            Duration: 2 seconds<br>
+            Max Charges: 2<br>
             Speed Increase: 150%<br>
             Cooldown (per charge): 8 seconds
             `,
             iconSource: "./images/abilities/phase_shift.png",
-            charges: 3,
-            lastingTime: 1500,
+            charges: 2,
+            lastingTime: 2e3,
             reload: 8e3
         },
         hardpoints: {
@@ -1369,12 +1406,13 @@
             heavy: 0
         },
         color: "#ffff00",
-        moduleHardpoints: 4,
+        moduleHardpoints: 3,
         costParts: true
     }, {
         tier: 2,
         name: "Gray Hexagon",
         speed: 0.0018,
+        indexRole: 2,
         speedLevel: [0, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0002, 0.0002, 0.0002, 0.0002, 0.0004],
         scale: 55,
         fieldOfViewMulti: 1.1,
@@ -1406,7 +1444,7 @@
             heavy: 2
         },
         color: "#808080",
-        moduleHardpoints: 3,
+        moduleHardpoints: 2,
         cost: {
             sliver: 500e3,
             gold: 5e3
@@ -1415,6 +1453,7 @@
         tier: 3,
         name: "Red Hexagon",
         speed: 0.0016,
+        indexRole: 0,
         speedLevel: [0, 0, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0002, 0.0002],
         scale: 60,
         fieldOfViewMulti: 1.3,
@@ -1434,25 +1473,25 @@
             The shape activates its generator and generates a energy shield. Energy shields obtained cannot regenerate health.<br><br>
             Duration of Shields: Until Destruction<br>
             Usage Interval: 1 second<br>
-            Max Charges: 4<br>
+            Max Charges: 2<br>
             Shield Type: Blue (when MK2 or MK3, yellow)<br>
-            Cooldown (per charge): 10 seconds
+            Cooldown (per charge): 12 seconds
             `,
             iconSource: "./images/modules/fortifier.png",
             shieldHpData: {
                 base: 35e3,
                 level: [0, 4e3, 4e3, 4e3, 4e3, 4e3, 10e3, 10e3, 12e3, 12e3, 12e3, 16e3],
             },
-            charges: 4,
-            lastingTime: 1e3,
-            reload: 10e3
+            charges: 2,
+            lastingTime: 2e3,
+            reload: 12e3
         },
         hardpoints: {
             light: 2,
             heavy: 1
         },
         color: "#f00",
-        moduleHardpoints: 4,
+        moduleHardpoints: 3,
         costParts: true
     }, {
         tier: 4,
@@ -1469,10 +1508,10 @@
         Recommended Equipment: x3 Shatter + x1 Brisant / x3 Evora + x1 Veyron
         `,
         healthData: {
-            base: 120e3,
-            level: [0, 6e3, 12e3, 13e3, 15e3, 16e3, 18e3, 20e3, 22e3, 25e3, 25e3, 30e3],
-        },
-        dotResistance: .2,
+            base: 90e3,
+            level: [0, 4500, 9000, 9750, 11250, 12000, 13500, 15e3, 16500, 18750, 18750, 22500]
+        },          
+        dotResistance: .4,
         ability: {
             name: "Stampede",
             desc: `
@@ -1481,28 +1520,29 @@
             DoT Duration (per stack): 7 seconds<br>
             Magnetic Field Range: 400PX<br>
             Speed Increase: +200%<br>
-            Duration: 12 seconds<br>
-            Cooldown: 8 seconds
+            Duration: 10 seconds<br>
+            Cooldown: 12 seconds
             `,
             iconSource: "./images/abilities/stampede.png",
             damageData: {
                 base: 440,
                 level: [0, 270, 300, 330, 360, 390, 420, 450, 480, 510, 540, 570],
             },
-            lastingTime: 12e3,
-            reload: 8e3
+            lastingTime: 10e3,
+            reload: 12e3
         },
         hardpoints: {
             light: 3,
             heavy: 1
         },
         color: "#d2b48c",
-        moduleHardpoints: 4,
+        moduleHardpoints: 3,
         costParts: true
     }, {
         tier: 3,
         name: "Orange Pentagon",
         speed: 0.0014,
+        indexRole: 1,
         speedLevel: [0, 0, 0, 0.0001, 0.0001, 0, 0.0001, 0, 0.0001, 0, 0.0001, 0.0001],
         scale: 55,
         fieldOfViewMulti: 1.35,
@@ -1547,7 +1587,7 @@
             heavy: 3
         },
         color: "#ffa500",
-        moduleHardpoints: 4,
+        moduleHardpoints: 3,
         cost: {
             sliver: 10e6,
             gold: 75e2,
@@ -1557,6 +1597,7 @@
         tier: 3,
         name: "Black Pentagon",
         speed: 0.0012,
+        indexRole: 2,
         speedLevel: [0, 0, 0.0001, 0.0001, 0, 0, 0.0001, 0.00005, 0, 0.0001, 0.0002, 0.0002],
         scale: 60,
         fieldOfViewMulti: 1.4,
@@ -1590,7 +1631,7 @@
             heavy: 3
         },
         color: "#000",
-        moduleHardpoints: 4,
+        moduleHardpoints: 3,
         cost: {
             sliver: 5e6,
             gold: 75e2,
@@ -1600,6 +1641,7 @@
         tier: 4,
         name: "Red Heptagon",
         speed: 0.0008,
+        indexRole: 1,
         speedLevel: [0, 0, 0.0001, 0.0001, 0, 0, 0.0001, 0.00005, 0, 0.0001, 0.0001, 0.0001],
         scale: 120,
         fieldOfViewMulti: 3.5,
@@ -1633,12 +1675,13 @@
             reload: 6e3
         },
         color: "#f00",
-        moduleHardpoints: 4,
+        moduleHardpoints: 3,
         costParts: true
     }, {
         tier: 4,
         name: "Gold Circle",
         speed: 0.001,
+        indexRole: 0,
         speedLevel: [0, 0.0001, 0.0001, 0, 0, 0, 0.0001, 0.0001, 0.0001, 0, 0.0001, 0.0001],
         scale: 85,
         fieldOfViewMulti: 1.65,
@@ -1653,8 +1696,8 @@
         `,
         hullIntegrity: .25,
         healthData: {
-            base: 184e3,
-            level: [0, 8640, 11520, 11520, 11520, 11520, 14400, 14400, 17280, 17280, 18720, 21600]
+            base: 100e3,
+            level: [0, 8500, 10e3, 10e3, 10e3, 10e3, 15e3, 15e3, 20e3, 20e3, 20e3, 25e3]
         },
         hardpoints: {
             light: 2,
@@ -1683,17 +1726,17 @@
             lastingTime: 0,
             reload: 6e3
         },
-        dotResistance: .75,
         healingMulti: 1.5,
         revive: .5,
         color: "#ffd700",
-        moduleHardpoints: 6,
-        builtInDefensePoints: 100,
+        moduleHardpoints: 4,
+        builtInDefensePoints: 50,
         costParts: true
     }, {
         tier: 0,
         name: "Black Hexagon",
         speed: 0.0012,
+        indexRole: 2,
         speedLevel: [0, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0002, 0.0004],
         scale: 45,
         fieldOfViewMulti: 1.15,
@@ -1724,7 +1767,7 @@
             heavy: 0
         },
         color: "#000",
-        moduleHardpoints: 1,
+        moduleHardpoints: 0,
         cost: {
             sliver: 0,
             gold: 500
@@ -1733,6 +1776,7 @@
         tier: 2,
         name: "White Hexagon",
         speed: 0.0012,
+        indexRole: 1,
         speedLevel: [0, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001],
         scale: 65,
         fieldOfViewMulti: 1.4,
@@ -1767,12 +1811,13 @@
             heavy: 2
         },
         color: "#fff",
-        moduleHardpoints: 3,
+        moduleHardpoints: 2,
         costParts: true
     }, {
         tier: 3,
         name: "Blue Heptagon",
         speed: 0.0014,
+        indexRole: 1,
         speedLevel: [0, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0002, 0.0002],
         scale: 75,
         fieldOfViewMulti: 1.55,
@@ -1805,12 +1850,13 @@
             heavy: 2
         },
         color: "#00f",
-        moduleHardpoints: 4,
+        moduleHardpoints: 3,
         costParts: true
     }, {
         tier: 4,
         name: "Cyan Pentagon",
         speed: 0.0026,
+        indexRole: 2,
         speedLevel: [0, 0.0001, 0.0001, 0.0001, 0.0002, 0.0002, 0.0002, 0.0002, 0.0002, 0.0004, 0.0004, 0.0006],
         scale: 65,
         fieldOfViewMulti: 1.3,
@@ -1825,7 +1871,6 @@
             level: [0, 10e3, 10e3, 14e3, 14e3, 17500, 17500, 17500, 17500, 19250, 22750, 43750],
             regen: 0.15
         },
-        builtInDefensePoints: 50,
         revive: .5,
         healthData: {
             base: 76e3,
@@ -1838,25 +1883,26 @@
             The shape increases the regeneration rate of its shield and its movement speed.<br><br>
             Speed Increase: 150%<br>
             Regeneration Increase: x13<br>
-            Duration: 10 seconds<br>
-            Cooldown: 6 seconds
+            Duration: 6 seconds<br>
+            Cooldown: 10 seconds
             `,
             iconSource: "./images/abilities/shield_regen.png",
-            lastingTime: 10e3,
-            reload: 6e3
+            lastingTime: 6e3,
+            reload: 10e3
         },
         hardpoints: {
             light: 6,
             heavy: 0
         },
         color: "#00ffff",
-        moduleHardpoints: 4,
+        moduleHardpoints: 3,
         costParts: true
     }, {
         dontSell: true,
         tier: 3,
         name: "Cyan Circle",
         speed: 0.0012,
+        indexRole: 0,
         speedLevel: [0, 0, 0, 0.0001, 0.0001, 0.0001, 0.0001, 0, 0.0002, 0.0002, 0.0002, 0.0002],
         scale: 75,
         fieldOfViewMulti: 1.45,
@@ -1890,8 +1936,8 @@
                 level: [0, 25, 0, 25, 0, 25, 0, 25, 0, 0, 0, 25]
             },
             lastingTimeData: {
-                base: 3e3,
-                level: [0, 200, 200, 400, 400, 600, 600, 800, 800, 1e3, 1e3, 3e3]
+                base: 2e3,
+                level: [0, 100, 100, 100, 100, 100, 250, 250, 500, 500, 1e3, 1e3]
             },
             iconSource: "./images/modules/heavy_armor_plating.png",
             reload: 8e3
@@ -1901,12 +1947,13 @@
             heavy: 3
         },
         color: "#00ffff",
-        moduleHardpoints: 4,
+        moduleHardpoints: 3,
         costParts: true
     }, {
         tier: 4,
         name: "Pinkish-Red Circle",
         speed: 0.0012,
+        indexRole: 1,
         speedLevel: [0, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0002, 0.0004],
         scale: 60,
         fieldOfViewMulti: 1.45,
@@ -1921,8 +1968,7 @@
         <br><br>
         Recommended Equipment: x1 Damper + x2 Tamer
         `,
-        builtInDefensePoints: 50,
-        dotResistance: 0.001,
+        dotResistance: .1,
         healthData: {
             base: 68e3,
             level: [0, 6e3, 6e3, 6e3, 6e3, 6e3, 11e3, 11e3, 11e3, 11e3, 15e3, 15e3],
@@ -1933,10 +1979,10 @@
             <span style="font-width: bolder; color: #fff;">Roulette Strike</span>
             The shape fires a projectile that emits a field upon destruction. The field emits rust and DoT effects to any enemy near its radius. Also upon activation, the shape reduces the duration of all rust effects applied to the shape.<br><br>
             Proj. Range: 1400PX<br>
-            Max Charges: 5<br>
+            Max Charges: 3<br>
             Effect Durations: 15 seconds<br>
             Effect Emit Speed: .25 seconds<br>
-            Cooldown (per charge): 3 seconds
+            Cooldown (per charge): 6 seconds
             `,
             iconSource: "./images/abilities/roulette_strike.png",
             damageData: {
@@ -1947,21 +1993,22 @@
                 base: 200,
                 level: [0, 60, 60, 60, 100, 100, 140, 140, 200, 200, 300, 400]
             },
-            charges: 5,
-            lastingTime: 750,
-            reload: 3e3
+            charges: 3,
+            lastingTime: 1e3,
+            reload: 6e3
         },
         hardpoints: {
             light: 2,
             heavy: 1
         },
         color: "#fc0072",
-        moduleHardpoints: 4,
+        moduleHardpoints: 3,
         costParts: true
     }, {
         tier: 4,
         name: "Magenta Circle",
         speed: 0.0012,
+        indexRole: 1,
         speedLevel: [0, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0002, 0.0004],
         scale: 65,
         fieldOfViewMulti: 1.6,
@@ -1980,8 +2027,8 @@
             desc: `
             <span style="font-width: bolder; color: #fff;">Clear Sky</span>
             The shape flies up, ignore all buildings when moving. The shape, upon activation of the ability, also activates built-in weapons that emit blast effect and a purple shield. Damage done to the purple shield will enchance the built-in weapons.<br><br>
-            Duration: 8 seconds<br>
-            Cooldown: 6 seconds
+            Duration: 6 seconds<br>
+            Cooldown: 8 seconds
             `,
             iconSource: "./images/abilities/clear_sky.png",
             damageData: {
@@ -1991,25 +2038,26 @@
             projPerShot: 1,
             fireRate: 100,
             effectIncreaseData: {
-                base: 1,
+                base: .01,
                 effect: "blast",
-                level: [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 5]
+                level: [0, .01, .01, .01, .01, .01, .01, .01, .01, .01, .01, .01]
             },
-            lastingTime: 8e3,
-            reload: 6e3
+            lastingTime: 6e3,
+            reload: 8e3
         },
         hardpoints: {
             light: 4,
             heavy: 0
         },
         color: "#ff00ff",
-        moduleHardpoints: 4,
+        moduleHardpoints: 3,
         costParts: true
     }, {
         dontSell: true,
         tier: 4,
         name: "Gray Pentagon",
         speed: 0.001,
+        indexRole: 0,
         speedLevel: [0, 0, 0, 0.0001, 0.0001, 0, 0.0001, 0, 0.0001, 0, 0.0001, 0.0001],
         scale: 97,
         fieldOfViewMulti: 1.9,
@@ -2031,10 +2079,9 @@
         <br><br>
         Recommended Equipment: x1 Brisant + x2 Shatter
         `,
-        healingMulti: 1.25,
         healthData: {
-            base: 120e3,
-            level: [0, 15148, 25148, 25148, 27456, 27456, 27456, 29744, 29744, 29744, 32008, 34320]
+            base: 78000,
+            level: [0, 9850, 16302, 16302, 17846, 17846, 17846, 19310, 19310, 19310, 20805, 22242]
         },
         shieldData: {
             type: "normal",
@@ -2052,7 +2099,7 @@
             Healing (per shield): 5%<br>
             Gray Damage Healing (% of total): 15%<br>
             Ability Range: 800PX<br>
-            Cooldown: 8 seconds
+            Cooldown: 12 seconds
             `,
             damageData: {
                 base: 900,
@@ -2064,7 +2111,7 @@
             },
             iconSource: "./images/abilities/castling.png",
             lastingTime: 12e3,
-            reload: 8e3
+            reload: 12e3
         },
         builtInDefensePoints: 100,
         hardpoints: {
@@ -2072,7 +2119,7 @@
             heavy: 1
         },
         color: "#808080",
-        moduleHardpoints: 6,
+        moduleHardpoints: 4,
         costParts: true
     }, {
         tier: 2,
@@ -2080,6 +2127,7 @@
         speed: 0.002,
         speedLevel: [0, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0002, 0.0003, 0.0004],
         scale: 60,
+        indexRole: 0,
         fieldOfViewMulti: 1.45,
         desc: `
         Fortified with an formidable defense mechanism,
@@ -2123,13 +2171,14 @@
             heavy: 0
         },
         color: "#FF4500",
-        moduleHardpoints: 3,
+        moduleHardpoints: 2,
         costParts: true
     }, {
         dontSell: true,
         tier: 3,
         name: "Brown Pentagon",
         speed: 0.0032,
+        indexRole: 0,
         speedLevel: [0, 0.0002, 0.0002, 0.0002, 0.0002, 0.0002, 0.0002, 0.0002, 0.0002, 0.0002, 0.0002, 0.0004],
         scale: 75,
         fieldOfViewMulti: 1.65,
@@ -2167,13 +2216,14 @@
             heavy: 1
         },
         color: "#964b00",
-        moduleHardpoints: 4,
+        moduleHardpoints: 3,
         costParts: true
     }, {
         dontSell: true,
         tier: 3,
         name: "Gray Heptagon",
         speed: 0.0012,
+        indexRole: 2,
         speedLevel: [0, 0.00005, 0.00005, 0.00005, 0.00005, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001],
         scale: 55,
         fieldOfViewMulti: 1.15,
@@ -2207,12 +2257,13 @@
             heavy: 4
         },
         color: "#808080",
-        moduleHardpoints: 4,
+        moduleHardpoints: 3,
         costParts: true
     }, {
         tier: 0,
         name: "Dark Blue Circle",
         speed: 0.002,
+        indexRole: 1,
         speedLevel: [0, 0, 0.0001, 0.0001, 0, 0.0001, 0.0001, 0, 0.0001, 0.0002, 0.0002, 0.0004],
         scale: 60,
         fieldOfViewMulti: 2,
@@ -2229,7 +2280,7 @@
             heavy: 1
         },
         color: "#00008B",
-        moduleHardpoints: 1,
+        moduleHardpoints: 0,
         cost: {
             sliver: 75e3,
             gold: 0
@@ -2239,6 +2290,7 @@
         tier: 4,
         name: "Cyan Hexagon",
         speed: 0.0012,
+        indexRole: 1,
         speedLevel: [0, 0, 0, 0.0001, 0.0001, 0.0001, 0.0001, 0, 0.0002, 0.0002, 0.0002, 0.0002],
         scale: 75,
         fieldOfViewMulti: 1.45,
@@ -2252,7 +2304,7 @@
             base: 126e3,
             level: [0, 10e3, 10e3, 10e3, 15e3, 15e3, 15e3, 15e3, 15e3, 15e3, 20e3, 30e3],
         },
-        builtInDefensePoints: 100,
+        builtInDefensePoints: 50,
         ability: {
             name: "Blink Support",
             desc: `
@@ -2261,7 +2313,7 @@
             One of the turrets deal most of the damage, while the other emits negative effects at enemies.<br><br>
             Duration of Turrets: x2 the duration of the ability<br>
             Duration: Based on shape level<br>
-            Max Charges: 4<br>
+            Max Charges: 2<br>
             Cooldown (per charge): 12 seconds
             `,
             abilityHealthMultiData: {
@@ -2280,7 +2332,7 @@
                 base: 6e3,
                 level: [0, 50, 50, 100, 100, 150, 150, 200, 200, 300, 300, 400]
             },
-            charges: 4,
+            charges: 2,
             iconSource: "./images/abilities/shield_t.png",
             reload: 12e3
         },
@@ -2289,13 +2341,14 @@
             heavy: 2
         },
         color: "#00ffff",
-        moduleHardpoints: 4,
+        moduleHardpoints: 3,
         costParts: true
     }, {
         dontSell: true,
         tier: 4,
         name: "Cyan Heptagon",
         speed: 0.0012,
+        indexRole: 1,
         speedLevel: [0, 0, 0, 0.0001, 0.0001, 0.0001, 0.0001, 0, 0.0002, 0.0002, 0.0002, 0.0002],
         scale: 85,
         fieldOfViewMulti: 1.55,
@@ -2303,10 +2356,9 @@
         Behold Heptagon's remarkable creation – adept at seamlessly vanishing from enemy radar. Witness its prowess: now you see it, now you don't, a testament to cutting-edge technology in action.
         `,
         healthData: {
-            base: 126e3,
-            level: [0, 10e3, 15e3, 15e3, 16e3, 16e3, 16e3, 18e3, 18e3, 18e3, 20e3, 30e3],
+            base: 100e3,
+            level: [0, 8000, 12000, 12000, 12800, 12800, 12800, 14400, 14400, 14400, 16000, 24000]
         },
-        builtInDefensePoints: 100,
         ability: {
             name: "Matrix",
             desc: `
@@ -2315,15 +2367,15 @@
             Gravity Field Range: 400PX<br>
             Suppression Range: 800PX<br>
             Damage Reduction (Suppression Power): 90%<br>
-            Duration: 8 seconds<br>
-            Cooldown: 10 seconds
+            Duration: 6 seconds<br>
+            Cooldown: 8 seconds
             `,
             iconSource: "./images/abilities/matrix.png",
             damageData: {
-                base: 3400,
-                level: [0, 160, 160, 240, 240, 320, 320, 400, 400, 480, 560, 720]
+                base: 2550,
+                level: [0, 120, 120, 180, 180, 240, 240, 300, 300, 360, 420, 540],
             },
-            lastingTime: 8e3,
+            lastingTime: 6e3,
             reload: 8e3
         },
         hardpoints: {
@@ -2331,13 +2383,14 @@
             heavy: 1
         },
         color: "#00ffff",
-        moduleHardpoints: 4,
+        moduleHardpoints: 3,
         costParts: true
     }, {
         dontSell: true,
         tier: 4,
         name: "White Heptagon",
         speed: 0.0012,
+        indexRole: 0,
         speedLevel: [0, 0, 0, 0.0001, 0.0001, 0.0001, 0.0001, 0, 0.0002, 0.0002, 0.0002, 0.0002],
         scale: 100,
         fieldOfViewMulti: 1.8,
@@ -2349,12 +2402,12 @@
         Recommended Equipment: x2 Maha Vajra + x1 Vajra
         `,
         healthData: {
-            base: 206e3,
-            level: [0, 8e3, 8e3, 10e3, 10e3, 10e3, 14e3, 14e3, 18e3, 22e3, 34e3, 50e3],
+            base: 133900,
+            level: [0, 5200, 5200, 6500, 6500, 6500, 9100, 9100, 11700, 14300, 22100, 32500]
         },
         hullIntegrity: .25,
         builtInDefensePoints: 100,
-        healingMulti: 1.25,
+        healingMulti: 1.5,
         ability: {
             name: "Ultimate Reflecting Dash",
             desc: `
@@ -2388,12 +2441,13 @@
             heavy: 2
         },
         color: "#fff",
-        moduleHardpoints: 6,
+        moduleHardpoints: 4,
         costParts: true
     }, {
         tier: 2,
         name: "Green Triangle",
         speed: 0.0018,
+        indexRole: 3,
         speedLevel: [0, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0002, 0.0002, 0.0002],
         scale: 55,
         fieldOfViewMulti: 1.25,
@@ -2429,13 +2483,14 @@
             heavy: 0
         },
         color: "#0f0",
-        moduleHardpoints: 3,
+        moduleHardpoints: 2,
         costParts: true
     }, {
         dontSell: true,
         tier: 4,
         name: "Purple Heptagon",
         speed: 0.001,
+        indexRole: 1,
         speedLevel: [0, 0, 0, 0.0001, 0.0001, 0, 0.0001, 0, 0.0001, 0.0001, 0, 0.0004],
         scale: 125,
         fieldOfViewMulti: 3.25,
@@ -2446,10 +2501,9 @@
         Recommened Equipment: x2 Fulgur + x2 Tonans
         `,
         healthData: {
-            base: 150e3,
-            level: [0, 12e3, 12e3, 12e3, 12e3, 12e3, 16e3, 16e3, 16e3, 25e3, 30e3, 40e3],
+            base: 75e3,
+            level: [0, 6000, 6000, 6000, 6000, 6000, 8000, 8000, 8000, 12500, 15000, 20000]
         },
-        builtInDefensePoints: 50,
         ability: {
             name: "Long Shot",
             desc: `
@@ -2471,13 +2525,14 @@
             heavy: 2
         },
         color: "#800080",
-        moduleHardpoints: 4,
+        moduleHardpoints: 3,
         costParts: true
     }, {
         dontSell: true,
         tier: 4,
         name: "Light Blue Heptagon",
         speed: 0.0012,
+        indexRole: 2,
         speedLevel: [0, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0002, 0.0002, 0.0002, 0.0002],
         scale: 95,
         fieldOfViewMulti: 1.5,
@@ -2486,7 +2541,7 @@
         Recommended Equipment: x2 Discordia + x3 Tumultus / x2 Fulgur + x3 Tonans
         `,
         healthData: {
-            base: 250e3,
+            base: 75e3,
             level: [0, 13e3, 13e3, 13e3, 13e3, 13e3, 13e3, 13e3, 13e3, 13e3, 13e3, 13e3],
         },
         builtInDefensePoints: 50,
@@ -2503,8 +2558,8 @@
             Cooldown: 12 seconds
             `,
             additionalHealthData: {
-                base: 250e3,
-                level: [0, 25e3, 25e3, 25e3, 25e3, 25e3, 25e3, 25e3, 50e3, 50e3, 50e3, 50e3]
+                base: 137500,
+                level: [0, 11250, 11250, 11250, 11250, 11250, 11250, 11250, 22500, 22500, 22500, 22500]
             },
             iconSource: "./images/abilities/shapeshift.png",
             lastingTime: 10e3,
@@ -2515,13 +2570,14 @@
             heavy: 3
         },
         color: "#add8e6",
-        moduleHardpoints: 4,
+        moduleHardpoints: 3,
         costParts: true
     }, {
         dontSell: true,
         tier: 3,
         name: "Dark Brown Pentagon",
         speed: 0.002,
+        indexRole: 1,
         speedLevel: [0, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0002, 0.0002, 0.0002, 0.0002, 0.0004],
         scale: 65,
         fieldOfViewMulti: 1.6,
@@ -2564,13 +2620,14 @@
             heavy: 3
         },
         color: "#452200",
-        moduleHardpoints: 4,
+        moduleHardpoints: 3,
         costParts: true
     }, {
         dontSell: true,
         tier: 4,
         name: "Magenta Hexagon",
         speed: 0.001,
+        indexRole: 0,
         speedLevel: [0, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0002, 0.0002],
         scale: 95,
         fieldOfViewMulti: 1.6,
@@ -2580,8 +2637,8 @@
         `,
         builtInDefensePoints: 100,
         healthData: {
-            base: 105e3,
-            level: [0, 5e3, 5e3, 10e3, 10e3, 10e3, 15e3, 20e3, 20e3, 30e3, 40e3, 80e3],
+            base: 65625,
+            level: [0, 3125, 3125, 6250, 6250, 6250, 9375, 12500, 12500, 18750, 25000, 50000]
         },
         healingMulti: 1.25,
         ability: {
@@ -2608,18 +2665,18 @@
             heavy: 1
         },
         color: "#ff00ff",
-        moduleHardpoints: 4,
+        moduleHardpoints: 3,
         costParts: true
     }, {
         dontSell: true,
         tier: 4,
         name: "Dark Green Pentagon",
         speed: 0.0018,
+        indexRole: 1,
         speedLevel: [0, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0002, 0.0002, 0.0002, 0.0002, 0.0002, 0.0002],
         scale: 65,
         fieldOfViewMulti: 1.8,
         desc: ``,
-        builtInDefensePoints: 100,
         healthData: {
             base: 75e3,
             level: [0, 5e3, 5e3, 5e3, 5e3, 10e3, 10e3, 10e3, 15e3, 15e3, 20e3, 50e3],
@@ -2636,8 +2693,8 @@
             `,
             iconSource: "./images/abilities/clain_blink.png",
             shieldHpData: {
-                base: 105e3,
-                level: [0, 3e3, 3e3, 3e3, 6e3, 6e3, 6e3, 6e3, 12e3, 12e3, 12e3, 24e3]
+                base: 78750,
+                level: [0, 2250, 2250, 2250, 4500, 4500, 4500, 4500, 9000, 9000, 9000, 18000]
             },
             lastingTime: 30e3,
             reload: 14e3
@@ -2647,13 +2704,14 @@
             heavy: 3
         },
         color: "#009100",
-        moduleHardpoints: 4,
+        moduleHardpoints: 3,
         costParts: true
     }, {
         dontSell: true,
         tier: 4,
         name: "Dark Tan Circle",
         speed: 0.002,
+        indexRole: 2,
         speedLevel: [0, 0.0001, 0.0001, 0.0001, 0.0001, 0.0002, 0.0002, 0.0002, 0.0002, 0.0002, 0.0002, 0.0004],
         scale: 65,
         fieldOfViewMulti: 1.4,
@@ -2664,10 +2722,10 @@
         Recommended Equipment: x2 Subduer / x2 Sorrow / x2 Veyron
         `,
         healthData: {
-            base: 76e3,
-            level: [0, 5e3, 10e3, 10e3, 10e3, 10e3, 15e3, 15e3, 15e3, 25e3, 25e3, 25e3],
+            base: 57000,
+            level: [0, 3750, 7500, 7500, 7500, 7500, 11250, 11250, 11250, 18750, 18750, 18750]
         },
-        builtInDefensePoints: 150,
+        builtInDefensePoints: 100,
         ability: {
             name: "Blink Assault",
             desc: `
@@ -2683,8 +2741,8 @@
             Cooldown: 8 seconds
             `,
             damageData: {
-                base: 2e3,
-                level: [0, 100, 150, 200, 250, 300, 350, 400, 450, 450, 450, 500]
+                base: 750,
+                level: [0, 25, 38, 50, 63, 75, 88, 100, 113, 113, 113, 125]
             },
             iconSource: "./images/abilities/shield_t.png",
             lastingTime: 8e3,
@@ -2695,13 +2753,14 @@
             heavy: 2
         },
         color: "#7a6951",
-        moduleHardpoints: 4,
+        moduleHardpoints: 3,
         costParts: true
     }, {
         dontSell: true,
         tier: 4,
         name: "Red Octagon",
         speed: 0.0014,
+        indexRole: 1,
         speedLevel: [0, 0.0001, 0.0001, 0.0001, 0.0001, 0, 0.0002, 0.0002, 0, 0.0002, 0.0002, 0.0002],
         scale: 75,
         fieldOfViewMulti: 1.65,
@@ -2710,10 +2769,10 @@
         Recommended Equipment: x2 Sorrow + x4 Grief / x2 Veyron + x4 Evora / x2 Maha Vajra + x4 Vajra
         `,
         healthData: {
-            base: 150e3,
-            level: [0, 10e3, 10e3, 10e3, 10e3, 15e3, 15e3, 15e3, 25e3, 25e3, 30e3, 35e3],
+            base: 97500,
+            level: [0, 6500, 6500, 6500, 6500, 9750, 9750, 9750, 16250, 16250, 19500, 22750]
         },
-        builtInDefensePoints: 200,
+        builtInDefensePoints: 50,
         hullIntegrity: .25,
         ability: {
             name: "Dismantle",
@@ -2727,8 +2786,8 @@
             Cooldown: 16 seconds
             `,
             damageData: {
-                base: 5e3,
-                level: [0, 450, 450, 550, 550, 550, 850, 850, 1e3, 1e3, 1250, 1550]
+                base: 1250,
+                level: [0, 113, 113, 138, 138, 138, 213, 213, 250, 250, 313, 388]
             },
             iconSource: "./images/abilities/dismantle.png",
             lastingTimeData: {
@@ -2742,13 +2801,14 @@
             heavy: 2
         },
         color: "#f00",
-        moduleHardpoints: 4,
+        moduleHardpoints: 3,
         costParts: true
     }, {
         dontSell: true,
         tier: 3,
         name: "Light Blue Triangle",
         speed: 0.0012,
+        indexRole: 3,
         speedLevel: [0, 0.0001, 0.0001, 0.0001, 0, 0.0001, 0, 0.0001, 0.0001, 0.0001, 0, 0.0006],
         scale: 75,
         fieldOfViewMulti: 2,
@@ -2785,13 +2845,14 @@
             heavy: 0
         },
         color: "#add8e6",
-        moduleHardpoints: 4,
+        moduleHardpoints: 3,
         costParts: true
     }, {
         dontSell: true,
         tier: 4,
         name: "Purple Pentagon",
         speed: 0.001,
+        indexRole: 0,
         speedLevel: [0, 0.0001, 0.0001, 0.0001, 0.0001, 0, 0.0001, 0.0001, 0, 0.0001, 0.0001, 0.0002],
         scale: 85,
         fieldOfViewMulti: 1.65,
@@ -2813,8 +2874,8 @@
             Cooldown Time: 14 seconds
             `,
             durabilityLimitData: {
-                base: 100e3,
-                level: [0, 10e3, 10e3, 10e3, 10e3, 10e3, 25e3, 25e3, 25e3, 25e3, 25e3, 25e3]
+                base: 75e3,
+                level: [0, 7500, 7500, 7500, 7500, 7500, 18750, 18750, 18750, 18750, 18750, 18750]
             },
             iconSource: "./images/abilities/shield_t.png",
             lastingTime: 6e3,
@@ -2825,13 +2886,14 @@
             heavy: 2
         },
         color: "#800080",
-        moduleHardpoints: 4,
+        moduleHardpoints: 3,
         costParts: true
     }, {
         dontSell: true,
         tier: 3,
         name: "Yellow Heptagon",
         speed: 0.0012,
+        indexRole: 2,
         speedLevel: [0, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0002, 0.0002, 0.0002, 0.0002, 0.0004],
         scale: 50,
         fieldOfViewMulti: 1.25,
@@ -2839,7 +2901,7 @@
         A real predator, this shape can hunt down enemies with its quick movement speed and can execute them at low durability.<br><br>
         <strong style="color: #fff">Forcefield</strong> Another type of defense which reduces damage taken. It cannot be mitigated by defense mitigation effect weapon but may be reduced. Forcefield is based on durability but not considered as a shield.<br><br>
         Damage Reduction: 90% (MAX) to 75% (MIN)<br>
-        Durability: 200,000<br>
+        Durability: 120,000<br>
         Regeneration Time: 6 seconds
         `,
         healthData: {
@@ -2853,7 +2915,7 @@
             Duration: 4 seconds<br>
             Speed Increase: 50%<br>
             Fire Rate: .5 seconds<br>
-            Cooldown: 6 seconds
+            Cooldown: 8 seconds
             `,
             iconSource: "./images/weapons/reaper.png",
             executionThresholdData: {
@@ -2865,19 +2927,20 @@
                 level: [0, 250, 250, 250, 500, 500, 500, 500, 500, 1e3, 1e3, 1e3]
             },
             lastingTime: 4e3,
-            reload: 6e3
+            reload: 8e3
         },
         hardpoints: {
             light: 0,
             heavy: 2
         },
         color: "#ffff00",
-        moduleHardpoints: 4,
+        moduleHardpoints: 3,
         costParts: true
     }, {
         tier: 4,
         name: "Orange Heptagon",
         speed: 0.0004,
+        indexRole: 0,
         speedLevel: [0, 0, 0.0001, 0.0001, 0, 0.0001, 0.0001, 0.0001, 0, 0.0001, 0.0001, 0.0001],
         scale: 95,
         fieldOfViewMulti: 2,
@@ -2887,8 +2950,8 @@
         Recommended Equipment: x5 Brisant / x5 Inferno / x5 Maha Vajra
         `,
         healthData: {
-            base: 250e3,
-            level: [0, 15e3, 15e3, 20e3, 20e3, 20e3, 20e3, 25e3, 25e3, 35e3, 35e3, 45e3]
+            base: 125000,
+            level: [0, 7500, 7500, 10000, 10000, 10000, 10000, 12500, 12500, 17500, 17500, 22500]
         },
         hardpoints: {
             light: 0,
@@ -2903,19 +2966,20 @@
             `,
             iconSource: "./images/icons/block.png",
             effectAccumulationData: {
-                base: 25,
-                level: [0, 12, 12, 12, 12, 12, 12, 12, 12, 22, 25, 32]
+                base: 10,
+                level: [0, 5, 5, 5, 5, 5, 10, 10, 10, 10, 10, 15]
             },
             reload: 12e3
         },
-        builtInDefensePoints: 150,
+        builtInDefensePoints: 100,
         color: "#ffa500",
-        moduleHardpoints: 6,
+        moduleHardpoints: 4,
         costParts: true
     }, {
         tier: 1,
         name: "Pinkish-Red Heptagon",
         speed: 0.001,
+        indexRole: 2,
         speedLevel: [0, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0002, 0.0004],
         scale: 60,
         fieldOfViewMulti: 1.55,
@@ -2946,7 +3010,7 @@
             heavy: 2
         },
         color: "#fc0072",
-        moduleHardpoints: 2,
+        moduleHardpoints: 1,
         cost: {
             sliver: 0,
             gold: 1500
@@ -2955,6 +3019,7 @@
         tier: 3,
         name: "White Octagon",
         speed: 0.0018,
+        indexRole: 1,
         speedLevel: [0, 0, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0002],
         scale: 65,
         fieldOfViewMulti: 1.45,
@@ -2987,21 +3052,22 @@
             Cooldown: 12 seconds
             `,
             damageData: {
-                base: 600,
-                level: [0, 150, 150, 250, 250, 250, 350, 350, 550, 550, 750, 1e3]
+                base: 510,
+                level: [0, 127, 127, 213, 213, 213, 297, 297, 467, 467, 637, 850]
             },
             iconSource: "./images/abilities/shapeshift.png",
             lastingTime: 8e3,
             reload: 12e3
         },
         color: "#fff",
-        moduleHardpoints: 4,
+        moduleHardpoints: 3,
         costParts: true
     }, {
         dontSell: true,
         tier: 4,
         name: "Blue Triangle",
         speed: 0.0016,
+        indexRole: 3,
         speedLevel: [0, 0.0001, 0.0001, 0.0001, 0, 0.0001, 0, 0.0001, 0.0001, 0.0001, 0, 0.0006],
         scale: 80,
         fieldOfViewMulti: 2.5,
@@ -3013,7 +3079,7 @@
             base: 100e3,
             level: [0, 10e3, 15e3, 15e3, 20e3, 20e3, 20e3, 20e3, 20e3, 20e3, 25e3, 30e3],
         },
-        builtInDefensePoints: 100,
+        builtInDefensePoints: 50,
         ability: {
             name: "Active Support",
             desc: `
@@ -3030,7 +3096,7 @@
             `,
             iconSource: "./images/abilities/self_heal.png",
             healingPercentData: {
-                base: 0.1,
+                base: 0.09,
                 level: [0, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005]
             },
             abilityDefensePointsData: {
@@ -3046,13 +3112,14 @@
             heavy: 2
         },
         color: "#00f",
-        moduleHardpoints: 4,
+        moduleHardpoints: 3,
         costParts: true
     }, {
         dontSell: true,
         tier: 3,
         name: "Dark Green Circle",
         speed: 0.0018,
+        indexRole: 1,
         speedLevel: [0, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0002, 0.0002, 0.0002, 0.0002, 0.0002, 0.0002],
         scale: 65,
         fieldOfViewMulti: 1.55,
@@ -3068,22 +3135,97 @@
             Duration of Area: 8 second(s)<br>
             Radius of Area: 600 PX<br>
             Effect Duration: 6 second(s)<br>
-            Cooldown: 8 second(s)
+            Cooldown: 10 second(s)
             `,
             iconSource: "./images/weapons/decay.png",
             damageData: {
-                base: 5e3,
-                level: [0, 400, 400, 400, 400, 600, 600, 600, 600, 600, 800, 1e3],
+                base: 2e3,
+                level: [0, 240, 240, 240, 240, 360, 360, 360, 360, 360, 480, 600]
             },
-            reload: 8e3
+            reload: 10e3
         },
         hardpoints: {
             light: 0,
             heavy: 3
         },
         color: "#009100",
-        moduleHardpoints: 4,
+        moduleHardpoints: 3,
         costParts: true
+    }, {
+        dontSell: true,
+        tier: 4,
+        name: "Teal Pentagon",
+        speed: 0.0014,
+        indexRole: 1,
+        speedLevel: [0, 0.0001, 0, 0.0001, 0, 0.0001, 0.0001, 0, 0.0001, 0.0001, 0.0002, 0.0002],
+        scale: 95,
+        fieldOfViewMulti: 1.8,
+        desc: `
+        Another sheild dependant shape. This shape takes frontlines with minimal damage takes to its hull.<br><br>
+        <strong style="color: #fff">Forcefield</strong> Another type of defense which reduces damage taken. It cannot be mitigated by defense mitigation effect weapon but may be reduced. Forcefield is based on durability but not considered as a shield.<br><br>
+        Damage Reduction: 99% (MAX) to 90% (MIN)<br>
+        Durability: X2 of Health<br>
+        Regeneration Time: 8 seconds<br><br>
+        Recommended Equippment: x2 Veyron + x1 Evora / x1 Discordia + x2 Tumultus
+        `,
+        healthData: {
+            base: 62500,
+            level: [0, 2500, 5000, 7500, 10000, 12500, 15000, 17500, 17500, 20000, 22500, 25000]
+        },
+        ability: {
+            name: "Absorption",
+            desc: `
+            <span style="font-width: bolder; color: #fff;">Absorption</span> The shape activates 3 built-in weapons and a purple shield. The more damage the shield takes, the stronger the weapons will be (x2.5 max). After the ability ends, the robot heals and gains a yellow shield depending on how much damage the purple shield took.<br><br>
+            Duration: 8 second(s)<br>
+            Built-in Weapon Ranges: 2000 PX<br>
+            Built-in WPN1: Fires energy shells<br>
+            Built-in WPN2: Fires rocket shells that emit blast effect<br>
+            Built-in WPN3: Fires normal homing shells<br>
+            Cooldown: 12 second(s)
+            `,
+            damageData: {
+                base: 170,
+                level: [0, 11, 21, 32, 43, 64, 85, 106, 128, 149, 170, 212]
+            },
+            iconSource: "./images/abilities/absorption.png",
+            lastingTime: 8e3,
+            reload: 12e3
+        },
+        hardpoints: {
+            light: 1,
+            heavy: 2
+        },
+        color: "#008080",
+        moduleHardpoints: 3,
+        costParts: true
+    }, {
+        dontSell: true,
+        dontShow: true,
+        tier: 10,
+        name: "Polygon",
+        speed: 0.005,
+        speedLevel: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        scale: 95,
+        fieldOfViewMulti: 1.8,
+        desc: ``,
+        dotResistance: .1,
+        revive: 1,
+        builtInDefensePoints: 400,
+        healthData: {
+            base: 100e3,
+            level: [0, 15e3, 15e3, 15e3, 15e3, 15e3, 15e3, 15e3, 15e3, 15e3, 15e3, 15e3],
+        },
+        hardpoints: {
+            light: 3,
+            heavy: 3
+        },
+        color: "#008080",
+        moduleHardpoints: 8,
+        cost: {
+            sliver: Infinity,
+            gold: Infinity,
+            workshopPoints: Infinity
+        }
     }];
     function defensePointsToResistance(defense) {
         return (100) / (100 + defense);
@@ -3092,6 +3234,7 @@
         constructor(data, ownerSID = null, slot = null) {
             this.isItem = true;
             this.tier = data.tier;
+            this.shotsPerFire = data.shotsPerFire;
             this.firedTime = 0;
             this.owner = ownerSID;
             this.name = data.name;
@@ -3160,14 +3303,14 @@
         Multi-barreled machine gun with a high rate of fire. Great at close range.
         `,
         damageData: {
-            base: 120,
-            level: [0, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20],
+            base: 160,
+            level: [0, 20, 20, 20, 20, 20, 30, 30, 30, 40, 40, 40],
         },
         motherShipCharge: 0.000125,
         imageSource: "./images/weapons/punisher.png",
         fireRate: 65,
         ammo: 220,
-        reload: 5e3,
+        reload: 10e3,
         range: 1200,
         cost: {
             sliver: 30e3,
@@ -3186,16 +3329,16 @@
         `,
         motherShipCharge: 0.00046875,
         damageData: {
-            base: 560,
-            level: [0, 80, 83, 86, 90, 90, 90, 90, 102, 102, 102, 102],
+            base: 750,
+            level: [0, 40, 43, 46, 50, 50, 50, 50, 82, 82, 102, 102],
         },
         ammoEachReloadTick: 1,
         continuousReload: true,
         imageSource: "./images/weapons/landslide.png",
         aoeRange: 60,
         fireRate: 50,
-        ammo: 40,
-        reload: 300,
+        ammo: 17,
+        reload: 600,
         range: 600,
         cost: {
             sliver: 230e3,
@@ -3212,13 +3355,13 @@
         `,
         motherShipCharge: 0.05,
         damageData: {
-            base: 4950,
-            level: [0, 200, 220, 240, 260, 260, 280, 300, 420, 440, 460, 480],
+            base: 5250,
+            level: [0, 200, 220, 240, 260, 380, 400, 420, 520, 540, 560, 580],
         },
         imageSource: "./images/weapons/shocker.png",
         fireRate: 0,
         ammo: 1,
-        reload: 3e3,
+        reload: 9e3,
         range: 3200,
         cost: {
             sliver: 190e3,
@@ -3238,13 +3381,14 @@
         `,
         motherShipCharge: 0.000125,
         damageData: {
-            base: 182,
-            level: [0, 10, 10, 20, 20, 20, 20, 40, 40, 40, 80, 80],
+            base: 242,
+            level: [0, 22, 22, 22, 22, 22, 44, 44, 44, 44, 44, 88],
         },
+        shotsPerFire: 2,
         imageSource: "./images/weapons/destroyer.png",
         fireRate: 65,
         ammo: 220,
-        reload: 5000,
+        reload: 10e3,
         range: 1400,
         cost: {
             sliver: 0,
@@ -3261,15 +3405,15 @@
         Improved reloading mechanics makes this weapon reload while firing.
         `,
         damageData: {
-            base: 1e3,
-            level: [0, 1e2, 140, 177, 190, 211, 222, 234, 255, 266, 288, 300],
+            base: 856,
+            level: [0, 80, 100, 147, 160, 211, 222, 234, 255, 266, 288, 300],
         },
         motherShipCharge: 0.000023,
-        ammoEachReloadTick: 6,
+        ammoEachReloadTick: 4,
         continuousReload: true,
         imageSource: "./images/weapons/avalanche.png",
         aoeRange: 80,
-        fireRate: 125,
+        fireRate: 200,
         ammo: 16,
         reload: 2e3,
         range: 800,
@@ -3290,8 +3434,8 @@
         `,
         motherShipCharge: 0.00125,
         damageData: {
-            base: 260,
-            level: [0, 30, 33, 33, 39, 39, 49, 59, 66, 77, 88, 100],
+            base: 218,
+            level: [0, 46, 51, 51, 55, 55, 79, 79, 89, 101, 114, 127],
         },
         imageSource: "./images/weapons/hawk.png",
         fireRate: 200,
@@ -3315,8 +3459,8 @@
         `,
         motherShipCharge: 0.00125,
         damageData: {
-            base: 218,
-            level: [0, 46, 51, 51, 55, 55, 79, 79, 89, 101, 114, 127],
+            base: 327,
+            level: [0, 69, 77, 77, 83, 83, 119, 119, 134, 152, 171, 191],
         },
         imageSource: "./images/weapons/eagle.png",
         fireRate: 100,
@@ -3349,9 +3493,9 @@
             level: [0, 4, 4, 5, 5, 5, 7, 6, 8, 8, 9, 10],
         },
         imageSource: "./images/weapons/viper.png",
-        fireRate: 82,
+        fireRate: 100,
         ammo: 150,
-        reload: 5e3,
+        reload: 10e3,
         range: 1400,
         cost: {
             sliver: 0,
@@ -3372,11 +3516,11 @@
         overheatTime: 10e3,
         motherShipCharge: 0.0005,
         damageData: {
-            base: 536,
-            level: [0, 51, 56, 60, 65, 75, 76, 85, 94, 104, 113, 130],
+            base: 736,
+            level: [0, 51, 56, 60, 65, 75, 76, 85, 104, 114, 123, 170],
         },
         imageSource: "./images/weapons/atomizer.png",
-        fireRate: 50,
+        fireRate: 150,
         ammo: 1e300,
         reload: 0,
         range: 1200,
@@ -3400,10 +3544,10 @@
         overheatTime: 10e3,
         damageData: {
             base: 1072,
-            level: [0, 102, 112, 120, 130, 150, 152, 170, 188, 208, 226, 260]
+            level: [0, 102, 112, 120, 130, 150, 152, 170, 188, 208, 226, 280]
         },
         imageSource: "./images/weapons/nucleon.png",
-        fireRate: 75,
+        fireRate: 150,
         ammo: 1e300,
         reload: 0,
         range: 1200,
@@ -3423,19 +3567,19 @@
         Projectiles are coated with a small layer of enzymes that corrode metal.
         Each hit emits DOT effect damage that bypasses defense systems of enemies.
         `,
-        damageData: {
-            base: 227,
-            level: [0, 23, 25, 28, 30, 33, 36, 40, 44, 48, 53, 59],
-        },
         motherShipCharge: 0.00067,
+        damageData: {
+            base: 303,
+            level: [0, 31, 33, 37, 40, 44, 47, 53, 58, 64, 70, 78],
+        },
         dotData: {
-            base: 19,
-            level: [0, 2, 2, 2, 2, 2, 3, 3, 4, 4, 4, 5],
+            base: 26,
+            level: [0, 3, 3, 4, 4, 4, 5, 4, 5, 5, 6, 7],
         },
         imageSource: "./images/weapons/sting.png",
-        fireRate: 40,
-        ammo: 100,
-        reload: 5e3,
+        fireRate: 100,
+        ammo: 150,
+        reload: 10e3,
         range: 1400,
         cost: {
             sliver: 0,
@@ -3450,20 +3594,20 @@
         type: "Heavy",
         desc: `
         Heavy shotgun.
-        Shoots 25 projectiles per burst.
+        Shoots 16 projectiles per burst.
         Improved reloading mechanic makes this weapon reload while firing.
         `,
-        motherShipCharge: 0.001,
+        motherShipCharge: 0.00075,
         damageData: {
-            base: 119,
-            level: [0, 16, 16, 16, 22, 22, 22, 27, 27, 32, 32, 38]
+            base: 8250,
+            level: [0, 400, 400, 800, 800, 800, 800, 800, 1e3, 1e3, 1e3, 1e3]
         },
         imageSource: "./images/weapons/thunder.png",
         ammoEachReloadTick: 1,
         continuousReload: true,
-        fireRate: 250,
-        ammo: 4,
-        reload: 1875,
+        fireRate: 1e3,
+        ammo: 5,
+        reload: 2e3,
         range: 800,
         cost: {
             sliver: 0,
@@ -3478,20 +3622,20 @@
         spread: 6,
         desc: `
         Light shotgun.
-        Shoots 12 projectiles per burst.
+        Shoots 16 projectiles per burst.
         Improved reloading mechanic makes this weapon reload while firing.
         `,
-        motherShipCharge: 0.001,
+        motherShipCharge: 0.00075,
         damageData: {
-            base: 119,
-            level: [0, 16, 16, 16, 22, 22, 22, 27, 27, 32, 32, 38]
+            base: 4125,
+            level: [0, 200, 200, 400, 400, 400, 400, 400, 500, 500, 500, 500]
         },
         imageSource: "./images/weapons/storm.png",
         ammoEachReloadTick: 1,
         continuousReload: true,
-        fireRate: 125,
-        ammo: 8,
-        reload: 937.5,
+        fireRate: 1e3,
+        ammo: 5,
+        reload: 2e3,
         range: 800,
         cost: {
             sliver: 0,
@@ -3517,9 +3661,9 @@
         imageSource: "./images/weapons/cinder.png",
         ammoEachReloadTick: 1,
         continuousReload: true,
-        fireRate: 150,
-        ammo: 24,
-        reload: 500,
+        fireRate: 200,
+        ammo: 12,
+        reload: 1e3,
         range: 500,
         cost: {
             sliver: 0,
@@ -3529,7 +3673,7 @@
         tier: 2,
         industryName: "Pentagon",
         name: "Blaze",
-        spread: 8,
+        spread: 2,
         type: "Light",
         projType: "energy",
         desc: `
@@ -3542,9 +3686,9 @@
         },
         motherShipCharge: 0.0003,
         imageSource: "./images/weapons/blaze.png",
-        fireRate: 25,
-        ammo: 175,
-        reload: 3e3,
+        fireRate: 20,
+        ammo: 200,
+        reload: 5e3,
         range: 600,
         cost: {
             sliver: 0,
@@ -3567,9 +3711,9 @@
         },
         motherShipCharge: 0.0003,
         imageSource: "./images/weapons/ember.png",
-        fireRate: 25,
-        ammo: 175,
-        reload: 3e3,
+        fireRate: 20,
+        ammo: 200,
+        reload: 5e3,
         range: 600,
         cost: {
             sliver: 0,
@@ -3577,6 +3721,7 @@
         }
     }, {
         tier: 3,
+        spread: 7,
         industryName: "Pentagon",
         name: "Slumber",
         type: "Light",
@@ -3590,8 +3735,8 @@
         },
         motherShipCharge: 0.001,
         imageSource: "./images/weapons/slumber.png",
-        fireRate: 24,
-        ammo: 35,
+        fireRate: 48,
+        ammo: 40,
         reload: 5e3,
         range: 1200,
         cost: {
@@ -3600,6 +3745,7 @@
         }
     }, {
         tier: 3,
+        spread: 7,
         industryName: "Pentagon",
         name: "Delay",
         type: "Heavy",
@@ -3613,8 +3759,8 @@
         },
         motherShipCharge: 0.001,
         imageSource: "./images/weapons/delay.png",
-        fireRate: 24,
-        ammo: 35,
+        fireRate: 48,
+        ammo: 40,
         reload: 5e3,
         range: 1200,
         cost: {
@@ -3633,17 +3779,17 @@
         Once the effect reaches X stacks, the enemy will be frozen for 1 second.
         `,
         damageData: {
-            base: 150,
-            level: [0, 20, 20, 20, 20, 25, 25, 28, 28, 30, 32, 32]
+            base: 605,
+            level: [0, 60, 60, 60, 60, 60, 100, 150, 180, 200, 220, 250]
         },
         motherShipCharge: 0.00036,
         ammoEachReloadTick: 2,
         continuousReload: true,
         imageSource: "./images/weapons/rime.png",
         aoeRange: 50,
-        fireRate: 25,
-        ammo: 70,
-        reload: 350,
+        fireRate: 100,
+        ammo: 35,
+        reload: 1e3,
         range: 800,
         cost: {
             sliver: 1e6,
@@ -3661,17 +3807,17 @@
         Once the effect reaches X stacks, the enemy will be frozen for 1 second.
         `,
         damageData: {
-            base: 300,
-            level: [0, 40, 40, 40, 40, 50, 50, 55, 55, 60, 65, 65]
+            base: 905,
+            level: [0, 90, 90, 90, 90, 90, 150, 225, 270, 300, 330, 375]
         },
         motherShipCharge: 0.00036,
         ammoEachReloadTick: 2,
         continuousReload: true,
         imageSource: "./images/weapons/glacier.png",
         aoeRange: 50,
-        fireRate: 45,
-        ammo: 70,
-        reload: 500,
+        fireRate: 100,
+        ammo: 35,
+        reload: 1e3,
         range: 800,
         cost: {
             sliver: 1e6,
@@ -3685,21 +3831,20 @@
         type: "Heavy",
         spread: 8,
         desc: `
-        Heavy sonic shotgun that fires 7 projectiles per burst.
-        Each impact of the sonic blasts would knockback enemies.
-        Due to how sonic blast waves work, the knockback is high but the range is small.
+        Heavy close ranged sonic shotgun that fires 10 projectiles per burst.
+        Each sonic "shell" deals "permanent" gray damage.
         `,
         damageData: {
-            base: 1984,
-            level: [0, 116, 116, 116, 116, 116, 116, 116, 116, 116, 116, 116]
+            base: 7200,
+            level: [0, 444, 500, 655, 777, 900, 1099, 1211, 1322, 1444, 1544, 2777]
         },
-        motherShipCharge: 0.0036,
+        motherShipCharge: 0.0004,
         imageSource: "./images/weapons/devastator.png",
         ammoEachReloadTick: 1,
         continuousReload: true,
-        fireRate: 400,
-        ammo: 6,
-        reload: 900,
+        fireRate: 500,
+        ammo: 8,
+        reload: 2e3,
         range: 500,
         cost: {
             sliver: 5e6,
@@ -3713,21 +3858,20 @@
         type: "Light",
         spread: 8,
         desc: `
-        Light sonic shotgun that fires 7 projectiles per burst.
-        Each impact of the sonic blasts would knockback enemies.
-        Due to how sonic blast waves work, the knockback is high but the range is small.
+        Light close ranged sonic shotgun that fires 10 projectiles per burst.
+        Each sonic "shell" deals "permanent" gray damage.
         `,
         damageData: {
-            base: 992,
-            level: [0, 58, 58, 58, 58, 58, 58, 58, 58, 58, 58, 58]
+            base: 4800,
+            level: [0, 296, 333, 436, 518, 600, 732, 807, 881, 962, 1029, 1851]
         },
-        motherShipCharge: 0.0036,
+        motherShipCharge: 0.0004,
         imageSource: "./images/weapons/scatter.png",
-        continuousReload: true,
         ammoEachReloadTick: 1,
-        fireRate: 400,
-        ammo: 6,
-        reload: 900,
+        continuousReload: true,
+        fireRate: 500,
+        ammo: 8,
+        reload: 2e3,
         range: 500,
         cost: {
             sliver: 5e6,
@@ -3739,25 +3883,26 @@
         name: "Evora",
         projType: "normal",
         type: "Light",
-        spread: 4,
+        spread: 5,
         desc: `
         Light sonic machine gun that fires 2 projectiles per burst.
         After 2 seconds of continuous fire, the weapon goes into increased firing state, and fires x1.5 faster.
         The sonic blasts that are shot only deal [GRAY DAMAGE].
         `,
         damageData: {
-            base: 77,
-            level: [0, 10, 10, 19, 19, 19, 19, 38, 38, 38, 49, 49]
+            base: 51,
+            level: [0, 7, 7, 12, 12, 12, 12, 25, 25, 25, 32, 32]
         },
         defenseBypassData: {
             base: .05,
             level: [0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.1, 0.15],
         },
+        shotsPerFire: 2,
         motherShipCharge: 0.00011,
         imageSource: "./images/weapons/evora.png",
         fireRate: 50,
-        ammo: 250,
-        reload: 5e3,
+        ammo: 150,
+        reload: 4e3,
         range: 1200,
         cost: {
             sliver: 5e6,
@@ -3768,7 +3913,7 @@
         tier: 4,
         industryName: "Circle",
         name: "Veyron",
-        spread: 4,
+        spread: 5,
         projType: "normal",
         type: "Heavy",
         desc: `
@@ -3777,18 +3922,19 @@
         The sonic blasts that are shot only deal [GRAY DAMAGE].
         `,
         damageData: {
-            base: 156,
-            level: [0, 19, 19, 40, 40, 40, 40, 79, 79, 79, 98, 98]
+            base: 76,
+            level: [0, 11, 11, 18, 18, 18, 18, 38, 38, 38, 48, 48]
         },
         defenseBypassData: {
             base: .05,
             level: [0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.15, 0.15, 0.15, 0.15],
         },
+        shotsPerFire: 2,
         motherShipCharge: 0.00011,
         imageSource: "./images/weapons/veyron.png",
         fireRate: 50,
-        ammo: 250,
-        reload: 5e3,
+        ammo: 150,
+        reload: 4e3,
         range: 1200,
         cost: {
             sliver: 50e6,
@@ -3807,7 +3953,7 @@
         Bullets are coated with high layers of special material,
         that makes it able to do high damage to heavily protected targets
         because it bypass the defense systems.
-        `,//[REFLECTOR] and 100% of all [DEFENSE POINTS]
+        `,
         damageData: {
             base: 2348,
             level: [0, 228, 228, 228, 228, 286, 286, 286, 382, 382, 382, 382],
@@ -3815,8 +3961,8 @@
         motherShipCharge: 0.0047,
         imageSource: "./images/weapons/reaper.png",
         fireRate: 200,
-        ammo: 8,
-        reload: 6e3,
+        ammo: 6,
+        reload: 12e3,
         range: 3800,
         cost: {
             sliver: 20e6,
@@ -3842,7 +3988,7 @@
         motherShipCharge: 0.00032,
         imageSource: "./images/weapons/flux.png",
         fireRate: 50,
-        ammo: 200,
+        ammo: 220,
         reload: 5e3,
         range: 1200,
         cost: {
@@ -3866,13 +4012,12 @@
         nearby allies of the target.
         `,
         damageData: {
-            base: 4400,
-            level: [0, 200, 200, 200, 300, 300, 500, 500, 600, 800, 900, 1e3],
+            base: 1400,
+            level: [0, 100, 100, 100, 100, 200, 200, 200, 300, 300, 300, 300],
         },
         effectIncreaseData: {
-            base: 8,
-            effect: "blast",
-            level: [0, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 4]
+            base: 0.184,
+            level: [0, 0.008, 0.008, 0.008, 0.008, 0.008, 0.008, 0.008, 0.008, 0.016, 0.016, 0.016]
         },
         motherShipCharge: 0.003125,
         ammoEachReloadTick: 1,
@@ -3881,7 +4026,7 @@
         aoeRange: 80,
         fireRate: 350,
         ammo: 8,
-        reload: 1125,
+        reload: 1500,
         range: 1200,
         cost: {
             sliver: 5e6,
@@ -3904,22 +4049,21 @@
         nearby allies of the target.
         `,
         damageData: {
-            base: 514,
-            level: [0, 40, 40, 40, 50, 50, 60, 60, 80, 120, 120, 180],
+            base: 933,
+            level: [0, 67, 67, 67, 67, 133, 133, 133, 200, 200, 200, 200]
         },
         effectIncreaseData: {
-            base: 8,
-            effect: "blast",
-            level: [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+            base: 0.102,
+            level: [0, 0.006, 0.006, 0.006, 0.006, 0.006, 0.006, 0.006, 0.006, 0.01, 0.01, 0.01]
         },
         motherShipCharge: 0.003125,
         ammoEachReloadTick: 1,
         continuousReload: true,
         imageSource: "./images/weapons/scald.png",
         aoeRange: 60,
-        fireRate: 250,
+        fireRate: 350,
         ammo: 8,
-        reload: 750,
+        reload: 1500,
         range: 1200,
         cost: {
             sliver: 5e6,
@@ -3936,12 +4080,12 @@
         Light acid spraying weapon that emits DOT effect. 
         `,
         damageData: {
-            base: 90,
-            level: [0, 10, 15, 15, 20, 25, 25, 30, 35, 35, 45, 45]
+            base: 135,
+            level: [0, 5, 10, 15, 20, 20, 25, 25, 30, 30, 35, 40]
         },
         dotData: {
-            base: 230,
-            level: [0, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30],
+            base: 34,
+            level: [0, 2, 2, 2, 4, 4, 5, 9, 10, 11, 13, 15],
         },
         motherShipCharge: 0.00021,
         imageSource: "./images/weapons/toxin.png",
@@ -3963,12 +4107,12 @@
         Heavy acid spraying weapon that emits DOT effect.
         `,
         damageData: {
-            base: 162,
-            level: [0, 18, 27, 27, 36, 45, 45, 54, 63, 63, 81, 81]
+            base: 203,
+            level: [0, 8, 15, 23, 30, 30, 38, 38, 45, 45, 53, 60]
         },
         dotData: {
-            base: 460,
-            level: [0, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60]
+            base: 51,
+            level: [0, 3, 3, 3, 6, 6, 8, 14, 15, 17, 20, 23]
         },
         motherShipCharge: 0.00021,
         imageSource: "./images/weapons/bane.png",
@@ -3989,12 +4133,8 @@
         desc: `
         This is a lightweight plasma weapon that shoots energy bursts.
         It can fire continuously without needing to "reload".
-        With each shot,
-        it gets hotter,
-        dealing more damage: 150% on the second shot,
-        250% on the third,
-        and a massive 350% on the fourth.
-        For safety, it cools down after every fourth shot and then starts over.
+        With each shot, it gets hotter, dealing more damage: 150% on the second shot, 200% on the third,
+        and a massive 250% on the fourth. For safety, it cools down after every fourth shot and then starts over.
         `,
         damageData: {
             base: 1264,
@@ -4002,7 +4142,7 @@
         },
         fireRateDecreaseData: {
             base: 0,
-            level: [0, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 50]
+            level: [0, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25]
         },
         motherShipCharge: 0.0125,
         imageSource: "./images/weapons/lance.png",
@@ -4024,20 +4164,16 @@
         desc: `
         This is a lightweight plasma weapon that shoots energy bursts.
         It can fire continuously without needing to "reload".
-        With each shot,
-        it gets hotter,
-        dealing more damage: 150% on the second shot,
-        250% on the third,
-        and a massive 350% on the fourth.
-        For safety, it cools down after every fourth shot and then starts over.
+        With each shot, it gets hotter, dealing more damage: 150% on the second shot, 200% on the third,
+        and a massive 250% on the fourth. For safety, it cools down after every fourth shot and then starts over.
         `,
         damageData: {
-            base: 2528,
-            level: [0, 200, 200, 300, 300, 400, 400, 500, 500, 500, 600, 800],
+            base: 1896,
+            level: [0, 150, 150, 225, 225, 300, 300, 375, 375, 375, 450, 600]
         },
         fireRateDecreaseData: {
             base: 0,
-            level: [0, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 50]
+            level: [0, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25]
         },
         motherShipCharge: 0.0125,
         imageSource: "./images/weapons/glaive.png",
@@ -4062,8 +4198,8 @@
         shieldData: {
             type: "energy",
             base: 47e3,
-            level: [0, 2e3, 2e3, 2e3, 2e3, 4e3, 4e3, 4e3, 5e3, 5e3, 5e3, 6e3],
-            regen: 0.03
+            level: [0, 3e3, 3e3, 4e3, 5e3, 5e3, 5e3, 6e3, 6e3, 7e3, 7e3, 8e3],
+            regen: 0.15
         },
         imageSource: "./images/modules/fortifier.png",
         cost: {
@@ -4083,8 +4219,8 @@
         Rust reduces the healing power of enemies (MAX 100% REDUCTION).
         `,
         damageData: {
-            base: 96,
-            level: [0, 27, 27, 27, 27, 27, 34, 34, 34, 34, 34, 51]
+            base: 667,
+            level: [0, 27, 27, 34, 34, 34, 34, 51, 51, 51, 67, 67]
         },
         defenseBypassData: {
             base: .05,
@@ -4094,7 +4230,7 @@
         imageSource: "./images/rust.png",
         fireRate: 48,
         ammo: 30,
-        reload: 1500,
+        reload: 2e3,
         range: 1400,
         cost: {
             sliver: 15e6,
@@ -4114,8 +4250,8 @@
         Rust reduces the healing power of enemies (MAX 100% REDUCTION).
         `,
         damageData: {
-            base: 192,
-            level: [0, 54, 54, 54, 54, 54, 68, 68, 68, 68, 68, 102]
+            base: 1001,
+            level: [0, 41, 41, 51, 51, 51, 51, 77, 77, 77, 101, 101]
         },
         defenseBypassData: {
             base: .05,
@@ -4125,7 +4261,7 @@
         imageSource: "./images/weapons/trickster.png",
         fireRate: 48,
         ammo: 30,
-        reload: 1500,
+        reload: 2e3,
         range: 1400,
         cost: {
             sliver: 45e6,
@@ -4147,13 +4283,9 @@
             base: 502,
             level: [0, 20, 20, 20, 30, 30, 30, 30, 40, 40, 40, 40],
         },
-        defenseBypassData: {
-            base: .1,
-            level: [0, 0.03, 0.03, 0.06, 0.07, 0.07, 0.07, 0.07, 0.07, 0.07, 0.07, 0.09],
-        },
         healBackOnDamageData: {
-            base: .2,
-            level: [0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.1, 0.15, 0.15],
+            base: .095,
+            level: [0, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005, 0.015, 0.025, 0.025],
         },
         motherShipCharge: 0.00042,
         imageSource: "./images/modules/self_fix_unit.png",
@@ -4161,11 +4293,11 @@
         fireRate: 100,
         ammo: 60,
         ammoEachReloadTick: 20,
-        reload: 3e3,
+        reload: 4e3,
         range: 1000,
         cost: {
             sliver: 0,
-            gold: 2e3
+            gold: 5e3
         }
     }, {
         dontSell: true,
@@ -4182,13 +4314,9 @@
             base: 1004,
             level: [0, 40, 40, 40, 60, 60, 60, 60, 80, 80, 80, 80],
         },
-        defenseBypassData: {
-            base: .1,
-            level: [0, 0.03, 0.03, 0.06, 0.07, 0.07, 0.07, 0.07, 0.07, 0.07, 0.07, 0.09],
-        },
         healBackOnDamageData: {
-            base: .3,
-            level: [0, 0.05, 0.05, 0.05, 0.1, 0.1, 0.1, 0.1, 0.15, 0.15, 0.15, 0.2],
+            base: .19,
+            level: [0, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.03, 0.05, 0.05],
         },
         motherShipCharge: 0.00042,
         imageSource: "./images/weapons/gangantua.png",
@@ -4196,11 +4324,11 @@
         fireRate: 100,
         ammo: 60,
         ammoEachReloadTick: 20,
-        reload: 3e3,
+        reload: 4e3,
         range: 1000,
         cost: {
             sliver: 0,
-            gold: 2e3
+            gold: 5e3
         }
     }, {
         tier: 4,
@@ -4210,8 +4338,7 @@
         type: "Light",
         projType: "energy",
         desc: `
-        Fast firing dot light energy machine gun that
-        applies dot effect on to enemies.<br><br>
+        Fast firing dot light energy machine gun that applies dot effect on to enemies.
         `,
         damageData: {
             base: 20,
@@ -4219,7 +4346,7 @@
         },
         dotData: {
             base: 50,
-            level: [0, 24, 24, 24, 24, 24, 24, 24, 24, 24, 49, 59]
+            level: [0, 3, 3, 3, 3, 6, 6, 6, 9, 12, 12, 24]
         },
         defenseBypassData: {
             base: .05,
@@ -4229,7 +4356,7 @@
         imageSource: "./images/weapons/deceiver.png",
         fireRate: 48,
         ammo: 30,
-        reload: 1500,
+        reload: 2e3,
         range: 1400,
         cost: {
             sliver: 4e9,
@@ -4244,16 +4371,15 @@
         type: "Heavy",
         projType: "energy",
         desc: `
-        Fast firing dot heavy energy machine gun that
-        applies dot effect on to enemies.<br><br>
+        Fast firing dot heavy energy machine gun that applies dot effect on to enemies.
         `,
         damageData: {
-            base: 80,
-            level: [0, 10, 10, 10, 10, 10, 10, 20, 20, 20, 20, 40]
+            base: 20,
+            level: [0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10]
         },
         dotData: {
-            base: 98,
-            level: [0, 48, 48, 48, 48, 48, 48, 48, 48, 48, 98, 117]
+            base: 75,
+            level: [0, 5, 5, 5, 5, 9, 9, 9, 14, 18, 18, 36]
         },
         defenseBypassData: {
             base: .05,
@@ -4263,7 +4389,7 @@
         imageSource: "./images/weapons/damper.png",
         fireRate: 48,
         ammo: 30,
-        reload: 1500,
+        reload: 2e3,
         range: 1400,
         cost: {
             sliver: 4e9,
@@ -4297,9 +4423,9 @@
         },
         motherShipCharge: 0.0025,
         imageSource: "./images/weapons/brisant.png",
-        fireRate: 350,
-        ammo: 12,
-        reload: 2700,
+        fireRate: 1e3,
+        ammo: 6,
+        reload: 3700,
         range: 2e3,
         cost: {
             sliver: 15e9,
@@ -4324,8 +4450,8 @@
         into 30 projectiles, a noticeable spread is seen.
         `,
         damageData: {
-            base: 3240,
-            level: [0, 108, 216, 270, 324, 378, 432, 486, 540, 540, 1080, 2160]
+            base: 4320,
+            level: [0, 79, 151, 184, 229, 259, 301, 324, 387, 460, 853, 1440]
         },
         defenseBypassData: {
             base: .05,
@@ -4333,9 +4459,9 @@
         },
         motherShipCharge: 0.0025,
         imageSource: "./images/weapons/shatter.png",
-        fireRate: 350,
-        ammo: 12,
-        reload: 2700,
+        fireRate: 1e3,
+        ammo: 6,
+        reload: 3700,
         range: 2e3,
         cost: {
             sliver: 15e9,
@@ -4357,15 +4483,16 @@
         `,
         damageData: {
             base: 90,
-            level: [0, 12, 12, 12, 12, 12, 12, 12, 12, 23, 23, 35]
+            level: [0, 12, 24, 36, 36, 48, 48, 48, 60, 60, 60, 60]
         },
+        shotsPerFire: 2,
         motherShipCharge: 0.0004,
         imageSource: "./images/weapons/razor.png",
-        fireRate: 30,
+        fireRate: 90,
         continuousReload: true,
         ammoEachReloadTick: 10,
-        ammo: 150,
-        reload: 1000,
+        ammo: 90,
+        reload: 2e3,
         range: 1500,
         cost: {
             sliver: 30e3,
@@ -4385,16 +4512,17 @@
         target after they travel X distance.
         `,
         damageData: {
-            base: 180,
-            level: [0, 24, 24, 24, 24, 24, 24, 24, 24, 46, 46, 70]
+            base: 135,
+            level: [0, 18, 36, 54, 54, 72, 72, 72, 90, 90, 90, 90]
         },
+        shotsPerFire: 2,
         motherShipCharge: 0.0004,
         imageSource: "./images/weapons/smuta.png",
-        fireRate: 30,
+        fireRate: 90,
         continuousReload: true,
         ammoEachReloadTick: 10,
-        ammo: 150,
-        reload: 1000,
+        ammo: 90,
+        reload: 2e3,
         range: 1500,
         cost: {
             sliver: 30e3,
@@ -4412,11 +4540,11 @@
         `,
         damageData: {
             base: 475,
-            level: [0, 40, 40, 50, 50, 50, 60, 80, 100, 100, 120, 180],
+            level: [0, 111, 133, 155, 177, 222, 222, 244, 255, 333, 466, 544],
         },
         motherShipCharge: 0.00625,
         imageSource: "./images/weapons/taran.png",
-        fireRate: [700, 100, 100, 100],
+        fireRate: [750, 150, 150, 150],
         ammo: 32,
         reload: 5e3,
         range: 1e3,
@@ -4436,12 +4564,12 @@
         allows weapon this to do a huge amount of damage.
         `,
         damageData: {
-            base: 745,
-            level: [0, 80, 80, 100, 100, 100, 120, 160, 200, 200, 240, 360],
+            base: 713,
+            level: [0, 167, 200, 233, 266, 333, 333, 366, 383, 500, 699, 816]
         },
         motherShipCharge: 0.00625,
         imageSource: "./images/weapons/redeemer.png",
-        fireRate: [700, 100, 100, 100],
+        fireRate: [750, 150, 150, 150],
         ammo: 32,
         reload: 5e3,
         range: 1e3,
@@ -4461,13 +4589,12 @@
         Light semi-automatic fireball cannon. Weapon emits blast effect, allowing it to deal a lot of damage.
         `,
         damageData: {
-            base: 1200,
-            level: [0, 100, 100, 100, 100, 150, 150, 200, 200, 200, 200, 200],
+            base: 1800,
+            level: [0, 75, 75, 75, 150, 150, 225, 225, 225, 225, 300, 300]
         },
         effectIncreaseData: {
-            base: 1,
-            effect: "blast",
-            level: [0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 2]
+            base: .017,
+            level: [0, .0002, .0002, .0002, .0002, .0002, .0005, .0005, .0005, .0005, .0005, .0005]
         },
         defenseBypassData: {
             base: .05,
@@ -4475,8 +4602,8 @@
         },
         motherShipCharge: 0.0015625,
         imageSource: "./images/weapons/labrys.png",
-        fireRate: [600, 100, 100, 100, 100],
-        ammo: 50,
+        fireRate: [480, 130, 130, 130, 130],
+        ammo: 25,
         reload: 5e3,
         range: 2e3,
         aoeRange: 75,
@@ -4500,9 +4627,8 @@
             level: [0, 100, 100, 100, 100, 150, 150, 200, 200, 200, 200, 200],
         },
         effectIncreaseData: {
-            base: 1,
-            effect: "blast",
-            level: [0, 1, 0, 1, 0, 1, 0, 0, 1, 1, 1, 3]
+            base: .017,
+            level: [0, .0002, .0002, .0002, .0002, .0002, .0005, .0005, .0005, .0005, .0005, .0005]
         },
         defenseBypassData: {
             base: .05,
@@ -4510,8 +4636,8 @@
         },
         motherShipCharge: 0.0015625,
         imageSource: "./images/weapons/cestus.png",
-        fireRate: [250, 50, 50, 50, 50],
-        ammo: 100,
+        fireRate: [480, 130, 130, 130, 130],
+        ammo: 25,
         reload: 5e3,
         range: 2e3,
         aoeRange: 75,
@@ -4543,13 +4669,14 @@
             base: .05,
             level: [0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.1, 0.15],
         },
+        shotsPerFire: 2,
         motherShipCharge: 0.0002,
         imageSource: "./images/weapons/discordia.png",
         fireRate: 60,
         continuousReload: true,
         ammoEachReloadTick: 10,
-        ammo: 150,
-        reload: 750,
+        ammo: 90,
+        reload: 1e3,
         range: 2000,
         cost: {
             sliver: 15e9,
@@ -4579,13 +4706,14 @@
             base: .05,
             level: [0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.15, 0.15, 0.15, 0.15],
         },
+        shotsPerFire: 2,
         motherShipCharge: 0.0002,
         imageSource: "./images/weapons/tumultus.png",
         fireRate: 60,
         continuousReload: true,
         ammoEachReloadTick: 10,
-        ammo: 150,
-        reload: 750,
+        ammo: 90,
+        reload: 1e3,
         range: 2000,
         cost: {
             sliver: 15e9,
@@ -4606,8 +4734,8 @@
         Enemies get slowdown when they get hit.
         `,
         damageData: {
-            base: 2800,
-            level: [0, 650, 650, 650, 650, 650, 1300, 1300, 1300, 1950, 1950, 2600]
+            base: 1840,
+            level: [0, 403, 403, 403, 403, 403, 517, 747, 977, 1253, 1552, 1840]
         },
         defenseBypassData: {
             base: .05,
@@ -4615,9 +4743,9 @@
         },
         motherShipCharge: 0.000357,
         imageSource: "./images/weapons/vajra.png",
-        fireRate: 750,
+        fireRate: 800,
         ammo: 15,
-        reload: 6e2,
+        reload: 6e3,
         range: 1500,
         cost: {
             sliver: 15e9,
@@ -4638,8 +4766,8 @@
         Enemies get slowdown when they get hit.
         `,
         damageData: {
-            base: 4200,
-            level: [0, 975, 975, 1950, 1950, 1950, 1950, 1950, 1950, 2925, 2925, 3900]
+            base: 2760,
+            level: [0, 605, 605, 605, 605, 605, 775, 1120, 1465, 1879, 2328, 2760]
         },
         defenseBypassData: {
             base: .05,
@@ -4647,9 +4775,9 @@
         },
         motherShipCharge: 0.000357,
         imageSource: "./images/weapons/maha_vajra.png",
-        fireRate: 750,
+        fireRate: 800,
         ammo: 15,
-        reload: 6e2,
+        reload: 6e3,
         range: 1500,
         cost: {
             sliver: 15e9,
@@ -4678,7 +4806,7 @@
         imageSource: "./images/weapons/fulgur.png",
         fireRate: 100,
         ammo: 10,
-        reload: 7e3,
+        reload: 8e3,
         range: 3800,
         cost: {
             sliver: 15e9,
@@ -4707,7 +4835,7 @@
         imageSource: "./images/weapons/tonans.png",
         fireRate: 100,
         ammo: 10,
-        reload: 7e3,
+        reload: 8e3,
         range: 3800,
         cost: {
             sliver: 15e9,
@@ -4733,8 +4861,8 @@
         motherShipCharge: 0.005,
         aoeRange: 120,
         imageSource: "./images/weapons/talon.png",
-        fireRate: 300,
-        ammo: 30,
+        fireRate: 350,
+        ammo: 24,
         reload: 5e3,
         range: 1800,
         cost: {
@@ -4755,14 +4883,14 @@
         Effects last for 10 seconds.
         `,
         damageData: {
-            base: 500,
-            level: [0, 100, 100, 100, 150, 175, 250, 275, 275, 275, 334, 444]
+            base: 667,
+            level: [0, 133, 133, 133, 200, 233, 333, 367, 367, 367, 444, 592]
         },
         motherShipCharge: 0.005,
         aoeRange: 120,
         imageSource: "./images/weapons/jaw.png",
-        fireRate: 300,
-        ammo: 30,
+        fireRate: 350,
+        ammo: 24,
         reload: 5e3,
         range: 1800,
         cost: {
@@ -4779,20 +4907,20 @@
         type: "Light",
         projType: "normal",
         desc: `
-        A light fast firing machine gun. After firing for 4 seconds, the weapon accelerates in fire rate and deals 80% gray damage instead of the normal 40%. This weapon also has a slight homing effect.
+        A light fast firing machine gun. After firing for 2 seconds, the weapon accelerates in fire rate and deals 80% gray damage instead of the normal 40%. This weapon also has a slight homing effect.
         `,
         damageData: {
-            base: 150,
-            level: [0, 20, 20, 20, 20, 20, 40, 40, 40, 40, 40, 40],
+            base: 128,
+            level: [0, 17, 17, 17, 17, 17, 34, 34, 34, 34, 34, 34]
         },
         defenseBypassData: {
             base: .05,
             level: [0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.1, 0.15],
         },
-        motherShipCharge: 0.0001,
+        motherShipCharge: 0.00015,
         imageSource: "./images/weapons/grief.png",
-        fireRate: 40,
-        ammo: 800,
+        fireRate: 50,
+        ammo: 400,
         reload: 8e3,
         range: 1e3,
         cost: {
@@ -4809,20 +4937,20 @@
         type: "Heavy",
         projType: "normal",
         desc: `
-        A heavy fast firing machine gun. After firing for 4 seconds, the weapon accelerates in fire rate and deals 80% gray damage instead of the normal 40%. This weapon also has a slight homing effect.
+        A heavy fast firing machine gun. After firing for 2 seconds, the weapon accelerates in fire rate and deals 80% gray damage instead of the normal 40%. This weapon also has a slight homing effect.
         `,
         damageData: {
-            base: 300,
-            level: [0, 40, 40, 40, 40, 40, 80, 80, 80, 80, 80, 80],
+            base: 192,
+            level: [0, 26, 26, 26, 26, 26, 51, 51, 51, 51, 51, 51]
         },
         defenseBypassData: {
             base: .05,
             level: [0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.15, 0.15, 0.15, 0.15],
         },
-        motherShipCharge: 0.0001,
+        motherShipCharge: 0.00015,
         imageSource: "./images/weapons/sorrow.png",
-        fireRate: 40,
-        ammo: 800,
+        fireRate: 50,
+        ammo: 400,
         reload: 8e3,
         range: 1e3,
         cost: {
@@ -4839,8 +4967,8 @@
         projType: "energy",
         desc: `The ultimate mixture of fire power, DoT, and rust. This weapon deals a lot of damage and applies rust and DoT to enemies.`,
         damageData: {
-            base: 150,
-            level: [0, 56, 85, 113, 141, 169, 197, 225, 254, 281, 310, 337]
+            base: 83,
+            level: [0, 31, 47, 66, 77, 93, 108, 131, 150, 154, 171, 186]
         },
         defenseBypassData: {
             base: .05,
@@ -4848,13 +4976,13 @@
         },
         dotData: {
             base: 35,
-            level: [0, 32, 32, 32, 32, 32, 32, 32, 32, 65, 78, 78]
+            level: [0, 5, 5, 10, 10, 15, 15, 20, 20, 20, 25, 25]
         },
         motherShipCharge: 0.0014,
         imageSource: "./images/weapons/subduer.png",
         fireRate: 48,
-        ammo: 60,
-        reload: 5e3,
+        ammo: 30,
+        reload: 8e3,
         range: 1400,
         cost: {
             sliver: 60e6,
@@ -4872,7 +5000,7 @@
         Light rocket weapon that fires 7 homing rockets that deals immense damage to enemies. Its large AoE range allows it to easily hit more than one target at a time.
         `,
         damageData: {
-            base: 13e3,
+            base: 15e3,
             level: [0, 500, 500, 500, 500, 1e3, 1e3, 1e3, 2e3, 2e3, 4e3, 5e3]
         },
         motherShipCharge: 0.00536,
@@ -4898,14 +5026,14 @@
         Heavy rocket weapon that fires a total of 14 homing rockets that deals immense damage to enemies. Its large AoE range allows it to easily hit more than one target at a time.
         `,
         damageData: {
-            base: 13e3,
-            level: [0, 500, 500, 500, 500, 1e3, 1e3, 1e3, 2e3, 2e3, 4e3, 5e3]
+            base: 22500,
+            level: [0, 750, 750, 750, 750, 1500, 1500, 1500, 3000, 3000, 6000, 7500]
         },
         motherShipCharge: 0.00536,
         aoeRange: 120,
         imageSource: "./images/weapons/thermite.png",
-        fireRate: 250,
-        ammo: 2,
+        fireRate: 0,
+        ammo: 1,
         reload: 7e3,
         range: 3200,
         cost: {
@@ -4922,8 +5050,8 @@
         projType: "energy",
         desc: `Super close ranged light laser arc weapon that deals a lot of damage in a short time. Every hit accumulates a lockdown effect that disables enemies from moving.`,
         damageData: {
-            base: 1020,
-            level: [0, 170, 170, 213, 213, 213, 255, 255, 255, 255, 298, 340]
+            base: 716,
+            level: [0, 120, 120, 148.8, 148.8, 148.8, 177.6, 177.6, 177.6, 177.6, 207.6, 237.6]
         },
         defenseBypassData: {
             base: .05,
@@ -4931,8 +5059,8 @@
         },
         motherShipCharge: 0.0005,
         imageSource: "./images/weapons/leiming.png",
-        fireRate: [150, 50, 50, 50, 50],
-        ammo: 100,
+        fireRate: [200, 50, 50, 50, 50],
+        ammo: 50,
         reload: 8e3,
         range: 450,
         cost: {
@@ -4949,8 +5077,8 @@
         projType: "energy",
         desc: `Super close ranged heavy laser arc weapon that deals a lot of damage in a short time. Every hit accumulates a lockdown effect that disables enemies from moving.`,
         damageData: {
-            base: 2550,
-            level: [0, 340, 340, 425, 425, 425, 510, 510, 510, 510, 595, 680]
+            base: 1074,
+            level: [0, 180, 180, 223, 223, 223, 266, 266, 266, 266, 311, 356]
         },
         defenseBypassData: {
             base: .05,
@@ -4958,8 +5086,8 @@
         },
         motherShipCharge: 0.0005,
         imageSource: "./images/weapons/fengbao.png",
-        fireRate: [150, 50, 50, 50, 50],
-        ammo: 100,
+        fireRate: [200, 50, 50, 50, 50],
+        ammo: 50,
         reload: 8e3,
         range: 450,
         cost: {
@@ -4977,17 +5105,18 @@
         projType: "energy",
         desc: `New heavy flamerthrower that has unlimited ammo. The longer you fire, the inaccurate the weapon becomes and the slower the projectiles travel.`,
         damageData: {
-            base: 667,
-            level: [0, 67, 74, 98, 108, 133, 133, 145, 175, 188, 208, 220]
+            base: 197,
+            level: [0, 21, 22, 28, 31, 39, 39, 44, 51, 54, 61, 65]
         },
         defenseBypassData: {
             base: .05,
             level: [0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.15, 0.15, 0.15, 0.15],
         },
-        overheatTime: 8e3,
+        shotsPerFire: 2,
+        overheatTime: 6e3,
         motherShipCharge: 0.00024,
         imageSource: "./images/weapons/inferno.png",
-        fireRate: 25,
+        fireRate: 40,
         ammo: 1e300,
         reload: 0,
         range: 1e3,
@@ -5006,17 +5135,18 @@
         projType: "energy",
         desc: `New light flamerthrower that has unlimited ammo. The longer you fire, the inaccurate the weapon becomes and the slower the projectiles travel.`,
         damageData: {
-            base: 266,
-            level: [0, 27, 30, 39, 43, 53, 53, 58, 70, 75, 83, 88]
+            base: 131,
+            level: [0, 14, 15, 19, 21, 26, 26, 29, 34, 36, 41, 43]
         },
         defenseBypassData: {
             base: .05,
             level: [0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.1, 0.15],
         },
-        overheatTime: 8e3,
+        shotsPerFire: 2,
+        overheatTime: 6e3,
         motherShipCharge: 0.00024,
         imageSource: "./images/weapons/pyro.png",
-        fireRate: 25,
+        fireRate: 40,
         ammo: 1e300,
         reload: 0,
         range: 1e3,
@@ -5033,14 +5163,14 @@
         projType: "energy",
         desc: `A radiation gun which fires in short burst of 3 shots. Each shot following the first deals increased damaged up to 200%.`,
         damageData: {
-            base: 4e3,
-            level: [0, 250, 250, 250, 375, 375, 375, 375, 375, 375, 400, 500]
+            base: 1400,
+            level: [0, 88, 88, 88, 131, 131, 131, 131, 131, 131, 140, 175]
         },
         motherShipCharge: 0.002,
         imageSource: "./images/weapons/blight.png",
         fireRate: [400, 75, 75],
         ammo: 9,
-        reload: 2e3,
+        reload: 3e3,
         range: 2e3,
         cost: {
             sliver: 5e6,
@@ -5055,14 +5185,14 @@
         projType: "energy",
         desc: `A radiation gun which fires in short burst of 3 shots. Each shot following the first deals increased damaged up to 200%.`,
         damageData: {
-            base: 6e3,
-            level: [0, 375, 375, 375, 563, 563, 563, 563, 563, 563, 600, 750]
+            base: 2100,
+            level: [0, 132, 132, 132, 197, 197, 197, 197, 197, 197, 210, 262]
         },
         motherShipCharge: 0.002,
         imageSource: "./images/weapons/decay.png",
         fireRate: [400, 75, 75],
         ammo: 9,
-        reload: 2e3,
+        reload: 3e3,
         range: 2e3,
         cost: {
             sliver: 5e6,
@@ -5083,15 +5213,16 @@
         Multi-barreled machine gun with a high rate of fire. Great at close range. Projectiles fired deal structural damage.
         `,
         damageData: {
-            base: 80,
-            level: [0, 10, 10, 20, 20, 40, 40, 50, 50, 60, 60, 80],
+            base: 52,
+            level: [0, 7, 7, 13, 13, 26, 26, 32, 32, 39, 39, 52]
         },
+        shotsPerFire: 2,
         defenseBypass: .5,
         motherShipCharge: 0.0001,
         imageSource: "./images/weapons/ultimate_punisher.png",
-        fireRate: 50,
-        ammo: 600,
-        reload: 4e3,
+        fireRate: 70,
+        ammo: 200,
+        reload: 8e3,
         range: 2e3,
         cost: {
             sliver: 50e6,
@@ -5114,15 +5245,16 @@
         Each round shoots 4 projectiles. Projectiles fired deal structural damage.
         `,
         damageData: {
-            base: 80,
-            level: [0, 10, 10, 20, 20, 40, 40, 50, 50, 60, 60, 80],
+            base: 40,
+            level: [0, 6, 6, 9, 9, 20, 20, 24, 24, 30, 30, 40]
         },
+        shotsPerFire: 4,
         defenseBypass: .75,
         motherShipCharge: 0.00007,
         imageSource: "./images/weapons/ultimate_destroyer.png",
-        fireRate: 50,
-        ammo: 600,
-        reload: 4e3,
+        fireRate: 70,
+        ammo: 200,
+        reload: 8e3,
         range: 2e3,
         cost: {
             sliver: 50e6,
@@ -5139,10 +5271,11 @@
         projType: "rocket",
         desc: `
         Homing freezing rockets that target your mouse cursor.
+        Each direct hit emits the freezing effect.
         `,
         damageData: {
-            base: 4e3,
-            level: [0, 200, 300, 400, 500, 500, 500, 600, 600, 600, 700, 800],
+            base: 1e3,
+            level: [0, 50, 75, 100, 125, 125, 125, 150, 150, 150, 175, 200]
         },
         defenseBypassData: {
             base: .05,
@@ -5152,13 +5285,79 @@
         motherShipCharge: 0.002,
         imageSource: "./images/weapons/ultimate_destroyer.png",
         fireRate: 150,
-        ammo: 60,
+        ammo: 30,
         reload: 7e3,
         range: 3e3,
         cost: {
             sliver: 50e6,
             gold: 100e3,
             workshopPoints: 100e3
+        }
+    }, {
+        dontSell: true,
+        tier: 4,
+        spread: 4,
+        industryName: "Octagon",
+        name: "Hammer",
+        type: "Heavy",
+        projType: "rocket",
+        desc: `A heavy shotgun that fires quickly. The projectiles fired emits blast effect.`,
+        damageData: {
+            base: 1150,
+            level: [0, 115, 115, 115, 115, 230, 230, 345, 345, 345, 345, 460]
+        },
+        effectIncreaseData: {
+            base: .0029,
+            level: [0, 0.0002, 0.0002, 0.0002, 0.0002, 0.0002, 0.0002, 0.0004, 0.0004, 0.0004, 0.0004, 0.0005]
+        },
+        defenseBypassData: {
+            base: .05,
+            level: [0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.15, 0.15, 0.15, 0.15],
+        },
+        motherShipCharge: 0.00025,
+        imageSource: "./images/weapons/hammer.png",
+        fireRate: 200,
+        ammo: 12,
+        reload: 7e3,
+        range: 800,
+        aoeRange: 75,
+        cost: {
+            sliver: 15e9,
+            gold: 150e3,
+            workshopPoints: 50e3
+        }
+    }, {
+        dontSell: true,
+        tier: 4,
+        spread: 4,
+        industryName: "Octagon",
+        name: "Mace",
+        type: "Light",
+        projType: "rocket",
+        desc: `A light shotgun that fires quickly. The projectiles fired emits blast effect.`,
+        damageData: {
+            base: 767,
+            level: [0, 77, 77, 77, 77, 153, 153, 230, 230, 230, 230, 307]
+        },
+        effectIncreaseData: {
+            base: .0029,
+            level: [0, 0.0002, 0.0002, 0.0002, 0.0002, 0.0002, 0.0002, 0.0004, 0.0004, 0.0004, 0.0004, 0.0005]
+        },
+        defenseBypassData: {
+            base: .05,
+            level: [0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.1, 0.15],
+        },
+        motherShipCharge: 0.00025,
+        imageSource: "./images/weapons/mace.png",
+        fireRate: 200,
+        ammo: 12,
+        reload: 7e3,
+        range: 800,
+        aoeRange: 75,
+        cost: {
+            sliver: 15e9,
+            gold: 150e3,
+            workshopPoints: 50e3
         }
     }];
     class module {
@@ -5246,8 +5445,8 @@
         Heavy armor kit, allows for even more protection to your shapes.
         `,
         healthIncreaseData: {
-            base: 0.07,
-            level: [0, 0.01, 0.01, 0.01, 0.01, 0.01]
+            base: 0.08,
+            level: [0, 0.02, 0.02, 0.02, 0.02, 0.02]
         },
         imageSource: "./images/modules/heavy_armor_plating.png",
         cost: {
@@ -5261,8 +5460,8 @@
         Repairs a portion of a shape's maximum durability each second.
         `,
         selfFixRepairData: {
-            base: 432,
-            level: [0, 216, 216, 216, 624, 624]
+            base: 756,
+            level: [0, 378, 378, 378, 1092, 1092]
         },
         imageSource: "./images/modules/self_fix_unit.png",
         cost: {
@@ -5291,8 +5490,8 @@
         Thermonuclear Reactor, increases weapon damage output even more.
         `,
         dmgIncreaseData: {
-            base: 0.05,
-            level: [0, 0.02, 0.02, 0.02, 0.02, 0.02]
+            base: 0.06,
+            level: [0, 0.02, 0.02, 0.02, 0.02, 0.04]
         },
         imageSource: "./images/modules/thermonuclear_reactor.png",
         cost: {
@@ -5307,11 +5506,11 @@
         `,
         healthIncreaseData: {
             base: 0.05,
-            level: [0, 0.02, 0.02, 0.02, 0.02, 0.02]
+            level: [0, 0.01, 0.01, 0.01, 0.01, 0.03]
         },
         dmgIncreaseData: {
             base: 0.04,
-            level: [0, 0.01, 0.01, 0.02, 0.02, 0.02]
+            level: [0, 0.01, 0.01, 0.01, 0.01, 0.02]
         },
         imageSource: "./images/modules/balance_unit.png",
         cost: {
@@ -5369,8 +5568,8 @@
             level: [0, 0.01, 0.01, 0.01, 0.01, 0.01]
         },
         grayDamageDecreaseData: {
-            base: 0.05,
-            level: [0, 0.02, 0.02, 0.03, 0.04, 0.05]
+            base: 0.04,
+            level: [0, 0.02, 0.02, 0.02, 0.02, 0.03]
         },
         imageSource: "./images/modules/damage_controller.png",
         cost: {
@@ -5391,8 +5590,8 @@
             level: [0, -0.01, -0.01, -0.01, -0.01, -0.01]
         },
         increasedDefensePointsData: {
-            base: 5,
-            level: [0, 8, 8, 8, 8, 13]
+            base: 20,
+            level: [0, 1, 1, 1, 1, 1]
         },
         imageSource: "./images/modules/repair_amplifier.png",
         cost: {
@@ -5409,7 +5608,7 @@
         `,
         antiControlData: {
             base: .25,
-            level: [0, 0.1, 0.1, 0.1, 0.1, 0.1]
+            level: [0, 0.05, 0.05, 0.05, 0.05, 0.05]
         },
         imageSource: "./images/modules/anticontrol.png",
         cost: {
@@ -5429,11 +5628,11 @@
         but not their maximum limit.
         `,
         nuclearAmpData: {
-            base: .003,
+            base: .001,
             level: [0, 0.001, 0.001, 0.001, 0.001, 0.001]
         },
         selfFixRepairData: {
-            base: 20e3,
+            base: 50e3,
             level: [0, 10e3, 10e3, 10e3, 10e3, 10e3]
         },
         imageSource: "./images/modules/nuclear_amplifier.png",
@@ -5454,8 +5653,8 @@
         When installing several such modules, the speed of receiving bonuses increases, but not their maximum amount
         `,
         healthIncreaseData: {
-            base: .05,
-            level: [0, 0.01, 0.01, 0.01, 0.01, 0.01]
+            base: .005,
+            level: [0, .005, .01, .01, .01, .01]
         },
         imageSource: "./images/modules/immune_amplifier.png",
         cost: {
@@ -5474,7 +5673,7 @@
         imageSource: "./images/modules/defense_amplifier.png",
         defensePointsIncreaseData: {
             base: .5,
-            level: [0, .2, .2, .3, .4, .4]
+            level: [0, .1, .1, .1, .1, .1]
         },
         cost: {
             sliver: 15e9,
@@ -5502,6 +5701,7 @@
         shieldData,
         moduleHardpoints,
         dotResistance,
+        indexRole,
         scale
     }, type, specialOf, source) {
         if (type == "shape") {
@@ -5509,6 +5709,7 @@
             let newshape = JSON.parse(JSON.stringify(shape));
             newshape.name = `${specialOf} ${name}`;
             newshape.specialOf = source;
+            if (indexRole != undefined) newshape.indexRole = indexRole;
             newshape.desc = newshape.desc.replace(name, `${specialOf} ${name}`);
             newshape.desc = `
             ${topDesc || "Limited Edition Shape with increased stat bonuses."}
@@ -5555,7 +5756,8 @@
     }, "shape", "Pumpkin", "./images/special_addtiction/pumpkin_orange_circle.png");
     makeNewSpecialEdition("Green Circle", {
         cantGet: true,
-        health: 2,
+        health: 1.5,
+        indexRole: 3,
         topDesc: `
         ULTIMATE SHAPE VERSION<br>
         The rarest modification of the Green Circle.
@@ -5600,7 +5802,7 @@
         borderColor: "#ffff00"
     }, "shape", "Ultimate");
     makeNewSpecialEdition("Tan Pentagon", {
-        health: 2.25,
+        health: 1.8,
         cantGet: true,
         tier: 4,
         builtInDefensePoints: 75,
@@ -5643,7 +5845,7 @@
     }, "shape", "Ultimate");
     makeNewSpecialEdition("Teal Circle", {
         health: 1.4,
-        speed: 1.5,
+        speed: 1.25,
         tier: 4,
         fieldOfViewMulti: 1.75,
         topDesc: `
@@ -5689,7 +5891,7 @@
         borderColor: "#ffff00"
     }, "shape", "Ultimate");
     makeNewSpecialEdition("Tan Circle", {
-        health: 1.2324,
+        health: 1.25,
         tier: 4,
         topDesc: `
         Special limited version of Tan Circle. This version has increased health and defense points.
@@ -5699,7 +5901,7 @@
     }, "shape", "Blue-Outlined");
     makeNewSpecialEdition("Gray Circle", {
         tier: 4,
-        health: 4.5,
+        health: 1.8,
         hardpoints: {
             light: 0,
             heavy: 2
@@ -5720,13 +5922,13 @@
         Recommended Equipment: x2 Veyron
         `,
         builtInDefensePoints: 25,
-        moduleHardpoints: 4,
+        moduleHardpoints: 3,
         hullIntegrity: .5,
         borderColor: "#ffff00"
     }, "shape", "Ultimate");
     makeNewSpecialEdition("Brown Pentagon", {
         tier: 4,
-        health: 1.7,
+        health: 1.3,
         scale: 80,
         topDesc: `
         ULTIMATE SHAPE VERSION<br>
@@ -5755,12 +5957,12 @@
             `,
             iconSource: "./images/abilities/shapeshift.png",
             abilityDefensePointsData: {
-                base: 150,
+                base: 100,
                 level: [0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5]
             },
             reload: 1e3
         },
-        moduleHardpoints: 6,
+        moduleHardpoints: 4,
         hullIntegrity: .25,
         borderColor: "#ffff00"
     }, "shape", "Ultimate");
@@ -5802,15 +6004,14 @@
             projPerShot: 4,
             fireRate: 50,
             effectIncreaseData: {
-                base: 1,
-                effect: "blast",
-                level: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+                base: .005,
+                level: [0, 0, .001, .001, .001, .001, .001, .001, .001, .001, .001, .001]
             },
             lastingTime: 10e3,
             iconSource: "./images/abilities/dragon_flight.png",
             reload: 12e3
         },
-        moduleHardpoints: 4,
+        moduleHardpoints: 3,
         borderColor: "#ffff00"
     }, "shape", "Ultimate");
     var activeModuleData = [{
@@ -5858,7 +6059,7 @@
             rate: 500
         },
         lastTime: 45e3,
-        cost: 20e3,
+        cost: 8e3,
         reload: 5e3
     }, {
         tier: 3,
@@ -5957,6 +6158,14 @@
         In FFA mode, 10 players, including you,
         fight in an arena. The goal is to be the
         last one standing by defeating everyone else!
+        `
+    }, {
+        name: "Gladiator",
+        id: 7,
+        level: 15,
+        backgroundImage: "",
+        desc: `
+        In this game mode, you fight with 6 other shapes simultaneously in a enclosed arena.
         `
     }, {
         name: "Extermination",
@@ -7550,6 +7759,24 @@
                 renderStar(tmpCtx, 4, obj.scale, obj.scale);
                 tmpCtx.stroke();
                 tmpCtx.fill();
+            } else if (obj.name == "Polygon") {
+                renderCircle(0, 0, obj.scale, tmpCtx, false, false, "#e9e9e9", "#000");
+                tmpCtx.rotate(Math.PI / 2);
+                tmpCtx.strokeStyle = "#000";
+                tmpCtx.lineWidth = 12
+                tmpCtx.fillStyle = "#ffb400";
+                renderStar(tmpCtx, 3.5, obj.scale * .7, obj.scale * .7);
+                tmpCtx.stroke();
+                tmpCtx.fill();
+                tmpCtx.rotate(-(Math.PI / 2));
+
+                tmpCtx.rotate(Math.PI / 2);
+                tmpCtx.strokeStyle = "#000";
+                tmpCtx.lineWidth = 12 * (obj.increaseLine ? obj.increaseLine : 1);
+                tmpCtx.fillStyle = "#ffff00";
+                renderStar(tmpCtx, 2.5, obj.scale * .4, obj.scale * .4);
+                tmpCtx.stroke();
+                tmpCtx.fill();
             }
             if (!isIcon) shapeSprites[obj.name] = tmpCanvas;
             tmpSprite = tmpCanvas;
@@ -7583,6 +7810,9 @@
         return tmpIcon;
     }
     const WEPAONAPOENOPAWNEOPWANEAPWOEN = weapon;
+    function styleNumberWithCommas(number) {
+        return Math.floor(number).toLocaleString();
+    }
     function drawWeaponDisplay(weapons, index, HA, shape, slot, inInventory) {
         let Weapon = weapons[index];
         if (!Weapon) return;
@@ -7619,13 +7849,13 @@
         ${weapon.desc}<br>
         <hr style="position: absolute; left: -5px; color: #fff; width: 325px;">
         <br>
-        ${weapon.dmg ? `Damage: ${abbreviateNumber(weapon.dmg)}<br>` : ""}
+        ${weapon.dmg ? `Damage: ${styleNumberWithCommas(weapon.dmg)}<br>Total Damage: ${weapon.ammo == 1e300 ? Infinity : styleNumberWithCommas(weapon.dmg * weapon.ammo * (weapon.shotsPerFire || 1))}<br><span style="font-size: 8px;">^^^Not including other factors like DoT or BLAST.</span><br>` : ""}
         ${weapon.range ? `Range: ${weapon.range} PX<br>` : ""}
         ${weapon.reload > 0 ? `Reload: ${(weapon.reload * (weapon.continuousReload ? weapon.ammo / weapon.ammoEachReloadTick : 1)) / 1000} sec<br>` : ""}
         ${weapon.motherShipCharge ? `MS Charge per Bullet: ${(weapon.motherShipCharge * 100).toFixed(4)}%<br>` : ""}
         ${weapon.aoeRange ? "AOE Range: " + weapon.aoeRange + " PX<br>" : ""}
-        ${weapon.dotDamage ? `DOT Damage: ${abbreviateNumber(weapon.dotDamage)}<br>` : ""}
-        ${weapon.effectIncrease ? `Effect Accumulation: ${weapon.effectIncrease} (${removeDecimals((weapon.effectIncrease / effectThresholds[weapon.effectIncreaseName]) * weapon.ammo * 100)}% Max Acc.)<br>` : ""}
+        ${weapon.dotDamage ? `DOT Damage: ${styleNumberWithCommas(weapon.dotDamage)}<br>` : ""}
+        ${weapon.effectIncrease ? `Effect Accumulation: ${Math.round(weapon.effectIncrease * 1e4) / 100}%<br>` : ""}
         ${weapon.fireRateDecrease + 1 >= 0 ? `Fire Rate Decrease: ${weapon.fireRateDecrease} ms<br>` : ""}
         ${weapon.baseShielding ? `Shield Durability: ${abbreviateNumber(weapon.baseShielding.health)}<br>` : ""}
         ${weapon.defenseBypass ? `Defense Mitigation: ${weapon.defenseBypass * 100}%<br>` : ""}
@@ -7918,13 +8148,11 @@
             }
             let indexAdjust = ((weapon.effectIncrease / maxdmg) * maxwidth) / maxwidth;
             let indexAdjusted = (((weapon.effectIncrease + Weapon.effectIncreaseData.level[weapon.level]) / maxdmg) * maxwidth) / maxwidth;
-            let thing1 = weapon.effectIncrease / effectThresholds[weapon.effectIncreaseName];
-            let thing2 = (Weapon.effectIncreaseData.level[weapon.level] || 0) / effectThresholds[weapon.effectIncreaseName];
             text = `
             <div style="position: relative; width: ${maxwidth}px;">
-            Effect Accumulation: ${abbreviateNumber(weapon.effectIncrease)} (${removeDecimals(thing1 * weapon.ammo * 100)}% Max Accumulation)
+            Effect Accumulation: ${Math.round(weapon.effectIncrease * 1e4) / 100}%
             <div style="display: ${Weapon.effectIncreaseData.level[weapon.level] ? "block" : "none"};position: absolute; top: 0px; right: 0px; color: #00ff00;">
-            +${abbreviateNumber(Weapon.effectIncreaseData.level[weapon.level])} (${removeDecimals(thing2 * weapon.ammo * 100)}% Max Accumulation)
+            +${Weapon.effectIncreaseData.level[weapon.level] * 100}%
             </div>
             </div>
             <div style="position: relative; width: ${maxwidth}px; height: 3px; background-color: #fff;">
@@ -8063,9 +8291,9 @@
         if (Weapon.healBackOnDamageData && weapon.level < 12) {
             let dmgIncrease = Weapon.healBackOnDamageData.level[weapon.level];
             weapon.healBackOnDamage += dmgIncrease;
-            weapon.healBackOnDamage *= 100;
+            weapon.healBackOnDamage *= 1000;
             weapon.healBackOnDamage = Math.round(weapon.healBackOnDamage);
-            weapon.healBackOnDamage /= 100;
+            weapon.healBackOnDamage /= 1000;
         }
         if (Weapon.defenseBypassData && weapon.level < 12) {
             let dmgIncrease = Weapon.defenseBypassData.level[weapon.level];
@@ -8798,9 +9026,9 @@
         if (Module.healthIncreaseData) {
             let healthIncrease = Module.healthIncreaseData.level[module.level];
             module.healthIncrease += healthIncrease;
-            module.healthIncrease *= 100;
+            module.healthIncrease *= 1000;
             module.healthIncrease = Math.round(module.healthIncrease);
-            module.healthIncrease /= 100;
+            module.healthIncrease /= 1000;
         }
         if (Module.defensePointsIncreaseData) {
             let healthIncrease = Module.defensePointsIncreaseData.level[module.level];
@@ -9359,10 +9587,10 @@
             "light": "Leiming"
         },
         "modules": [
-            "Defense Amplifier","Defense Amplifier",
-            "Nuclear Amplifier","Nuclear Amplifier",
-            "Repair Amplifier","Repair Amplifier",
-            "Immune Amplifier","Immune Amplifier",
+            "Defense Amplifier",
+            "Nuclear Amplifier",
+            "Repair Amplifier",
+            "Immune Amplifier",
             "Anti Control"
         ],
         "drone": "Pascal",
@@ -9384,10 +9612,10 @@
             "light": "Fulgur"
         },
         "modules": [
-            "Defense Amplifier","Defense Amplifier",
-            "Nuclear Amplifier","Nuclear Amplifier",
-            "Repair Amplifier","Repair Amplifier",
-            "Immune Amplifier","Immune Amplifier","Immune Amplifier",
+            "Defense Amplifier",
+            "Nuclear Amplifier",
+            "Repair Amplifier",
+            "Immune Amplifier",
             "Anti Control"
         ],
         "drone": "Pascal",
@@ -9409,10 +9637,10 @@
             "light": "Leiming"
         },
         "modules": [
-            "Repair Amplifier","Repair Amplifier",
-            "Nuclear Amplifier","Nuclear Amplifier",
-            "Immune Amplifier","Immune Amplifier",
-            "Defense Amplifier", "Defense Amplifier", "Anti Control", "Last Stand"
+            "Repair Amplifier",
+            "Nuclear Amplifier",
+            "Immune Amplifier",
+            "Defense Amplifier", "Anti Control", "Last Stand"
         ],
         "drone": "Kestrel",
         "pilotName": "Mosi Kristoffer",
@@ -9483,10 +9711,10 @@
             "light": "Pyro"
         },
         "modules": [
-            "Defense Amplifier","Defense Amplifier",
-            "Nuclear Amplifier","Nuclear Amplifier",
-            "Repair Amplifier","Repair Amplifier",
-            "Immune Amplifier","Immune Amplifier",
+            "Defense Amplifier",
+            "Nuclear Amplifier",
+            "Repair Amplifier",
+            "Immune Amplifier",
             "Anti Control"
         ],
         "drone": "Kestrel",
@@ -9508,10 +9736,10 @@
             "light": "Fulgur"
         },
         "modules": [
-            "Defense Amplifier","Defense Amplifier",
-            "Nuclear Amplifier","Nuclear Amplifier",
-            "Repair Amplifier","Repair Amplifier",
-            "Immune Amplifier","Immune Amplifier",
+            "Defense Amplifier",
+            "Nuclear Amplifier",
+            "Repair Amplifier",
+            "Immune Amplifier",
             "Last Stand"
         ],
         "drone": "Pascal",
@@ -9533,10 +9761,10 @@
             "light": "Leiming"
         },
         "modules": [
-            "Defense Amplifier","Defense Amplifier",
-            "Nuclear Amplifier","Nuclear Amplifier",
-            "Repair Amplifier","Repair Amplifier",
-            "Immune Amplifier","Immune Amplifier",
+            "Defense Amplifier",
+            "Nuclear Amplifier",
+            "Repair Amplifier",
+            "Immune Amplifier",
             "Anti Control"
         ],
         "drone": "Kestrel",
@@ -9584,10 +9812,10 @@
             "light": "Pyro"
         },
         "modules": [
-            "Repair Amplifier","Repair Amplifier",
-            "Nuclear Amplifier", "Nuclear Amplifier",
-            "Immune Amplifier","Immune Amplifier",
-            "Defense Amplifier", "Last Stand"
+            "Defense Amplifier",
+            "Nuclear Amplifier",
+            "Repair Amplifier",
+            "Immune Amplifier", "Last Stand"
         ],
         "drone": "Pascal",
         "pilotName": "Sebastian Wren",
@@ -9609,10 +9837,10 @@
             "light": "Leiming"
         },
         "modules": [
-            "Repair Amplifier","Repair Amplifier",
-            "Nuclear Amplifier","Nuclear Amplifier",
-            "Immune Amplifier", "Immune Amplifier",
-            "Defense Amplifier", "Last Stand", "Anti Control"
+            "Defense Amplifier",
+            "Nuclear Amplifier",
+            "Repair Amplifier",
+            "Immune Amplifier", "Last Stand", "Anti Control"
         ],
         "drone": "Kestrel",
         "pilotName": "Mosi Kristoffer",
@@ -9634,9 +9862,9 @@
             "light": "Vajra"
         },
         "modules": [
-            "Repair Amplifier","Repair Amplifier",
-            "Nuclear Amplifier","Nuclear Amplifier",
-            "Immune Amplifier","Immune Amplifier",
+            "Nuclear Amplifier",
+            "Repair Amplifier",
+            "Immune Amplifier",
             "Defense Amplifier", "Last Stand"
         ],
         "drone": "Kestrel",
@@ -9709,10 +9937,10 @@
             "light": "Vajra"
         },
         "modules": [
-            "Repair Amplifier","Repair Amplifier",
-            "Nuclear Amplifier","Nuclear Amplifier",
-            "Immune Amplifier","Immune Amplifier",
-            "Anti Control", "Defense Amplifier", "Defense Amplifier",
+            "Defense Amplifier",
+            "Nuclear Amplifier",
+            "Repair Amplifier",
+            "Immune Amplifier",
             "Damage Controller", "Damage Controller"
         ],
         "drone": "Pascal",
@@ -9735,10 +9963,10 @@
             "light": "Punisher"
         },
         "modules": [
-            "Repair Amplifier","Repair Amplifier",
-            "Nuclear Amplifier","Nuclear Amplifier",
-            "Immune Amplifier","Immune Amplifier",
-            "Defense Amplifier", "Last Stand"
+            "Defense Amplifier",
+            "Nuclear Amplifier",
+            "Repair Amplifier",
+            "Immune Amplifier"
         ],
         "drone": "Pascal",
         "pilotName": "Xavier Sinclair",
@@ -9852,7 +10080,10 @@
         inGameSids++;
     }
     function setRobotLocation(robot, isAlly, gameMode, spawnLocations) {
-        if (gameMode == 3 || gameMode == 4) {
+        if (gameMode == 7) {
+            robot.x = Math.random() * mapInfo.x;
+            robot.y = Math.random() * mapInfo.y;
+        } else if (gameMode == 3 || gameMode == 4) {
             robot.x = Math.random() * mapInfo.x;
             if (player.mapID == 1) {
                 robot.y = Math.randInt((2500 + robot.scale * 2), mapInfo.y - (2500 + robot.scale * 2));
@@ -9896,6 +10127,10 @@
                 newWeapon.notActive = true;
             } else if (newWeapon.name == "Cinder" && robot.name == "Orange Pentagon") {
                 newWeapon.dmg *= 2;
+            }
+            if (robot.name == "Polygon") {
+                if (newWeapon.range < 2e3) newWeapon.range = 2e3;
+                newWeapon.reload *= .25;
             }
             robot.weapons.push(newWeapon);
         }
@@ -10148,8 +10383,8 @@
                 data: {
                     resistance: .9,
                     min: .75,
-                    maxhealth: 200e3,
-                    health: 200e3
+                    maxhealth: 120e3,
+                    health: 120e3
                 },
                 rechargeTime: 6e3,
                 lastTime: 1,
@@ -10158,6 +10393,44 @@
         } else if (robot.name == "Ultimate Brown Pentagon") {
             robot.effects.push({
                 name: "anti defense mig",
+                lastTime: 1,
+                lastForever: true
+            });
+        } else if (robot.name == "Teal Pentagon") {
+            robot.effects.push({
+                name: "forcefield",
+                data: {
+                    resistance: .99,
+                    min: .9,
+                    maxhealth: robot.maxhealth * 2,
+                    health: robot.maxhealth * 2
+                },
+                rechargeTime: 8e3,
+                lastTime: 1,
+                lastForever: true
+            });
+        } else if (robot.name == "Polygon") {
+            robot.effects.push({
+                name: "anti defense mig",
+                lastTime: 1,
+                lastForever: true
+            });
+            robot.effects.push({
+                name: "reflector",
+                return: 1,
+                block: .8,
+                lastForever: true,
+                lastTime: 1
+            });
+            robot.effects.push({
+                name: "forcefield",
+                data: {
+                    resistance: .8,
+                    min: .75,
+                    maxhealth: robot.health * 2,
+                    health: robot.health * 2
+                },
+                rechargeTime: 5e3,
                 lastTime: 1,
                 lastForever: true
             });
@@ -10242,22 +10515,6 @@
         setStatAdjustments(statAdjustments, robot, microchips, drone);
         setShieldsData(robot);
         adjustStats(robot, statAdjustments);
-        if (isBluebell) {
-            robot.isBluebell = true;
-            if (typeof isBluebell == "string" && typeof robot.baseDP == "number") {
-                if (player.league >= 7e3) {
-                    robot.baseDP += 200;
-                } else if (player.league >= 6e3) {
-                    robot.baseDP += 100;
-                }
-            }
-        } else if (isAlly != true) {
-            if (player.league >= 7e3) {
-                robot.baseDP += 100;
-            } else if (player.league >= 6e3) {
-                robot.baseDP += 50;
-            }
-        }
         return robot;
     }
     function doDroneDataForBots(data) {
@@ -10311,15 +10568,19 @@
         } else {
             if (player.league >= 5e3) {
                 if (player.league >= 6e3) {
-                    shape = new mothership(mothershipData.find(e => e.name == "Gray Oval"));
-
+                    let ship = mothershipData.find(e => e.name == "Gray Oval");
+                    shape = new mothership(ship);
                 } else {
-                    shape = new mothership(mothershipData.find(e => e.name == (Math.random() > .5 ? "Green Oval" : "Gray Oval")));
+                    let n = (Math.random() > .5 ? "Green Oval" : "Gray Oval");
+                    let ship = mothershipData.find(e => e.name == n);
+                    shape = new mothership(ship);
                 }
             } else if (player.league >= 4e3) {
-                shape = new mothership(mothershipData.find(e => e.name == "Green Oval"));
+                let ship = mothershipData.find(e => e.name == "Green Oval");
+                shape = new mothership(ship);
             } else if (player.league >= 3e3) {
-                shape = new mothership(mothershipData.find(e => e.name == "Black Rectangle"));
+                let ship = mothershipData.find(e => e.name == "Black Rectangle");
+                shape = new mothership(ship);
             }
         }
         return shape;
@@ -10372,7 +10633,7 @@
         }
         if (hasPlayers()) {
             let moduleIndex = Math.round((player.league / 5e3) * 100);
-            let amount = gameMode == 4 ? 9 : 11;
+            let amount = gameMode == 4 ? 9 : gameMode == 7 ? 6 : 11;
             let preselectBots = {
                 "Bluebell": 0,
                 "Redbell": 0
@@ -10383,7 +10644,7 @@
             }
             let amounnnt = 5;
             for (let i = 0; i < amount; i++) {
-                let isAlly = gameMode == 4 ? false : i < 5 ? true : false;
+                let isAlly = gameMode == 7 ? false : gameMode == 4 ? false : i < 5 ? true : false;
                 let name = generateRandomName();
                 let isBluebell = false;
                 if (onlyPreselect) {
@@ -11298,22 +11559,74 @@
             mapInfo.x = mapInfo.y = 3e3;
             enemies.push(new enemy(arena.bosses[0], true));
         } else if (gameMode == 2 || gameMode == 4 || gameMode == 7) {
-            document.getElementById("mapName").style.display = "block";
-            spawnLocations = buildMap();
-            beaconPoints = {
-                ally: 0,
-                enemy: 0
-            };
+            if (gameMode == 7) {
+                mapInfo.x = mapInfo.y = 4e3;
+                buildings.push({
+                    name: "wall rect",
+                    x: mapInfo.x / 2 - 250,
+                    y: mapInfo.y / 2 - 250,
+                    scale: 500,
+                    width: 500,
+                    height: 500
+                });
+                while (buildings.length < 4) {
+                    let x = mapInfo.x * Math.random();
+                    let y = mapInfo.y * Math.random();
+                    let scale = Math.randInt(200, 800);
+                    if (!buildings.find(e => dist(e, {x: x, y: y}) <= e.scale + scale)) {
+                        buildings.push({
+                            name: "pond",
+                            scale: Math.randInt(200, 800),
+                            x: mapInfo.x * Math.random(),
+                            y: mapInfo.y * Math.random()
+                        });
+                    }
+                }
+            } else {
+                document.getElementById("mapName").style.display = "block";
+                spawnLocations = buildMap();
+                beaconPoints = {
+                    ally: 0,
+                    enemy: 0
+                };
+            }
         } else if (gameMode == 6) {
             mapInfo.x = mapInfo.y = 1e3;
             enemies.push(new enemy({
-                health: 100e6,
-                scale: 200,
-                name: "Test Dummy",
+                health: 150e3,
+                scale: 100,
+                name: "Low Health",
+                speed: 0,
+                dummy: true,
+                x: 100,
+                y: 100
+            }));
+            enemies.push(new enemy({
+                health: 250e3,
+                scale: 100,
+                name: "Med Health",
                 speed: 0,
                 dummy: true,
                 x: 500,
                 y: 500
+            }));
+            enemies.push(new enemy({
+                health: 350e3,
+                scale: 100,
+                name: "High Health",
+                speed: 0,
+                dummy: true,
+                x: 900,
+                y: 900
+            }));
+            enemies.push(new enemy({
+                health: 1e9,
+                scale: 100,
+                name: "Test Dummy",
+                speed: 0,
+                dummy: true,
+                x: 100,
+                y: 900
             }));
         } else {
             mapInfo.x = mapInfo.y = 4e3;
@@ -11737,13 +12050,11 @@
             }
             let indexAdjust = ((shape.ability.effectIncrease / maxdmg) * maxwidth) / maxwidth;
             let indexAdjusted = (((shape.ability.effectIncrease + Shape.ability.effectIncreaseData.level[shape.level]) / maxdmg) * maxwidth) / maxwidth;
-            let addAcc = (Shape.ability.effectIncreaseData.level[shape.level] / effectThresholds[shape.ability.effectIncreaseName]) * (shape.ability.projPerShot * (shape.ability.lastingTime / shape.ability.fireRate));
-            let currentAcc = (shape.ability.effectIncrease / effectThresholds[shape.ability.effectIncreaseName]) * (shape.ability.projPerShot * (shape.ability.lastingTime / shape.ability.fireRate));
             text = `
             <div style="position: relative; width: ${maxwidth}px;">
-            Effect Accumulation: ${abbreviateNumber(shape.ability.effectIncrease)} (${currentAcc * 100}% Max Accumulation)
+            Effect Accumulation: ${Math.round(shape.ability.effectIncrease * 1e4) / 100}%
             <div style="display: ${Shape.ability.effectIncreaseData.level[shape.level] ? "block" : "none"};position: absolute; top: 0px; right: 0px; color: #00ff00;">
-            +${abbreviateNumber(Shape.ability.effectIncreaseData.level[shape.level])} (${addAcc * 100}% Max Accumulation)
+            +${Shape.ability.effectIncreaseData.level[shape.level] * 100}%
             </div>
             </div>
             <div style="position: relative; width: ${maxwidth}px; height: 3px; background-color: #fff;">
@@ -11930,7 +12241,7 @@
             if (Shape.ability.healingPercentData && shape.level < 12) {
                 let increase = Shape.ability.healingPercentData.level[shape.level];
                 shape.ability.healingPercent += increase;
-                shape.ability.healingPercent = Math.round(shape.ability.healingPercent * 1000) / 1000;
+                shape.ability.healingPercent = Math.round(shape.ability.healingPercent * 1e3) / 1e3;
             }
             if (Shape.ability.effectAccumulationData && shape.level < 12) {
                 let increase = Shape.ability.effectAccumulationData.level[shape.level];
@@ -12303,7 +12614,7 @@
         desc: "The shape has increased defense points, when it has low durability (30% or below).",
         main: "onLowDefense",
         imageSource: "./images/abilities/full_action.png",
-        onLowDefenseData: [25, 50, 75, 100]
+        onLowDefenseData: [37.5, 50, 75, 100]
     }, {
         name: "Wonderworker",
         desc: "Upon activating its ability, the shape repairs a part of its durability.",
@@ -12313,11 +12624,11 @@
         onAbilityUseFixData: [.03, .05, .08, .12]
     }, {
         name: "Tough Guy",
-        desc: "The robot has increased durability, but has decreased weapon damage output by 2.5%.",
+        desc: "The robot has increased durability, but has decreased weapon damage output by 10%.",
         main: "healthIncrease",
         imageSource: "./images/modules/armor_plating.png",
         healthIncreaseData: [.075, .1125, .15, .1875],
-        dmgIncreaseData: [-.025, -.025, -.025, -.025]
+        dmgIncreaseData: [-.1, -.1, -.1, -.1]
     }, {
         name: "Cautious Pilot",
         desc: "The robot has increased durability, but has decreased movement speed by 10%.",
@@ -13705,8 +14016,8 @@
             reload: 500,
             range: 2e3,
             damageData: {
-                base: 3e3,
-                level: [0, 375, 375, 375, 375, 375, 375, 750, 750, 750, 750, 750, 750, 1500, 1500]
+                base: 5250,
+                level: [0, 656, 656, 656, 656, 656, 656, 1313, 1313, 1313, 1313, 1313, 1313, 2625, 2625]
             },
         }, {
             name: "On Deployment: Damage",
@@ -14459,10 +14770,12 @@
             document.getElementById("goToPreCon").style.color = "#fff";
         }
     }
+    var indexToRole = ["Tank", "Assault", "Scout", "Support"];
     function customizeShape(shape) {
         let customizedShape = shape;
         document.getElementById("hangerUI").style.display = "none";
         let infoDisplayTextThing = `
+        Role: <span style="color: #fff">${indexToRole[shape.indexRole || 0]}</span><br>
         Health: ${abbreviateNumber(shape.health)}<br>
         ${shape.builtInDefensePoints ? `Defense Points: ${shape.builtInDefensePoints} (${((1 - defensePointsToResistance(shape.builtInDefensePoints)) * 100).toFixed(1)}% Resistance)<br>` : ""}
         Speed: ${(shape.speed * 1000).toFixed(2)} PX/SEC<br>
@@ -14483,7 +14796,7 @@
         ${shape.ability && shape.ability.showDuration ? `Ability Duration: ${(shape.ability.lastingTime / 1000)} sec<br>` : ""}
         ${shape.ability && shape.ability.abilityDefensePoints ? `Ability ${shape.ability.defensePointToReflector ? "Reflector Blocked" : "Defense Points"}: ${shape.ability.defensePointToReflector ? Math.round((1 - defensePointsToResistance(shape.ability.abilityDefensePoints)) * 1e3) / 10 + "%" : shape.ability.abilityDefensePoints}<br>` : ""}
         ${shape.ability && shape.ability.abilityHealthMulti ? `Ability Health Multiplier: ${(shape.ability.abilityHealthMulti * 100).toFixed(4)}%<br>` : ""}
-        ${shape.ability && shape.ability.effectIncrease ? `Effect Accumulation: ${shape.ability.effectIncrease} (${removeDecimals((shape.ability.effectIncrease / effectThresholds[shape.ability.effectIncreaseName]) * (shape.ability.projPerShot * (shape.ability.lastingTime / shape.ability.fireRate)) * 100)}% Max Acc.)<br>` : ""}
+        ${shape.ability && shape.ability.effectIncrease ? `Effect Accumulation: ${Math.round(shape.ability.effectIncrease * 1e4) / 100}%<br>` : ""}
         ${shape.ability && shape.ability.suppressionPower ? `Ability Suppression Power: ${(shape.ability.suppressionPower * 100).toFixed(0)}%<br>` : ""}
         ${shape.ability && shape.ability.healingPower ? `Ability Healing Power: ${abbreviateNumber(shape.ability.healingPower)}<br>` : ""}
         ${shape.ability && shape.ability.additionalHealth ? `Ability Additional Health: ${abbreviateNumber(shape.ability.additionalHealth)}<br>` : ""}
@@ -14925,6 +15238,7 @@
             shape = new SHAPPPPPPPPPE(shape, null, true);
         }
         let infoDisplayTextThing = `
+        Role: <span style="color: #fff">${indexToRole[shape.indexRole || 0]}</span><br>
         Health: ${abbreviateNumber(shape.health)}<br>
         ${shape.builtInDefensePoints ? `Defense Points: ${shape.builtInDefensePoints} (${((1 - defensePointsToResistance(shape.builtInDefensePoints)) * 100).toFixed(1)}% Resistance)<br>` : ""}
         Speed: ${(shape.speed * 1000).toFixed(2)} PX/SEC<br>
@@ -14943,8 +15257,9 @@
         ${shape.revive ? `Revival Amount: ${removeDecimals(shape.revive * 100)}%<br>` : ""}
         ${shape.healingAura ? `Healing Aura Power: ${abbreviateNumber(shape.healingAura)}<br>` : ""}
         ${shape.ability && shape.ability.showDuration ? `Ability Duration: ${(shape.ability.lastingTime / 1000)} sec<br>` : ""}
-        ${shape.ability && shape.ability.abilityDefensePoints ? `Ability ${shape.ability.defensePointToReflector ? "Reflector Blocked" : "Defense Points"}: ${shape.ability.defensePointToReflector ? Math.round((1 - defensePointsToResistance(shape.ability.abilityDefensePoints)) * 1e3) / 10 + "%" : shape.ability.abilityDefensePoints}<br>` : ""}        ${shape.ability && shape.ability.abilityHealthMulti ? `Ability Health Multiplier: ${(shape.ability.abilityHealthMulti * 100).toFixed(4)}%<br>` : ""}
-        ${shape.ability && shape.ability.effectIncrease ? `Effect Accumulation: ${shape.ability.effectIncrease} (${removeDecimals((shape.ability.effectIncrease / effectThresholds[shape.ability.effectIncreaseName]) * (shape.ability.projPerShot * (shape.ability.lastingTime / shape.ability.fireRate)) * 100)}% Max Acc.)<br>` : ""}
+        ${shape.ability && shape.ability.abilityDefensePoints ? `Ability ${shape.ability.defensePointToReflector ? "Reflector Blocked" : "Defense Points"}: ${shape.ability.defensePointToReflector ? Math.round((1 - defensePointsToResistance(shape.ability.abilityDefensePoints)) * 1e3) / 10 + "%" : shape.ability.abilityDefensePoints}<br>` : ""}
+        ${shape.ability && shape.ability.abilityHealthMulti ? `Ability Health Multiplier: ${(shape.ability.abilityHealthMulti * 100).toFixed(4)}%<br>` : ""}
+        ${shape.ability && shape.ability.effectIncrease ? `Effect Accumulation: ${Math.round(shape.ability.effectIncrease * 1e4) / 100}%<br>` : ""}
         ${shape.ability && shape.ability.suppressionPower ? `Ability Suppression Power: ${(shape.ability.suppressionPower * 100).toFixed(0)}%<br>` : ""}
         ${shape.ability && shape.ability.healingPower ? `Ability Healing Power: ${abbreviateNumber(shape.ability.healingPower)}<br>` : ""}
         ${shape.ability && shape.ability.additionalHealth ? `Ability Additional Health: ${abbreviateNumber(shape.ability.additionalHealth)}<br>` : ""}
@@ -16029,6 +16344,10 @@
             type: "weapon", rarity: "Legendary", name: "Pyro"
         }, {
             type: "drone", rarity: "Legendary", name: "Bulwark"
+        }, {
+            type: "weapon", rarity: "Epic", name: "Hammer"
+        }, {
+            type: "weapon", rarity: "Epic", name: "Mace"
         }],
         tokenCost: "token 2"
     }, {
@@ -16054,9 +16373,9 @@
         }, {
             type: "shape", rarity: "Rare", name: "Orange Circle",
         }, {
-            type: "shape", rarity: "Epic", name: "Ultimate Green Circle",
+            type: "shape", rarity: "Rare", name: "Ultimate Green Circle",
         }, {
-            type: "shape", rarity: "Epic", name: "Cyan Heptagon",
+            type: "shape", rarity: "Rare", name: "Cyan Heptagon",
         }, {
             type: "shape", rarity: "Common", name: "Blue Heptagon",
         }, {
@@ -16066,9 +16385,9 @@
         }, {
             type: "shape", rarity: "Epic", name: "Ultimate Teal Circle",
         }, {
-            type: "shape", rarity: "Epic", name: "Ultimate Tan Pentagon",
+            type: "shape", rarity: "Rare", name: "Ultimate Tan Pentagon",
         }, {
-            type: "shape", rarity: "Epic", name: "Pumpkin Orange Circle",
+            type: "shape", rarity: "Common", name: "Pumpkin Orange Circle",
         }, {
             type: "shape", rarity: "Common", name: "Pink Circle",
         }, {
@@ -16080,7 +16399,7 @@
         }, {
             type: "shape", rarity: "Epic", name: "Purple Heptagon",
         }, {
-            type: "shape", rarity: "Epic", name: "Blue-Outlined Tan Circle"
+            type: "shape", rarity: "Rare", name: "Blue-Outlined Tan Circle"
         }, {
             type: "shape", rarity: "Epic", name: "Magenta Hexagon"
         }, {
@@ -16090,15 +16409,19 @@
         }, {
             type: "shape", rarity: "Epic", name: "Red Octagon"
         }, {
-            type: "shape", rarity: "Epic", name: "Light Blue Triangle"
+            type: "shape", rarity: "Common", name: "Light Blue Triangle"
         }, {
-            type: "shape", rarity: "Epic", name: "Ultimate Gray Circle"
+            type: "shape", rarity: "Common", name: "Ultimate Gray Circle"
         }, {
             type: "shape", rarity: "Legendary", name: "Purple Pentagon"
         }, {
             type: "shape", rarity: "Legendary", name: "Ultimate Brown Pentagon"
         }, {
-            type: "shape", rarity: "Epic", name: "Orange Heptagon"
+            type: "shape", rarity: "Rare", name: "Orange Heptagon"
+        }, {
+            type: "shape", rarity: "Epic", name: "Teal Pentagon"
+        }, {
+            type: "shape", rarity: "Epic", name: "Blue Triangle"
         }],
         tokenCost: "token 3"
     }];
@@ -16560,14 +16883,6 @@
         let noMainElement = document.getElementById("noMain");
         let noMainText = "";
         let specialBoxes = lootboxes.filter(e => !e.name.includes("Ultimate") && !e.cost);
-        if (player.lootboxSpecialPrize == null) {
-            player.lootboxSpecialPrize = {
-                mk1: Math.randInt(12, 25),
-                mk2: Math.randInt(25, 50),
-                mk3: Math.randInt(37, 50)
-            };
-            saveGameData();
-        }
         specialBoxes.forEach((e, index) => {
             let left = window.innerWidth / 2 - 460;
             if (index == 1) {
@@ -16789,6 +17104,7 @@
         betterEquipShape(slot, oldShape, unequipedShapes);
     }
     function tierColor(obj) {
+        if (obj.tier == 10) return `rgb(${Math.randInt(0, 255)},${Math.randInt(0, 255)},${Math.randInt(0, 255)})`;
         return obj.tier == 4 ? "#fa0032" : obj.tier == 3 ? "#fcdf00" : obj.tier == 2 ? "#7702bf" : obj.tier == 1 ? "#38b0f5" : "#d3d3d3";
     }
     function updateSlots() {
@@ -17596,7 +17912,7 @@
         name: "Nuclear Attack Cannon",
         strikeDelay: 1,
         desc: "Instantly strikes the target with a powerful blast of damage and DoT. Deals increased damage to T4 (150%) and T5 (200%).",
-        dmg: 80e3,
+        dmg: 50e3,
         imageSource: "./images/weapons/decay.png",
         scale: 450,
         cost: turretsCost[4]
@@ -18767,7 +19083,7 @@
         saveValue("workshopQueue", JSON.stringify(workshopQueue));
     }
     setTimeout(() => {
-        if (getValue("hasSaved")) {
+        if (getValue("hasSaved") == 1) {
             player.shapes = [];
             player.weapons = [];
             player.modules = [];
@@ -18782,10 +19098,14 @@
             if (getValue("profile")) {
                 player.profile = JSON.parse(getValue("profile"));
             }
-            if (getValue("lootboxSpecialPrize")) {
+            if (getValue("lootboxSpecialPrize") && getValue("lootboxSpecialPrize") != "undefined") {
                 player.lootboxSpecialPrize = JSON.parse(getValue("lootboxSpecialPrize"));
             }
             let ShapeData = JSON.parse(getValue("shapes"));
+            if (ShapeData.length < 0) {
+                saveValue("hasSaved", undefined);
+                return;
+            }
             let WeaponData = JSON.parse(getValue("weapons"));
             let ModuleData = JSON.parse(getValue("modules"));
             let DronesData = JSON.parse(getValue("drones")) || [];
@@ -19235,6 +19555,19 @@
             }
         } else if (robot.name.includes("Pentagon")) {
             ctx.rotate(dir + Math.PI / 2);
+            if (robot.effects) {
+                let force = robot.effects.find(e => e.name == "forcefield");
+                if (force) {
+                    let percent = 1 - (force.data.health / force.data.maxhealth);
+                    let startColor = "#00ffff";
+                    let endColor = "#ff0000";
+                    let interpolatedColor = interpolateColor(startColor, endColor, percent);
+                    ctx.strokeStyle = interpolatedColor;
+                    ctx.lineWidth = 15;
+                    renderStar(ctx, 2.5, robot.scale + 10, robot.scale + 10);
+                    ctx.stroke();
+                }
+            }
             ctx.strokeStyle = robot.isFREEZE ? "#fff" : (robot.borderColor || "#000");
             ctx.lineWidth = robot.name == "Gray Pentagon" ? 18 : w;
             ctx.fillStyle = robot.color;
@@ -19304,6 +19637,35 @@
             ctx.stroke();
             ctx.fill();
             ctx.rotate(-(dir + Math.PI / 2));
+        } else if (robot.name == "Polygon") {
+            renderCircle(0, 0, robot.scale, ctx, false, false, "#e9e9e9", "#000");
+            if (robot.polygonTurning1 == null) robot.polygonTurning1 = 0;
+            robot.polygonTurning1 += 0.015;
+            ctx.rotate(dir + (Math.PI / 2) + robot.polygonTurning1);
+            ctx.strokeStyle = "#000";
+            ctx.lineWidth = 12;
+            ctx.fillStyle = "#ffb400";
+            renderStar(ctx, 3.5, robot.scale * .7, robot.scale * .7);
+            ctx.stroke();
+            ctx.fill();
+            ctx.rotate(-(dir + (Math.PI / 2) + robot.polygonTurning1));
+            ctx.rotate(dir + (Math.PI / 2) - robot.polygonTurning1);
+            ctx.strokeStyle = "#000";
+            ctx.lineWidth = 12;
+            ctx.fillStyle = "#ffff00";
+            renderStar(ctx, 2.5, robot.scale * .4, robot.scale * .4);
+            ctx.stroke();
+            ctx.fill();
+            if (robot.effects) {
+                let force = robot.effects.find(e => e.name == "forcefield");
+                if (force) {
+                    let percent = 1 - (force.data.health / force.data.maxhealth);
+                    let startColor = "#00ffff";
+                    let endColor = "#ff0000";
+                    let interpolatedColor = interpolateColor(startColor, endColor, percent);
+                    renderCircle(0, 0, robot.scale + 25, ctx, false, true, "#fff", interpolatedColor, 15);
+                }
+            }
         }
     }
     function doBondStuff(bond, delta, i, robot) {
@@ -19574,7 +19936,7 @@
                     range: weapon.range,
                     dir: dir + getRandomOffset(weapon.spread),
                     isAlly: isAlly,
-                    color: `./images/bullets/${(weapon.firedTime / 4e3) == 1 ? "red_bullet" : "bullet"}.png`,
+                    color: `./images/bullets/${(weapon.firedTime / 2e3) == 1 ? "red_bullet" : "bullet"}.png`,
                     avoidBuildings: shape.avoidBuildings,
                     grayDamageAmount: (weapon.firedTime / 4e3) == 1 ? .8 : undefined,
                     owner: shape,
@@ -19681,7 +20043,7 @@
                     freezeEffect: {
                         name: "freezing",
                         last: 8e3,
-                        power: 15
+                        power: .18
                     },
                     motherShipCharge: weapon.motherShipCharge,
                     changeDirSpeed: 0.025,
@@ -19884,8 +20246,8 @@
                     owner: shape,
                     freezeEffect: {
                         name: "freezing",
-                        last: weapon.name == "Glacier" ? 75e2 : 5e3,
-                        power: weapon.name == "Glacier" ? 4 : 2
+                        last: weapon.name == "Glacier" ? 7500 : 5e3,
+                        power: weapon.name == "Glacier" ? .18 : .09
                     },
                     motherShipCharge: weapon.motherShipCharge,
                     weaponOwner: {
@@ -19990,10 +20352,10 @@
                     velx: 0,
                     vely: 0,
                     scale: scale,
-                    speed: 0.4,
+                    speed: 0.35,
                     dmg: weapon.dmg,
                     range: weapon.range,
-                    dir: dir,
+                    dir: dir + getRandomOffset(weapon.spread),
                     isAlly: isAlly,
                     slowEffect: {
                         name: "slowdown",
@@ -20016,9 +20378,9 @@
                 } else if (thing == 1) {
                     multi = 1.5;
                 } else if (thing == 2) {
-                    multi = 2.5;
+                    multi = 2;
                 } else {
-                    multi = 3.5;
+                    multi = 2.5;
                 }
                 weapon.ammoFired++;
                 projectiles.push({
@@ -20115,7 +20477,7 @@
                     isAlly: isAlly,
                     dotEffect: {
                         name: "dot",
-                        last: 7e3,
+                        last: 4e3,
                         dmg: weapon.dotDamage,
                         owner: shape
                     },
@@ -20153,7 +20515,7 @@
                     }
                 });
             } else if (weapon.name == "Inferno" || weapon.name == "Pyro") {
-                for (let i = 0; i < (Math.random() > .5 ? 2 : 1); i++) projectiles.push({
+                for (let i = 0; i < 2; i++) projectiles.push({
                     projType: weapon.projType,
                     x: x,
                     y: y,
@@ -20286,7 +20648,7 @@
                     }
                 });
             } else if (weapon.name == "Devastator" || weapon.name == "Scatter") {
-                for (let i = 0; i < 7; i++) {
+                for (let i = 0; i < 10; i++) {
                     projectiles.push({
                         projType: weapon.projType,
                         x: x,
@@ -20297,7 +20659,7 @@
                         vely: 0,
                         scale: scale,
                         speed: 0.25,
-                        dmg: weapon.dmg,
+                        dmg: weapon.dmg / 10,
                         range: weapon.range,
                         dir: dir + getRandomOffset(weapon.spread),
                         isAlly: isAlly,
@@ -20305,7 +20667,8 @@
                         avoidBuildings: shape.avoidBuildings,
                         color: "./images/bullets/sonic_blast.png",
                         owner: shape,
-                        knockback: 0.046875,
+                        knockback: 0.07,
+                        grayDamageAmount: 1,
                         weaponOwner: {
                             name: weapon.name,
                             level: weapon.level
@@ -20313,7 +20676,7 @@
                     });
                 }
             } else if (weapon.name == "Thunder" || weapon.name == "Storm") {
-                for (let i = 0; i < (weapon.name == "Storm" ? 12 : 25); i++) {
+                for (let i = 0; i < 16; i++) {
                     projectiles.push({
                         projType: weapon.projType,
                         x: x,
@@ -20324,7 +20687,7 @@
                         vely: 0,
                         scale: scale,
                         speed: 0.25,
-                        dmg: weapon.dmg,
+                        dmg: weapon.dmg / 16,
                         range: weapon.range,
                         dir: dir + getRandomOffset(weapon.spread),
                         isAlly: isAlly,
@@ -20412,6 +20775,36 @@
                     isAlly: isAlly,
                     motherShipCharge: weapon.motherShipCharge,
                     color: "./images/bullets/energy_bullet.png",
+                    owner: shape,
+                    weaponOwner: {
+                        name: weapon.name,
+                        level: weapon.level
+                    }
+                });
+            } else if (weapon.name == "Mace" || weapon.name == "Hammer") {
+                for (let i = 0; i < 7; i++) projectiles.push({
+                    x: x,
+                    y: y,
+                    oldX: x,
+                    oldY: y,
+                    projType: weapon.projType,
+                    velx: 0,
+                    vely: 0,
+                    scale: scale,
+                    motherShipCharge: weapon.motherShipCharge,
+                    speed: 0.2,
+                    aoeRange: weapon.aoeRange,
+                    dmg: weapon.dmg / 7,
+                    range: weapon.range,
+                    dir: dir + getRandomOffset(weapon.spread),
+                    isAlly: isAlly,
+                    blastEffect: {
+                        name: "blast",
+                        last: 7e3,
+                        power: weapon.effectIncrease
+                    },
+                    color: `./images/bullets/red_bullet.png`,
+                    avoidBuildings: shape.avoidBuildings,
                     owner: shape,
                     weaponOwner: {
                         name: weapon.name,
@@ -20807,7 +21200,7 @@
         });
         enemies = enemies.sort((a, b) => b.honor - a.honor);
         let leagueReward = getLegauePointReward(player.league, allies.findIndex(e => e.isMe), isWin, gameMode);
-        if (gameMode == 2) {
+        if (gameMode == 2 || gameMode == 7) {
             let rewards = getRewardsForGame("pvp", allies.find(e => e.isMe), player.league);
             let width = window.innerWidth / 2 - 10 - 60;
             let width2 = window.innerWidth - 120;
@@ -20916,12 +21309,16 @@
             </span>
             </div>
             <div style="position: absolute; color: #fff; font-size: 35px; top: 0px; right: 5px;">
-            ${leagueReward}
+            ${leagueReward * (gameMode == 7 && !isWin ? -1 : 1)}
             </div>
             </div>
             `;
-            updateMoneyDisplay("league", leagueReward);
+            updateMoneyDisplay("league", leagueReward * (gameMode == 7 && !isWin ? -1 : 1));
             for (let i in rewards) {
+                if (gameMode == 7 && !isWin) {
+                    rewards[i] *= .25;
+                    rewards[i] = Math.round(rewards[i]);
+                }
                 if (i == "sliver" || i == "gold" || i == "keys") {
                     elemtn.innerHTML += `
                     <div style="position: absolute; top: ${50 * index}px; left: 0px; width: 100%;">
@@ -21328,7 +21725,7 @@
         robot.dotConverter = [];
     }
     function doPlayerMovement(robot, delta, { hasStampede, slowdownMulti, speedMulti, isAlly }) {
-        if (!robot.isFREEZE && (robot.isMe ? (keysPressed[87] || keysPressed[65] || keysPressed[83] || keysPressed[68]) : true)) {
+        if ((robot.isMe ? (keysPressed[87] || keysPressed[65] || keysPressed[83] || keysPressed[68]) : true)) {
             let moveDir = undefined;
             if (robot.isMe) {
                 let dx = (keysPressed[68]) - (keysPressed[65]);
@@ -21356,10 +21753,11 @@
             } else {
                 robot.movedir = moveDir;
             }
-            let moveSpeed = robot.speed * robot.reloadMoveMulti;
+            let moveSpeed = robot.speed * (robot.reloadMoveMulti == .5 ? 0 : 1);
             moveSpeed *= robot.abilitySpeedMulti;
             moveSpeed *= slowdownMulti;
             moveSpeed *= speedMulti;
+            moveSpeed *= (robot.isFREEZE ? .2 : 1);
             if (!robot.avoidBuildings && buildings.find(e => e.name == "pond" && dist(e, robot) <= e.tmpScale)) {
                 moveSpeed *= (1 / 3);
             }
@@ -21459,9 +21857,17 @@
             `;
         }
     }
+    var shieldPowerLevel = {
+        "normal": 0,
+        "energy": 1,
+        "yellow": 2,
+        "purple": 3,
+        "purple normal": 3
+    }
     function doShieldsStuff(robot, delta, { shieldRegenMulti, isAlly }) {
-        for (let i = 0; i < robot.shields.length; i++) {
-            let shield = robot.shields[i];
+        let shields = robot.shields.sort((a, b) => shieldPowerLevel[b.type] - shieldPowerLevel[a.type]);
+        for (let i = 0; i < shields.length; i++) {
+            let shield = shields[i];
             if (shield) {
                 if (shield.regen) {
                     if (shield.lastRegen == null) shield.lastRegen = false;
@@ -21489,6 +21895,26 @@
                 if (shield.lastTime) {
                     shield.lastTime -= delta;
                     if (shield.lastTime <= 0) {
+                        if (shield.absorption) {
+                            let health = shield.health;
+                            changeHealth(robot, {
+                                amount: health * .5
+                            }, false, robot);
+                            let asdasd = robot.shields.find(e => e.Absorption);
+                            if (asdasd) {
+                                asdasd.kill = false;
+                                asdasd.maxhealth += health;
+                                asdasd.health += health;
+                            } else {
+                                robot.shields.push({
+                                    type: "yellow",
+                                    health: health,
+                                    Absorption: true,
+                                    maxhealth: health,
+                                    regen: 0
+                                });
+                            }
+                        }
                         shield.kill = true;
                     }
                 }
@@ -21511,7 +21937,7 @@
                             }
                         }
                     } else {
-                        let touchBullets = projectiles.filter(e => !e.bypassShields && e.isAlly != isAlly && e.projType != shield.type && checkIfHit(e, robot, "shield"));
+                        let touchBullets = projectiles.filter(e => e.dmg && !e.bypassShields && e.isAlly != isAlly && e.projType != shield.type && checkIfHit(e, robot, "shield"));
                         for (let t = 0; t < touchBullets.length; t++) {
                             shieldEffects.push({
                                 location: robot,
@@ -21545,7 +21971,7 @@
     }
     function checkIfHitByProj(robot, isAlly) {
         let touchBullets = projectiles.filter(e => e.isAlly != isAlly && checkIfHit(e, robot));
-        let hasColdPulse = robot.effects.find(e => e.name == "cold pulse");
+        let hasColdPulse = robot.effects.find(e => e.name == "freeze" && e.lastTime > 0);
         for (let t = 0; t < touchBullets.length; t++) {
             let bullet = touchBullets[t];
             if (bullet.dmg > 0 && bullet.antiTier4_5) {
@@ -21606,23 +22032,38 @@
                     });
                 }
                 if (bullet.blastEffect) {
-                    for (let asdasd = 0; asdasd < bullet.blastEffect.power; asdasd++) {
+                    let e = robot.effects.find(e => e.name == bullet.blastEffect.name && e.lastTime > 0);
+                    if (!e) {
                         robot.effects.push({
                             neg: true,
                             owner: bullet.owner,
                             name: bullet.blastEffect.name,
-                            lastTime: bullet.blastEffect.last
+                            power: bullet.blastEffect.power,
+                            lastTime: bullet.blastEffect.last,
+                            increasement: true
                         });
+                    } else {
+                        e.power += bullet.blastEffect.power;
+                        e.owner = bullet.owner;
+                        if (e.lastTime < bullet.blastEffect.last) {
+                            e.lastTime = bullet.blastEffect.last;
+                        }
                     }
                 }
                 if (bullet.freezeEffect && !hasColdPulse) {
-                    for (let asdasd = 0; asdasd < bullet.freezeEffect.power; asdasd++) {
+                    let e = robot.effects.find(e => e.name == bullet.freezeEffect.name && e.lastTime > 0);
+                    if (!e) {
                         robot.effects.push({
-                            name: bullet.freezeEffect.name,
                             neg: true,
-                            owner: bullet.owner,
+                            name: bullet.freezeEffect.name,
+                            power: bullet.freezeEffect.power,
                             lastTime: bullet.freezeEffect.last
                         });
+                    } else {
+                        e.power += bullet.freezeEffect.power;
+                        if (e.lastTime < bullet.freezeEffect.last) {
+                            e.lastTime = bullet.freezeEffect.last;
+                        }
                     }
                 }
                 if (!bullet.aoeRange) {
@@ -21683,7 +22124,7 @@
         }
     }
     function hasPlayers() {
-        return player.gameMode == 2 || player.gameMode == 4;// || player.gameMode == 7;
+        return player.gameMode == 2 || player.gameMode == 4 || player.gameMode == 7;
     }
     function doDamageToPhysicalShields(shields, dmg, doer) {
         for (let i = 0; i < shields.length; i++) {
@@ -21725,10 +22166,8 @@
         let slowdownMulti = 1;
         let speedMulti = 1;
         let freezingAmount = 0;
-        let blastAmount = 0;
         let hasPhaseShift = robot.effects.find(e => e.name == "phase shift");
         let LMAODJASOUD = false;
-        let blastEffectOwner = undefined;
         let freezeEffectOwner = undefined;
         if (robot.health <= robot.maxhealth * .3) {
             if (robot.onLowDefense && !robot.effects.find(e => e.name == "defense points" && e.onLowDefense_1)) {
@@ -21802,7 +22241,7 @@
                     if (hasPhaseShift && effect.neg && effect.name != "cooldown_timer") {
                         effect.lastTime = 0;
                         continue;
-                    } else if ((effect.name == "freezing" || effect.name == "cold pulse") && hasFreezeImmune) {
+                    } else if ((effect.name == "freezing" || effect.name == "freeze") && hasFreezeImmune) {
                         effect.lastTime = 0;
                         continue;
                     } else if (effect.name == "rust" && hasRustImmune) {
@@ -21818,6 +22257,9 @@
                         effect.lastTime = 0;
                         continue;
                     } else if (effect.name == "suppression" && hasSuppressionImmune) {
+                        effect.lastTime = 0;
+                        continue;
+                    } else if ((effect.neg || effect.name == "dot" || effect.name == "rust") && robot.name == "Polygon") {
                         effect.lastTime = 0;
                         continue;
                     } else {
@@ -21864,20 +22306,8 @@
                             }
                         }
                     }
-                    if (effect.name == "cold pulse") {
-                        if (effect.dmgOverTime == null) effect.dmgOverTime = 0;
+                    if (effect.name == "freeze") {
                         robot.isFREEZE = true;
-                        effect.dmgOverTime -= delta;
-                        if (robot.effects.find(e => e.name == "phase shift")) {
-                            effect.lastTime = 0;
-                        }
-                        if (effect.dmgOverTime <= 0) {
-                            changeHealth(robot, {
-                                amount: -50,
-                                damageTypeName: "FREEZE EFFECT"
-                            }, robot.isMe, effect.owner);
-                            effect.dmgOverTime = 500;
-                        }
                     } else if (effect.name == "dot") {
                         if (effect.dmgOverTime == null) effect.dmgOverTime = 0;
                         effect.dmgOverTime -= delta;
@@ -21946,11 +22376,6 @@
                         let moveSpeed = (0.015 * (effect.POWER ? effect.POWER : 1));// * robot.reloadMoveMulti * slowdownMulti * speedMulti;
                         robot.velx += Math.cos(effect.dir) * (moveSpeed * delta);
                         robot.vely += Math.sin(effect.dir) * (moveSpeed * delta);
-                    } else if (effect.name == "freezing") {
-                        if (freezingAmount + 1 == effectThresholds.freeze) {
-                            freezeEffectOwner = effect.owner;
-                        }
-                        freezingAmount++;
                     } else if (effect.name == "stampede") {
                         if (effect.lastTime > 4e3) speedMulti += 2;
                         robot.turnDmgIntoDOT = true;
@@ -22009,11 +22434,6 @@
                         }
                     } else if (effect.name == "overload") {
                         speedMulti += 1;
-                    } else if (effect.name == "blast") {
-                        if (blastAmount + 1 == effectThresholds.blast) {
-                            blastEffectOwner = effect.owner;
-                        }
-                        blastAmount++;
                     } else if (effect.name == "Ultimate Mending") {
                         robot.builtInDefensePoints += 200;
                         speedMulti += 1.5;
@@ -22227,6 +22647,147 @@
                             robot.avoidBuildings = true;
                             robot.abilitySpeedMulti += 1.5;
                         }
+                    } else if (effect.name == "absorption") {
+                        let dir = 0;
+                        if (effect.weapon1 == null) effect.weapon1 = 0;
+                        let dmgMulti = 0;
+                        let shield = robot.shields.find(e => e.absorption);
+                        if (shield) {
+                            dmgMulti += shield.health * .025;
+                        }
+                        if (effect.weaponSlotThingyAbility == null) effect.weaponSlotThingyAbility = 0;
+                        if (effect.weapon2 == null) effect.weapon2 = 0;
+                        if (Date.now() - effect.weapon2 >= 150) {
+                            effect.weapon2 = Date.now();
+                            projectiles.push({
+                                x: robot.x,
+                                y: robot.y,
+                                oldX: robot.x,
+                                oldY: robot.y,
+                                velx: 0,
+                                vely: 0,
+                                scale: 25,
+                                speed: 0.15,
+                                projType: "rocket",
+                                dmg: (robot.ability.dmg / 2) + Math.min(dmgMulti, robot.ability.dmg * 2.5),
+                                range: 2e3,
+                                dir: robot.dir,
+                                blastEffect: {
+                                    name: "blast",
+                                    power: .25,
+                                    last: 30e3
+                                },
+                                color: "./images/bullets/red_bullet.png",
+                                isAlly: isAlly,
+                                owner: robot,
+                                weaponOwner: {
+                                    name: "Absorption WPN2",
+                                    level: robot.level
+                                }
+                            });
+                        }
+                        if (effect.weapon3 == null) effect.weapon3 = 0;
+                        if (effect.weaponSlotThingyAbility2 == null) effect.weaponSlotThingyAbility2 = 3;
+                        if (Date.now() - effect.weapon3 >= 75) {
+                            effect.weapon3 = Date.now();
+                            if (effect.weaponSlotThingyAbility2 % 4 == 0) {
+                                x = robot.x + Math.cos(robot.dir + 1.57) * (robot.scale - 7.5);
+                                y = robot.y + Math.sin(robot.dir + 1.57) * (robot.scale - 7.5);
+                            } else if (effect.weaponSlotThingyAbility2 % 4 == 1) {
+                                x = robot.x + Math.cos(robot.dir + 0.39) * (robot.scale - 7.5);
+                                y = robot.y + Math.sin(robot.dir + 0.39) * (robot.scale - 7.5);
+                            } else if (effect.weaponSlotThingyAbility2 % 4 == 2) {
+                                x = robot.x + Math.cos(robot.dir - 0.39) * (robot.scale - 7.5);
+                                y = robot.y + Math.sin(robot.dir - 0.39) * (robot.scale - 7.5);
+                            } else {
+                                x = robot.x + Math.cos(robot.dir - 1.57) * (robot.scale - 7.5);
+                                y = robot.y + Math.sin(robot.dir - 1.57) * (robot.scale - 7.5);
+                            }
+                            effect.weaponSlotThingyAbility2++;
+                            if (robot.isMe) {
+                                let offsetX = x - offset.x;
+                                let offsetY = y - offset.y;
+                                let mosX = (mouseX / window.innerWidth) * maxScreen.x;
+                                let mosY = (mouseY / window.innerHeight) * maxScreen.y;
+                                dir = Math.atan2(mosY - offsetY, mosX - offsetX);
+                            } else if (robot.target) {
+                                dir = Math.atan2(robot.target.y - y, robot.target.x - x);
+                            }
+                            projectiles.push({
+                                x: x,
+                                y: y,
+                                oldX: x,
+                                oldY: y,
+                                velx: 0,
+                                vely: 0,
+                                scale: 25,
+                                speed: 0.2,
+                                projType: "normal",
+                                dmg: (robot.ability.dmg * .25) + Math.min(dmgMulti, robot.ability.dmg * 2.5),
+                                range: 2e3,
+                                dir: dir,
+                                color: "./images/bullets/bullet.png",
+                                isAlly: isAlly,
+                                owner: robot,
+                                changeDirSpeed: 0.045,
+                                autoTargetData: {
+                                    type: "nearest",
+                                    range: robot.scale * 3,
+                                    better: true
+                                },
+                                weaponOwner: {
+                                    name: "Absorption WPN3",
+                                    level: robot.level
+                                }
+                            });
+                        }
+                        if (Date.now() - effect.weapon1 >= 50) {
+                            effect.weapon1 = Date.now();
+                            if (effect.weaponSlotThingyAbility % 4 == 0) {
+                                x = robot.x + Math.cos(robot.dir + 1.57) * (robot.scale - 7.5);
+                                y = robot.y + Math.sin(robot.dir + 1.57) * (robot.scale - 7.5);
+                            } else if (effect.weaponSlotThingyAbility % 4 == 1) {
+                                x = robot.x + Math.cos(robot.dir + 0.39) * (robot.scale - 7.5);
+                                y = robot.y + Math.sin(robot.dir + 0.39) * (robot.scale - 7.5);
+                            } else if (effect.weaponSlotThingyAbility % 4 == 2) {
+                                x = robot.x + Math.cos(robot.dir - 0.39) * (robot.scale - 7.5);
+                                y = robot.y + Math.sin(robot.dir - 0.39) * (robot.scale - 7.5);
+                            } else {
+                                x = robot.x + Math.cos(robot.dir - 1.57) * (robot.scale - 7.5);
+                                y = robot.y + Math.sin(robot.dir - 1.57) * (robot.scale - 7.5);
+                            }
+                            effect.weaponSlotThingyAbility++;
+                            if (robot.isMe) {
+                                let offsetX = x - offset.x;
+                                let offsetY = y - offset.y;
+                                let mosX = (mouseX / window.innerWidth) * maxScreen.x;
+                                let mosY = (mouseY / window.innerHeight) * maxScreen.y;
+                                dir = Math.atan2(mosY - offsetY, mosX - offsetX);
+                            } else if (robot.target) {
+                                dir = Math.atan2(robot.target.y - y, robot.target.x - x);
+                            }
+                            projectiles.push({
+                                x: x,
+                                y: y,
+                                oldX: x,
+                                oldY: y,
+                                velx: 0,
+                                vely: 0,
+                                scale: 25,
+                                speed: 0.2,
+                                projType: "energy",
+                                dmg: robot.ability.dmg + Math.min(dmgMulti, robot.ability.dmg * 2.5),
+                                range: 2e3,
+                                dir: dir,
+                                color: "./images/bullets/energy_bullet.png",
+                                isAlly: isAlly,
+                                owner: robot,
+                                weaponOwner: {
+                                    name: "Absorption WPN1",
+                                    level: robot.level
+                                }
+                            });
+                        }
                     }
                 }
                 if (effect.lastTime <= 0) {
@@ -22349,26 +22910,13 @@
                 }
             }
         }
-        if (blastAmount >= effectThresholds.blast) {
-            let amount = 0;
-            let n = effectThresholds.blast;
-            let damage = 25e3;
-            if (blastAmount / effectThresholds.blast > 1) {
-                let m = Math.floor(blastAmount / effectThresholds.blast);
-                n *= m;
-                damage *= m;
-            }
-            for (let tt = 0; tt < robot.effects.length; tt++) {
-                let effect = robot.effects[tt];
-                if (effect) {
-                    if (effect.name == "blast") {
-                        effect.lastTime = 0;
-                        amount++;
-                        if (amount >= n) {
-                            break;
-                        }
-                    }
-                }
+        let blastEffectThingy = robot.effects.find(e => e.name == "blast" && e.power >= 1 && e.lastTime > 0)
+        if (blastEffectThingy) {
+            let damage = Math.floor(blastEffectThingy.power) * 20e3;
+            let blastEffectOwner = blastEffectThingy.owner;
+            blastEffectThingy.power = blastEffectThingy.power - Math.floor(blastEffectThingy.power);
+            if (blastEffectThingy.power <= 0) {
+                blastEffectThingy.lastTime = 0;
             }
             let gameMode = player.gameMode;
             for (let t = 0; t < players.length; t++) {
@@ -22392,26 +22940,15 @@
                 maxScale: 300 + robot.scale
             });
         }
-        if (freezingAmount >= effectThresholds.freeze) {
-            let amount = 0;
+        let freezingEffect = robot.effects.find(e => e.name == "freezing" && e.power >= 1 && e.lastTime > 0);
+        if (freezingEffect) {
+            freezingEffect.power = 0;
+            freezingEffect.lastTime = 0;
             robot.effects.push({
-                name: "cold pulse",
+                name: "freeze",
                 neg: true,
-                owner: freezeEffectOwner,
-                lastTime: 1e3
+                lastTime: 5e3
             });
-            for (let tt = 0; tt < robot.effects.length; tt++) {
-                let effect = robot.effects[tt];
-                if (effect) {
-                    if (effect.name == "freezing") {
-                        effect.lastTime = 0;
-                        amount++;
-                        if (amount >= effectThresholds.freeze) {
-                            break;
-                        }
-                    }
-                }
-            }
         }
         slowdownMulti = Math.max(slowdownMulti, 0.01);
         if (!LMAODJASOUD) {
@@ -22551,6 +23088,8 @@
             return "./images/icons/reflector.png";
         } else if (index == "shield break") {
             return "./images/icons/shield_break.png";
+        } else if (index == "absorption") {
+            return "./images/abilities/absorption.png";
         } else {
             return "./images/abilities/cold_pulse.png";
         }
@@ -22640,7 +23179,7 @@
             } else if (weapon.name == "Discordia" || weapon.name == "Tumultus") {
                 thingy = (weapon.firedTime / 2e3) * 100;
             } else if (weapon.name == "Sorrow" || weapon.name == "Grief") {
-                thingy = (weapon.firedTime / 4e3) * 100;
+                thingy = (weapon.firedTime / 2e3) * 100;
             } else if (weapon.name == "Ultimate Punisher" || weapon.name == "Ultimate Destroyer") {
                 thingy = (weapon.firedTime / 2e3) * 100;
             }
@@ -22671,6 +23210,7 @@
         dmgMulti = dmgMulti || 1;
         if (weapon.weaponIsBroken) return;
         if (["Leiming", "Fengbao"].includes(weapon.name) ? false : taker.invis) return;
+        let shieldBreak = robot.effects.find(e => e.name == "shield break" && e.lastTime > 0);
         if (taker.shields) {
             for (let i = 0; i < taker.shields.length; i++) {
                 let shield = taker.shields[i];
@@ -22682,7 +23222,7 @@
                             }, false, robot);
                             return;
                         }
-                    } else {
+                    } else if (!shieldBreak) {
                         shieldEffects.push({
                             location: taker,
                             scale: taker.scale + 20,
@@ -22831,6 +23371,7 @@
         let doWeaponss = robot.weapons.sort((a, b) => a.slot - b.slot);
         let spacePressed = keysPressed[32];
         let rPressed = keysPressed[82];
+        let DateNow = Date.now();
         if (robot.isMe) updateCursorLocation(robot);
         for (let i = 0; i < doWeaponss.length; i++) {
             let weapon = doWeaponss[i];
@@ -22848,9 +23389,9 @@
                         increaseFireTime(weapon, -delta);
                     }
                 }
-                let fireRateMulti = (weapon.firedTime / 2e3 == 1 ? 0.5 : 1);
-                if (!weapon.notActive && weapon.ammo > 0 && !robot.isFREEZE && (robot.isMe ? spacePressed : robot.fireWeapon) && Date.now() - weapon.lastFire >= (weapon.fireRate * fireRateMulti)) {
-                    weapon.lastFire = Date.now();
+                let fireRateMulti = (weapon.firedTime / 2e3 == 1 ? 0.7 : 1);
+                if (!weapon.notActive && weapon.ammo > 0 && !robot.isFREEZE && (robot.isMe ? spacePressed : robot.fireWeapon) && DateNow - weapon.lastFire >= (weapon.fireRate * fireRateMulti)) {
+                    weapon.lastFire = DateNow;
                     if (weapon.name == "Cinder") {
                         if (hasPlayers()) {
                             for (let t = 0; t < players.length; t++) {
@@ -22917,9 +23458,9 @@
                 if (!weapon.notActive && !weapon.weaponIsBroken) {
                     if (weapon.name == "Atomizer" || weapon.name == "Nucleon") {
                         if ((robot.isMe ? spacePressed : robot.fireWeapon)) {
-                            increaseFireTime(weapon, delta, weapon.overheatTime, -(delta * 10));
+                            increaseFireTime(weapon, delta, weapon.overheatTime, -(delta * 2));
                         } else {
-                            increaseFireTime(weapon, -(delta * 10));
+                            increaseFireTime(weapon, -(delta * 2));
                         }
                     } else if (weapon.name == "Inferno" || weapon.name == "Pyro") {
                         if ((robot.isMe ? spacePressed : robot.fireWeapon) && !weapon.disabled) {
@@ -22940,7 +23481,7 @@
                         }
                     } else if (weapon.name == "Sorrow" || weapon.name == "Grief") {
                         if ((robot.isMe ? spacePressed : robot.fireWeapon)) {
-                            increaseFireTime(weapon, delta, 4e3);
+                            increaseFireTime(weapon, delta, 2e3);
                         } else {
                             increaseFireTime(weapon, -delta);
                         }
@@ -22959,17 +23500,17 @@
                     } else if (weapon.name == "Atomizer" || weapon.name == "Nucleon") {
                         fireRateMulti = 1 + (weapon.firedTime / 10000);
                     } else if (weapon.name == "Sorrow" || weapon.name == "Grief") {
-                        fireRateMulti = (weapon.firedTime / 4e3) == 1 ? .25 : 1;
+                        fireRateMulti = (weapon.firedTime / 2e3) == 1 ? .25 : 1;
                     } else if (weapon.name == "Ultimate Punisher" || weapon.name == "Ultimate Destroyer") {
-                        fireRateMulti = (weapon.firedTime / 2e3) == 1 ? 0 : 1;
+                        fireRateMulti = (weapon.firedTime / 2e3) == 1 ? .75 : 1;
                     }
                     if (((robot.isMe ? spacePressed : robot.fireWeapon) || weapon.continueToFire) && !robot.isFREEZE) {
                         if (typeof weapon.fireRate == "object") {
-                            if (Date.now() - weapon.lastFire >= weapon.fireRate[weapon.ammoFired % weapon.fireRate.length]) {
+                            if (DateNow - weapon.lastFire >= weapon.fireRate[weapon.ammoFired % weapon.fireRate.length]) {
                                 if (weapon.ammoFired % weapon.fireRate.length == 0) {
                                     weapon.continueToFire = true;
                                 }
-                                weapon.lastFire = Date.now();
+                                weapon.lastFire = DateNow;
                                 if (weapon.name == "Leiming" || weapon.name == "Fengbao") {
                                     doLaserStuff(robot, weapon, isAlly);
                                 } else {
@@ -22981,11 +23522,11 @@
                                 weapon.ammoFired++;
                                 weapon.ammo--;
                             }
-                        } else if (Date.now() - weapon.lastFire >= weapon.fireRate * fireRateMulti) {
+                        } else if (DateNow - weapon.lastFire >= weapon.fireRate * fireRateMulti) {
                             if (weapon.name == "Fulgur" || weapon.name == "Tonans") {
                                 weapon.continueToFire = true;
                             }
-                            weapon.lastFire = Date.now();
+                            weapon.lastFire = DateNow;
                             if (weapon.name == "Hawk" || weapon.name == "Eagle") {
                                 let nearestEnemies = [];
                                 if (hasPlayers()) {
@@ -23385,7 +23926,7 @@
                     robot.abilityLast = 1;
                 }
             }
-        } else if (robot.ability.name == "Skyward" || robot.ability.name == "Ferocity" || robot.ability.name == "Barrier Field" || robot.ability.name == "Blink Assault" || (robot.ability.name == "Clain Blink" && !robot.ability.maxcharge) || robot.ability.name == "Remote Assault" || robot.ability.name == "Cannonier" || robot.ability.name == "Long Shot" || robot.ability.name == "Support" || robot.ability.name == "Matrix" || robot.ability.name == "Reflector" || robot.ability.name == "Clear Sky" || robot.ability.name == "Reinforce Hull" || robot.ability.name == "Ultimate Mending" || robot.ability.name == "Divine Judgement" || robot.ability.name == "Grand Fortitude" || robot.ability.name == "Paladin" || robot.ability.name == "Overload" || robot.ability.name == "Stampede" || robot.ability.name == "Stealth" || robot.ability.name == "Retribution" || robot.ability.name == "Ultimate Defense" || robot.ability.name == "Self Heal" || robot.ability.name == "Dragon Flight" || robot.ability.name == "Shield Regeneration" || robot.ability.name == "Full Action") {
+        } else if (robot.ability.name == "Absorption" || robot.ability.name == "Skyward" || robot.ability.name == "Ferocity" || robot.ability.name == "Barrier Field" || robot.ability.name == "Blink Assault" || (robot.ability.name == "Clain Blink" && !robot.ability.maxcharge) || robot.ability.name == "Remote Assault" || robot.ability.name == "Cannonier" || robot.ability.name == "Long Shot" || robot.ability.name == "Support" || robot.ability.name == "Matrix" || robot.ability.name == "Reflector" || robot.ability.name == "Clear Sky" || robot.ability.name == "Reinforce Hull" || robot.ability.name == "Ultimate Mending" || robot.ability.name == "Divine Judgement" || robot.ability.name == "Grand Fortitude" || robot.ability.name == "Paladin" || robot.ability.name == "Overload" || robot.ability.name == "Stampede" || robot.ability.name == "Stealth" || robot.ability.name == "Retribution" || robot.ability.name == "Ultimate Defense" || robot.ability.name == "Self Heal" || robot.ability.name == "Dragon Flight" || robot.ability.name == "Shield Regeneration" || robot.ability.name == "Full Action") {
             if (robot.abilityReload == 0 && robot.abilityLast == 0) {
                 robot.abilityLast = robot.ability.lastingTime;
                 doWonderworkerSkill(robot);
@@ -23690,6 +24231,18 @@
                     let builtInWeapon = robot.weapons.find(e => e.name == "Skyward");
                     builtInWeapon.notActive = false;
                     builtInWeapon.ammo = builtInWeapon.maxammo;
+                } else if (robot.ability.name == "Absorption") {
+                    robot.shields.push({
+                        type: "purple",
+                        absorption: true,
+                        lastTime: robot.ability.lastingTime,
+                        health: 0
+                    });
+                    robot.effects.push({
+                        name: "absorption",
+                        abilityEffect: robot.ability.name,
+                        lastTime: robot.ability.lastingTime
+                    });
                 }
             }
         } else if (robot.ability.name == "Cold Pulse") {
@@ -23723,8 +24276,7 @@
                             amount: -robot.ability.dmg
                         }, robot.isMe, robot);
                         enemy.effects.push({
-                            name: "cold pulse",
-                            owner: robot,
+                            name: "freeze",
                             neg: true,
                             lastTime: 3e3
                         });
@@ -23859,7 +24411,7 @@
                         }
                     });
                 } else if (robot.ability.name == "Blink Support") {
-                    robot.abilityLast = 1e3;
+                    robot.abilityLast = 2e3;
                     let healthIncreased = robot.normalMaxHealth * (robot.ability.abilityHealthMulti - 1);
                     let thingy = robot.grayDamage / robot.maxhealth;
                     let thing2 = robot.health / robot.maxhealth;
@@ -24002,7 +24554,7 @@
                         isAlly: isAlly,
                         owner: robot,
                         name: "Nuclear Strike",
-                        lastingTime: 6e3
+                        lastingTime: 4e3
                     });
                 } else if (robot.ability.name == "Dismantle") {
                     domains.push({
@@ -24156,7 +24708,7 @@
             (!robot.isMe ? robot.deltaTimer -= delta : deltaTimer -= delta);
             if ((!robot.isMe ? robot.deltaTimer <= 0 : deltaTimer <= 0)) {
                 (!robot.isMe ? robot.deltaTimer = 50 : deltaTimer = 50);
-                for (let asdasd = 0; asdasd < (robot.name.includes("Ultimate") ? 4 : 2); asdasd++) projectiles.push({
+                for (let asdasd = 0; asdasd < (robot.name.includes("Ultimate") ? 3 : 2); asdasd++) projectiles.push({
                     x: robot.x,
                     y: robot.y,
                     oldX: robot.x,
@@ -24452,8 +25004,19 @@
             let player = players[i].robots[players[i].robotIndex];
             if (player && players[i].isAlly != isAlly) {
                 posT.push(player);
-                if ((robot.isBluebell ? (player.invis || robot.blind) ? (dist(player, robot) <= 200 + robot.scale + player.scale) : true : !player.invis && !robot.blind)) {
-                    possibleTargets.push(player);
+                if (robot.isBluebell) {
+                    if (player.shields.find(e => e.type == "purple") && !robot.effects.find(e => e.name == "shield break" && e.lastTime > 0)) continue;
+                    if (player.invis || robot.blind) {
+                        if (dist(player, robot) <= 200 + robot.scale + player.scale) {
+                            possibleTargets.push(player);
+                        }
+                    } else {
+                        possibleTargets.push(player);
+                    }
+                } else {
+                    if (!player.invis && !robot.blind) {
+                        possibleTargets.push(player);
+                    }
                 }
             }
         }
@@ -24506,7 +25069,7 @@
         }
         if (robot.ability) {
             let abilityName = robot.ability.name;
-            if (["Skyward", "Barrier Field", "Clain Blink", "Dismantle", "Blink Assault", "Support", "Ultimate Defense", "Matrix", "Blink Support", "Reflector", "Stampede", "Clear Sky", "Reinforce Hull", "Cold Pulse", "Divine Judgement", "Full Action", "Stealth", "Domain Expansion: Infinite Void", "Paladin", "Dragon Flight", "Phase Shift", "Ultimate Mending", "Self Heal", "Retribution"].includes(abilityName) && Date.now() - robot.damagedTime <= 50) {
+            if (["Absorption", "Skyward", "Barrier Field", "Clain Blink", "Dismantle", "Blink Assault", "Support", "Ultimate Defense", "Matrix", "Blink Support", "Reflector", "Stampede", "Clear Sky", "Reinforce Hull", "Cold Pulse", "Divine Judgement", "Full Action", "Stealth", "Domain Expansion: Infinite Void", "Paladin", "Dragon Flight", "Phase Shift", "Ultimate Mending", "Self Heal", "Retribution"].includes(abilityName) && Date.now() - robot.damagedTime <= 50) {
                 if (abilityName == "Clain Blink" && robot.movementTarget) {
                     robot.useAbility = true;
                 } else if (abilityName != "Clain Blink") {
@@ -24679,7 +25242,7 @@
                             lastTime: 7e3
                         });
                         if (robot.fixedDurabilityIncreaseWithAbility____JustToMakeSure_ == null) {
-                            robot.fixedDurabilityIncreaseWithAbility____JustToMakeSure_ = robot.maxhealth * .2;
+                            robot.fixedDurabilityIncreaseWithAbility____JustToMakeSure_ = robot.maxhealth * .07;
                         }
                         robot.normalMaxHealth += robot.fixedDurabilityIncreaseWithAbility____JustToMakeSure_;
                         robot.maxhealth += robot.fixedDurabilityIncreaseWithAbility____JustToMakeSure_;
@@ -24967,7 +25530,7 @@
                         neg: true,
                         dmg: turret.dmg / 5,
                         owner: robot,
-                        lastTime: 10e3
+                        lastTime: 5e3
                     });
                 });
                 domains.push({
@@ -25061,7 +25624,7 @@
         robot.shieldRegen = 1;
         robot.reloadMoveMulti = 1;
         robot.abilitySpeedMulti = 1;
-        robot.avoidBuildings = false;
+        robot.avoidBuildings = robot.name == "Polygon";
         if (robot.oldFOV == null) robot.oldFOV = robot.fieldOfViewMulti;
         robot.invis = false;
         robot.isFREEZE = robot.freeze ? true : false;
@@ -25881,6 +26444,7 @@
     } 
     function changeHealth(object, { amount, graydmg, noAmp, onDamageHealBack, maxhealthDamage, isDotDamage, execute, defensePointsBypass, bypassReflector, damageTypeName, motherShipCharge }, isPlayer, doer, noDefense) {
         try {
+            if (object.name == "Polygon") noDefense = false;
             amount = parseInt(removeDecimals(amount));
             if (object.killed && object.health <= 0) amount = 0;
             if (!object || (object.health <= 0 && object.type != "purple" && object.type != "purple normal")) return;
@@ -25945,6 +26509,7 @@
                 resistance *= e1;
             }
             let defense = defensePointsToResistance(resistance);
+            let orgnialdmg = 0;
             if (amount < 0) {
                 amount *= defense;
                 if (doer && doer.effects) {
@@ -25968,12 +26533,13 @@
                     amount *= deathmark;
                 }
                 if (object.isFREEZE) {
-                    amount *= 2;
+                    amount *= 1.2;
                 }
                 if (object.LASTSTANDISON || (object.effects && (object.effects.find(e => e.name == "phase shift") || object.effects.find(e => e.name == "last stand")))) {
                     amount = 0;
                     return;
                 }
+                orgnialdmg = amount;
                 if (object.effects && !noDefense && !isDotDamage) {
                     let force = object.effects.find(e => e.name == "forcefield");
                     if (force) {
@@ -26088,7 +26654,7 @@
                 amount *= milt;
             }
             if (amount < 0 && !noDefense && object.effects) {
-                let normalDmg = amount;
+                let normalDmg = orgnialdmg;
                 for (let i = 0; i < object.effects.length; i++) {
                     let effect = object.effects[i];
                     if (effect.name == "reflector") {
@@ -26350,9 +26916,9 @@
         } else if (enemy.tier == 4) {
             amount += 1.5;
         }
-        if (enemy.maxhealth >= 350e3) {
-            let mm = enemy.maxhealth - 350e3;
-            amount += Math.min(Math.floor(mm / 25e3) * .1, 5);
+        if (enemy.maxhealth >= 175e3) {
+            let mm = enemy.maxhealth - 175e3;
+            amount += Math.min(Math.floor(mm / 5e3) * .1, 2);
         }
         let dmg = bullet.dmg * amount;
         if (dmg > 0 && bullet.weaponOwner.name.includes("Divine") && enemy.effects) {
@@ -26381,8 +26947,6 @@
                 enemy.isFREEZE = enemy.freeze ? true : false;
                 enemy.freeze = false;
                 let speedMULTIIIII = 1;
-                let freezingAMount = 0;
-                let blastAmount = 0;
                 enemy.dotDamage = 0;
                 enemy.blind = false;
                 for (let tt = 0; tt < enemy.effects.length; tt++) {
@@ -26391,17 +26955,8 @@
                         if (effect.oldLastTime == null) effect.oldLastTime = effect.lastTime;
                         effect.lastTime -= delta;
                         if (effect.lastTime > 0) {
-                            if (effect.name == "cold pulse") {
-                                if (effect.dmgOverTime == null) effect.dmgOverTime = 0;
+                            if (effect.name == "freeze") {
                                 enemy.isFREEZE = true;
-                                effect.dmgOverTime -= delta;
-                                if (effect.dmgOverTime <= 0) {
-                                    changeHealth(enemy, {
-                                        amount: -50,
-                                        damageTypeName: "FREEZE EFFECT"
-                                    }, false, playerRobot);
-                                    effect.dmgOverTime = 500;
-                                }
                             } else if (effect.name == "dot") {
                                 enemy.dotDamage += (Math.floor(effect.lastTime / 1000) * effect.dmg) * (enemy.dotResistance ? enemy.dotResistance : 1);
                                 if (effect.dmgOverTime == null) effect.dmgOverTime = 0;
@@ -26415,10 +26970,6 @@
                                 }
                             } else if (effect.name == "slowdown") {
                                 speedMULTIIIII -= effect.power;
-                            } else if (effect.name == "freezing") {
-                                freezingAMount++;
-                            } else if (effect.name == "blast") {
-                                blastAmount++;
                             } else if (effect.name == "blind") {
                                 enemy.blind = true;
                             }
@@ -26428,26 +26979,12 @@
                         }
                     }
                 }
-                if (blastAmount >= effectThresholds.blast) {
-                    let amount = 0;
-                    let n = effectThresholds.blast;
-                    let damage = 25e3;
-                    if (blastAmount / effectThresholds.blast > 1) {
-                        let m = Math.floor(blastAmount / effectThresholds.blast);
-                        n *= m;
-                        damage *= m;
-                    }
-                    for (let tt = 0; tt < enemy.effects.length; tt++) {
-                        let effect = enemy.effects[tt];
-                        if (effect) {
-                            if (effect.name == "blast") {
-                                effect.lastTime = 0;
-                                amount++;
-                                if (amount >= n) {
-                                    break;
-                                }
-                            }
-                        }
+                let blastEffectThingy = enemy.effects.find(e => e.name == "blast" && e.power >= 1 && e.lastTime > 0)
+                if (blastEffectThingy) {
+                    let damage = Math.floor(blastEffectThingy.power) * 20e3;
+                    blastEffectThingy.power = blastEffectThingy.power - Math.floor(blastEffectThingy.power);
+                    if (blastEffectThingy.power <= 0) {
+                        blastEffectThingy.lastTime = 0;
                     }
                     enemies.filter(e => Math.hypot(e.y - enemy.y, e.x - enemy.x) <= 300 + enemy.scale + e.scale).forEach(item => {
                         changeHealth(item, {
@@ -26464,25 +27001,19 @@
                         maxScale: 300 + enemy.scale
                     });
                 }
-                if (freezingAMount >= effectThresholds.freeze) {
+                let freezingEffectThingy = enemy.effects.find(e => e.name == "freezing" && e.power >= 1 && e.lastTime > 0)
+                if (freezingEffectThingy) {
+                    freezingEffectThingy.lastTime = 0;
+                    freezingEffectThingy.power = 0;
                     enemy.effects.push({
-                        name: "cold pulse",
-                        owner: playerRobot,
+                        name: "freeze",
                         neg: true,
-                        lastTime: 1e3
+                        lastTime: 5e3
                     });
-                    for (let tt = 0; tt < enemy.effects.length; tt++) {
-                        let effect = enemy.effects[tt];
-                        if (effect) {
-                            if (effect.name == "freezing") {
-                                effect.lastTime = 0;
-                            }
-                        }
-                    }
                 }
                 speedMULTIIIII = Math.max(speedMULTIIIII, 0.01);
-                let moveSpeed = enemy.speed * (enemy.isFREEZE ? 0 : 1) * speedMULTIIIII;
-                if (!enemy.isFREEZE && !playerRobot.invis && !enemy.blind) {
+                let moveSpeed = enemy.speed * (enemy.isFREEZE ? .2 : 1) * speedMULTIIIII;
+                if (!playerRobot.invis && !enemy.blind) {
                     if (enemy.name == "Burner Circle") {
                         if (Math.hypot(enemy.y - playerRobot.y, enemy.x - playerRobot.x) >= enemy.range) {
                             enemy.velx += Math.cos(Math.atan2(playerRobot.y - enemy.y, playerRobot.x - enemy.x)) * (moveSpeed * delta);
@@ -26691,7 +27222,7 @@
                                     blastEffect: {
                                         name: "blast",
                                         last: 5e3,
-                                        power: 1e3
+                                        power: 10
                                     },
                                     aoeRange: 500
                                 });
@@ -26896,8 +27427,7 @@
                                 color: "white"
                             });
                             playerRobot.effects.push({
-                                name: "cold pulse",
-                                owner: enemy,
+                                name: "freeze",
                                 neg: true,
                                 lastTime: (enemy.name == "Level 8 Boss" ? 7e3 : 6e3)
                             });
@@ -26948,10 +27478,6 @@
                             });
                         }
                     }
-                }
-                if (enemy.isFREEZE) {
-                    enemy.velx = 0;
-                    enemy.vely = 0;
                 }
                 if (enemy.x + (enemy.velx * delta) >= enemy.scale && enemy.x + (enemy.velx * delta) <= mapInfo.x - enemy.scale) {
                     enemy.x += (enemy.velx * delta);
@@ -27025,13 +27551,20 @@
                             });
                         }
                         if (bullet.blastEffect) {
-                            for (let asdasd = 0; asdasd < bullet.blastEffect.power; asdasd++) {
+                            let e = enemy.effects.find(e => e.name == bullet.blastEffect.name && e.lastTime > 0);
+                            if (!e) {
                                 enemy.effects.push({
                                     neg: true,
-                                    owner: bullet.owner,
                                     name: bullet.blastEffect.name,
+                                    power: bullet.blastEffect.power,
                                     lastTime: bullet.blastEffect.last
                                 });
+                            } else {
+                                e.power += bullet.blastEffect.power;
+                                e.owner = bullet.owner;
+                                if (e.lastTime < bullet.blastEffect.last) {
+                                    e.lastTime = bullet.blastEffect.last;
+                                }
                             }
                         }
                         if (bullet.deathmarkEffect) {
@@ -27050,14 +27583,20 @@
                                 lastTime: bullet.slowEffect.last
                             });
                         }
-                        if (bullet.freezeEffect && !enemy.effects.find(e => e.name == "cold pulse")) {
-                            for (let asdasd = 0; asdasd < bullet.freezeEffect.power; asdasd++) {
+                        if (bullet.freezeEffect && !enemy.effects.find(e => e.name == "freeze" && e.lastTime > 0)) {
+                            let e = enemy.effects.find(e => e.name == bullet.freezeEffect.name && e.lastTime > 0);
+                            if (!e) {
                                 enemy.effects.push({
                                     neg: true,
-                                    owner: bullet.owner,
                                     name: bullet.freezeEffect.name,
+                                    power: bullet.freezeEffect.power,
                                     lastTime: bullet.freezeEffect.last
                                 });
+                            } else {
+                                e.power += bullet.freezeEffect.power;
+                                if (e.lastTime < bullet.freezeEffect.last) {
+                                    e.lastTime = bullet.freezeEffect.last;
+                                }
                             }
                         }
                     }
@@ -27742,6 +28281,10 @@
                     if (!robot.effects.find(e => e.name == "Ultimate Reflecting Dash")) {
                         robot.x += (tmpInt * Math.cos(angle));
                         robot.y += (tmpInt * Math.sin(angle));
+                        if (ROBOT.name == "Polygon") {
+                            robot.velx *= 10.5;
+                            robot.vely *= 10.5;
+                        }
                     }
                     if (!ROBOT.effects.find(e => e.name == "Ultimate Reflecting Dash")) {
                         ROBOT.x -= (tmpInt * Math.cos(angle));
@@ -28035,7 +28578,7 @@
                             },
                             blastEffect: {
                                 name: "blast",
-                                power: 25,
+                                power: .15,
                                 last: 10e3
                             },
                             owner: obj.owner,
@@ -28384,7 +28927,7 @@
                                 name: "dot",
                                 neg: true,
                                 owner: domain.owner,
-                                dmg: domain.owner.ability.dmg / 8,
+                                dmg: domain.owner.ability.dmg / 16,
                                 lastTime: 16e3
                             });
                         }
