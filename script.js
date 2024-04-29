@@ -11023,11 +11023,11 @@
                 type: "Heavy",
                 projType: "energy",
                 desc: "",
-                dmg: robot.ability.dmg,
+                dmg: robot.abilities[0].dmg,
                 imageSource: "./images/weapons/flux.png",
                 fireRate: 100,
                 ammo: 101,
-                reload: robot.ability.reload,
+                reload: robot.abilities[0].reload,
                 range: 2e3,
                 cost: { sliver: 1e300, gold: 1e300 }
             });
@@ -16325,9 +16325,10 @@
             <div style="margin-top: 5px;">
             <strong style="color: #fff;">Industry: ${shape.industryName || shape.name.split(" ")[shape.name.split(" ").length - 1]}</strong><br><br>
             ${returnStyledName(shape, shape.desc)}<br><br>
-            ${shape.ability ? `
-            Ability:<br>
-            ${shape.ability.desc}<br><br>
+            ${shape.abilities.length ? `
+            Abilities:<br>
+            ${shape.abilities[0]?.desc || ""}<br><br>
+            ${shape.abilities[1] ? (shape.abilities[1].desc + "<br><br>") : ""}
             ` : ``}
             Shape Stats:<br>
             ${infoDisplayTextThing}
@@ -22873,7 +22874,7 @@
                     }
                 }
                 if ((shield.health <= 0 && shield.type != "purple" && shield.type != "purple normal" && !shield.regen) || shield.kill) {
-                    if (!shield.droneShield && (shield.health <= 0 && shield.type != "purple" && shield.type != "purple normal" && !shield.regen) && shield.type == "yellow" && robot.ability && robot.ability.name == "Paladin") {
+                    if (!shield.droneShield && (shield.health <= 0 && shield.type != "purple" && shield.type != "purple normal" && !shield.regen) && shield.type == "yellow" && robot.abilities.length && robot.abilities[0].name == "Paladin") {
                         doPaldinStuff(robot, isAlly);
                     } else if (shield.grayOvalShield) {
                         if (shield.health > 0) {
@@ -23061,14 +23062,14 @@
                 let player = players[t].robots[players[t].robotIndex];
                 if (player && (ha ? players[t].isAlly == isAlly : players[t].isAlly != isAlly)) {
                     if (Math.hypot(player.y - robot.y, player.x - robot.x) <= abilityRange + player.scale) {
-                        if (robot == player && robot.ability && robot.ability.name == "Active Support") {
+                        if (robot == player && robot.abilities.length && robot.abilities[0].name == "Active Support") {
                             continue;
                         }
                         near.push(player);
                     }
                 }
             }
-        } else if (robot.ability && robot.ability.name == "Active Support") {
+        } else if (robot.abilities.length && robot.abilities[0].name == "Active Support") {
             return [];
         } else {
             if ((robot.name == "Remote Repair" || robot.name == "healfield") && dist(robot.owner, robot) <= abilityRange + robot.owner.scale) {
@@ -23550,7 +23551,7 @@
                             }
                             near.forEach(e => {
                                 changeHealth(e, {
-                                    amount: robot.ability.healingPower
+                                    amount: robot.abilities[0].healingPower
                                 }, false, robot);
                             });
                         }
@@ -24546,7 +24547,7 @@
                 }
             }
         }
-        if (robot.name == "Dark Brown Pentagon" && !robot.effects.find(e => e.abilityEffect == robot.ability.name)) {
+        if (robot.name == "Dark Brown Pentagon" && !robot.effects.find(e => e.abilityEffect == robot.abilities[0].name)) {
             if (robot.remoteAssaultLast == null) robot.remoteAssaultLast = 0;
             if (Date.now() - robot.remoteAssaultLast >= 150) {
                 robot.remoteAssaultLast = Date.now();
@@ -24561,14 +24562,14 @@
                     scale: 20,
                     speed: 0.15,
                     aoeRange: 120,
-                    dmg: robot.ability.dmg,
+                    dmg: robot.abilities[0].dmg,
                     range: 2300,
                     dir: robot.dir,
                     isAlly: isAlly,
                     color: "./images/bullets/rocket.png",
                     owner: robot,
                     weaponOwner: {
-                        name: robot.ability.name,
+                        name: robot.abilities[0].name,
                         level: robot.level
                     }
                 });
