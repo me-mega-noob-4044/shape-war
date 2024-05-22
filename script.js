@@ -378,6 +378,15 @@
             `)}
         `)}
     `);
+    updateLogger.newLog("V59 UPDATE NOTES (May 21, 2024)", `
+        ${updateLogger.marginBlock(10, `
+            ${updateLogger.lineBlock(["New Titan: Luchador", "New Shape: Light Gray Heptagon", "New Weapons: Athos and Aramis", "New Titan Weapons: Igniter and Discharger", "Balance Changes / Other Improvements"])}
+            ${updateLogger.title("h2", `CHANGES`)}
+            ${updateLogger.marginBlock(10, `
+                ${updateLogger.lineBlock(["Reaper Mothership Charge: -50%", "Last Stand: Invincibility -> 9000 Defense Points", "Blue Triangle: Healing Power: 15 -> 10%", "Kestrel: Deathmark Affector: 25 -> 15%", "White Octagon: Skyward Damage: -40%", "All 'Anti-Tier' Shapes will do more increased damage to titans as well."])}
+            `)}
+        `)}
+    `);
     var mainDisplayText = updateLogger.grabHTML();
     document.getElementById("sideDisplay").innerHTML = "";
     function getValue(id) {
@@ -405,6 +414,7 @@
         workshopPoints: 0,
         league: 0,
         league2: 0,
+        exterminationIndx: 0,
         lootboxSpecialPrize: {
             mk1: Math.randInt(12, 25),
             mk2: Math.randInt(25, 50),
@@ -456,7 +466,7 @@
         weapons: [0, 3375e3, 16875e3, 3375e4, 675e5, 135e6, 27e6, 405e6, 405e6, 50625e4, 6075e5, 84375e4]
     }];
     sliverUpgradesByTier[10] = {
-        shapes: [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+        shapes: [0, 250e6, 500e6, 1e9, 10e9, 50e9, 50e9, 100e9, 250e9, 500e9, 1e10, 5e10]
     };
     var unlockedAtTier = [1, 6, 13, 21, 30];
     var shapeSids = 0;
@@ -480,7 +490,7 @@
             this.revive = data.revive;
             this.vely = 0;
             this.baseDP = 0;
-            this.titan = data.titan;
+            this.titan = data.titan || false;
             this.activeModuleIndex = data.activeModuleIndex || 0;
             this.costParts = data.costParts;
             this.grayDamage = 0;
@@ -597,6 +607,11 @@
                         }
                         ability.charges = data.charges;
                         ability.maxcharge = data.charges;
+                    } else if (data.name == "Frog Splash" || data.name == "Comet Splash") {
+                        ability.lastingTime = data.lastingTime;
+                        ability.dmg = data.damageData ? data.damageData.base : data.dmg;
+                        ability.charges = data.charges;
+                        ability.maxcharge = data.charges;
                     } else if (data.name == "Cannonier") {
                         ability.lastingTime = data.lastingTime;
                         ability.additionalHealth = data.additionalHealthData ? data.additionalHealthData.base : data.additionalHealth;
@@ -618,7 +633,7 @@
                             ability.abilityDefensePoints = data.abilityDefensePoints;
                         }
                         ability.dmg = data.damageData ? data.damageData.base : data.dmg;
-                    } else if (data.name == "Ultimate Reflecting Dash") {
+                    } else if (data.name == "Ultimate Reflecting Dash" || data.name == "Ultimate Reflector") {
                         ability.lastingTime = data.lastingTime;
                         if (data.abilityDefensePointsData) {
                             ability.abilityDefensePoints = data.abilityDefensePointsData.base;
@@ -1606,7 +1621,7 @@
         },
         shieldData: {
             type: "normal",
-            base: 450e3,
+            base: 450e3*1e7,
             amountOfShields: 5,
             level: [0, 10e3, 20e3, 30e3, 30e3, 40e3, 40e3, 40e3, 50e3, 50e3, 60e3, 80e3],
             regen: 0
@@ -1837,7 +1852,7 @@
             name: "Divine Judgement",
             desc: `
             <span style="font-width: bolder; color: #fff;">Divine Judgement</span>
-            The shape slows down, activates a defense system, and a built-in weapon. The damage of its built-in weapon is enchance by the enemy's shape information.<br><br>
+            The shape slows down, activates a defense system, and a built-in weapon. The damage of its built-in weapon is enchance by the enemy's shape information (deals +150% more damage to titans).<br><br>
             Duration: 5 seconds<br>
             Damage Reduction: 9000 Defense Points (99% resistance)<br>
             Speed Decrease: 80%<br>
@@ -3080,7 +3095,7 @@
         abilities: [{
             name: "Skyward",
             desc: `
-            <strong style="color: #fff">Skyward</strong> The shape takes flight and activites its built-in weapon. The weapon fires in a arc, the target closest to the cursor takes 100% of the damage while the rest only take half. It does 250% damage to T5 and bypasses reflector effects.<br><br>
+            <strong style="color: #fff">Skyward</strong> The shape takes flight and activites its built-in weapon. The weapon fires in a arc, the target closest to the cursor takes 100% of the damage while the rest only take half. It does 250% damage to T5 and bypasses reflector effects and does a even more damage to Titans (50%).<br><br>
             <strong style="color: #fff">Forcefield</strong> Another type of defense which reduces damage taken. It cannot be mitigated by defense mitigation effect weapon but may be reduced. Forcefield is based on durability but not considered as a shield.<br><br>
             Damage Reduction: 90% (MAX) to 50% (MIN)<br>
             Durability: 100% of Max Health<br>
@@ -3091,8 +3106,8 @@
             Cooldown: 12 seconds
             `,
             damageData: {
-                base: 510,
-                level: [0, 127, 127, 213, 213, 213, 297, 297, 467, 467, 637, 850]
+                base: 156,
+                level: [0, 76, 76, 127, 127, 127, 178, 178, 280, 280, 382, 510]
             },
             iconSource: "./images/abilities/shapeshift.png",
             lastingTime: 8e3,
@@ -3134,7 +3149,7 @@
             `,
             iconSource: "./images/abilities/self_heal.png",
             healingPercentData: {
-                base: 0.09,
+                base: 0.045,
                 level: [0, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005]
             },
             abilityDefensePointsData: {
@@ -3241,24 +3256,30 @@
         dontShow: true,
         tier: 10,
         name: "Polygon",
-        speed: 0.005,
-        speedLevel: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        scale: 95,
+        speed: 0.002,
+        speedLevel: [0, 0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0005],
+        scale: 85,
         fieldOfViewMulti: 1.8,
-        desc: ``,
-        dotResistance: .1,
+        desc: `
+        Polygon has every shape's abilities, taking all the good and leaving out the bad. It adapts to any situation, offering flexibility and strength. With Polygon, every action is at its best, making sure you succeed in any challenge.<br><br>
+        This shape increases all mothership charge by 25%.
+        `,
+        dotResistance: .5,
         revive: 1,
+        indexRole: 4,
         builtInDefensePoints: 400,
+        healingMulti: 2,
+        hullIntegrity: .75,
         healthData: {
-            base: 100e3,
-            level: [0, 15e3, 15e3, 15e3, 15e3, 15e3, 15e3, 15e3, 15e3, 15e3, 15e3, 15e3],
+            base: 200e3,
+            level: [0, 30e3, 30e3, 30e3, 30e3, 30e3, 30e3, 30e3, 30e3, 30e3, 30e3, 30e3],
         },
         hardpoints: {
-            light: 3,
-            heavy: 3
+            light: 2,
+            heavy: 2
         },
         color: "#008080",
-        moduleHardpoints: 8,
+        moduleHardpoints: 4,
         cost: {
             sliver: Infinity,
             gold: Infinity,
@@ -3472,7 +3493,7 @@
         }, {
             name: "Mute Blast",
             desc: `
-            <span style="font-width: bolder; color: #fff;">Blast Wave</span> The shape sends a battle ship strike that emits mute and emp effects.<br><br>
+            <span style="font-width: bolder; color: #fff;">Mute Blast</span> The shape sends a battle ship strike that emits mute and emp effects.<br><br>
             Effect Duration: depends on shape level<br>
             Time before strike: 1 seconds<br>
             Effect Radius: 300 PX<br>
@@ -3485,13 +3506,6 @@
             },
             reload: 18e3
         }],
-        shieldData: {
-            type: "normal",
-            base: 1120800,
-            amountOfShields: 2,
-            level: [0, 10e3, 10e3, 10e3, 10e3, 20e3, 20e3, 20e3, 20e3, 20e3, 20e3, 20e3, 30e3, 30e3, 30e3, 30e3, 40e3, 40e3, 40e3, 40e3, 40e3, 40e3, 40e3, 50e3, 50e3],
-            regen: 0
-        },
         hardpoints: {
             light: 2,
             heavy: 1
@@ -3504,6 +3518,130 @@
             gold: 0,
             workshopPoints: 175e3
         }
+    }, {
+        dontSell: true,
+        tier: 4,
+        name: "Luchador",
+        industryName: "Circle",
+        indexRole: 0,
+        speed: 0.0006,
+        speedLevel: [0, 0, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0, 0.0001, 0.0001, 0, 0, 0.0001, 0, 0, 0.0001, 0.0001, 0.0001],
+        scale: 120,
+        fieldOfViewMulti: 3.2,
+        desc: `A super tank titan that uses reflectors for defense. Jump tech and suppression tech allows this shape to travel long distances and weaken enemy weapon damage output. This titan also takes less gray "unrepairable" damage.`,
+        healingMultiData: {
+            base: 1,
+            level: [0, .02, .02, .02, .02, .02, .02, .02, .02, .02, .02, .02, .02, .02, .02, .02, .02, .02, .02, .02, .02, .02, .02, .02, .04]
+        },
+        builtInDefensePointsData: {
+            base: 25,
+            level: [0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 10, 10, 10, 10, 10]
+        },
+        healthData: {
+            base: 480e3,
+            level: [0, 11e3, 11e3, 11e3, 11e3, 11e3, 11e3, 11e3, 11e3, 11e3, 11e3, 11e3, 11e3, 11e3, 11e3, 11e3, 11e3, 11e3, 11e3, 11e3, 11e3, 11e3, 11e3, 11e3, 11e3]
+        },
+        hullIntegrity: .35,
+        abilities: [{
+            name: "Ultimate Reflector",
+            desc: `
+            <span style="font-width: bolder; color: #fff;">Ultimate Reflector</span> The shape digs to the ground and activates a powerful reflector, after the reflector ends the shape repairs some of its durability.<br><br>
+            Duration: 8 seconds<br>
+            Repairable Durability: 25,000/SEC<br>
+            Reflector Blocked: depends on shape level<br>
+            Reflector Returned: 25%<br>
+            Cooldown (per charge): 15 seconds
+            `,
+            iconSource: "./images/icons/reflector.png",
+            lastingTime: 8e3,
+            defensePointToReflector: true,
+            abilityDefensePointsData: {
+                base: 12.5,
+                level: [0, 12.5, 0, 12.5, 12.5, 12.5, 12.5, 12.5, 12.5, 12.5, 12.5, 12.5, 12.5, 12.5, 12.5, 12.5, 12.5, 25, 25, 25, 25, 25, 25, 25, 25]
+            },
+            reload: 15e3
+        }, {
+            name: "Frog Splash",
+            desc: `
+            <span style="font-width: bolder; color: #fff;">Frog Splash</span> The shape leaps into the air and activates a reflector.<br><br>
+            Charges: 3<br>
+            Repair Power: 10%<br>
+            Gray Damage Repair: 15%<br>
+            Effect Radius: 400PX<br>
+            Duration: 1 seconds<br>
+            Reflector Blocked: 40%<br>
+            Reflector Returned: 10%<br>
+            Suppression Power: 40%<br>
+            Cooldown (per charge): 18 seconds
+            `,
+            damageData: {
+                base: 8e3,
+                level: [0, 750, 750, 750, 750, 850, 950, 950, 950, 1050, 1050, 1050, 1050, 1050, 1350, 1350, 1350, 1350, 1450, 1450, 1550, 1650, 1750, 1750, 1750]
+            },
+            iconSource: "./images/icons/reflector.png",
+            charges: 2,
+            lastingTime: 1e3,
+            reload: 18e3
+        }],
+        hardpoints: {
+            light: 2,
+            heavy: 1
+        },
+        color: "#fff",
+        titan: true,
+        moduleHardpoints: 4,
+        cost: {
+            sliver: 0,
+            gold: 0,
+            workshopPoints: 305e3
+        }
+    }, {
+        dontSell: true,
+        tier: 4,
+        name: "Light Gray Heptagon",
+        speed: 0.0012,
+        indexRole: 0,
+        speedLevel: [0, 0.00005, 0.00005, 0.00005, 0.00005, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001],
+        scale: 85,
+        fieldOfViewMulti: 1.5,
+        desc: `no description lol<br>too lazy`,
+        builtInDefensePoints: 50,
+        hullIntegrity: .25,
+        healthData: {
+            base: 125e3,
+            level: [0, 15e3, 15e3, 15e3, 15e3, 15e3, 15e3, 15e3, 15e3, 15e3, 15e3, 15e3],
+        },
+        healingMulti: 1.25,
+        abilities: [{
+            name: "Comet Splash",
+            desc: `
+            <span style="font-width: bolder; color: #fff;">Comet Splash</span> The shape leaps up high in the air and activates a powerful reflector. After the shape goes to the ground or it smashes to the ground, it activates a laser that repairs health when dealing damage.<br><br>
+            Reflector Blocked: 70%<br>
+            Reflector Returned: 20%<br>
+            Built-In Weapon Duration: 5 seconds<br>
+            Built-In Weapon Range: 600 PX<br>
+            Built-In Weapon Damage Heal-Back: 60%<br>
+            AoE Blast Radius: 600PX<br>
+            Dashing Duration: 3 seconds<br>
+            Duration of entire ability: 8 seconds<br>
+            Cooldown (per charge): 18 seconds
+            `,
+            iconSource: "./images/icons/reflector.png",
+            damageData: {
+                base: 15e3,
+                level: [0, 1e3, 1e3, 1e3, 1e3, 1e3, 2e3, 2e3, 2e3, 2e3, 3e3, 4e3]
+            },
+            charges: 2,
+            lastingTime: 8e3,
+            reload: 18e3
+        }],
+        hardpoints: {
+            light: 2,
+            heavy: 1
+        },
+        color: "#bababa",
+        moduleHardpoints: 4,
+        costParts: true
     }];//15000,55000,105000,175000,305000
     function defensePointsToResistance(defense) {
         return (100) / (100 + defense);
@@ -3550,7 +3688,7 @@
                     regen: data.shieldData.regen
                 }
             }
-            this.titan = data.titan;
+            this.titan = data.titan || false;
             this.effectIncrease = data.effectIncreaseData ? data.effectIncreaseData.base : data.effectIncrease;
             this.effectIncreaseName = data.effectIncreaseData ? data.effectIncreaseData.effect : data.effectIncreaseName;
             this.sellPrice = 0;
@@ -4234,10 +4372,10 @@
         because it bypass the defense systems.
         `,
         damageData: {
-            base: 2348,
-            level: [0, 228, 228, 228, 228, 286, 286, 286, 382, 382, 382, 382],
+            base: 2300,
+            level: [0, 200, 200, 200, 200, 290, 290, 290, 380, 380, 380, 380],
         },
-        motherShipCharge: 0.0047,
+        motherShipCharge: 0.00235,
         imageSource: "./images/weapons/reaper.png",
         fireRate: 200,
         ammo: 6,
@@ -4258,7 +4396,7 @@
         desc: `
         The Flux is a formidable multi-barreled machine gun with an astonishingly high rate of fire.
         What sets this weapon apart is its unique damage amplification,
-        which is intricately tied to the maximum health and tier of the targets it strikes.
+        which is intricately tied to the maximum health and tier of the targets it strikes (deals +150% more to titans).
         `,
         damageData: {
             base: 99,
@@ -4553,7 +4691,7 @@
         damageData: {
             base: 502,
             level: [0, 20, 20, 20, 30, 30, 30, 30, 40, 40, 40, 40],
-        },
+        },//healBackOnDamage
         healBackOnDamageData: {
             base: .095,
             level: [0, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005, 0.015, 0.025, 0.025],
@@ -5023,7 +5161,7 @@
         projType: "energy",
         desc: `
         Next generation of laser weapons, Fulgur is a light laser weapon that deals quick bursts of damage.
-        It is ideal weapon to use aganist T5 shapes since it deals extra 225% more damage.
+        It is ideal weapon to use aganist T5 shapes since it deals extra 225% more damage (+150% more to titans).
         `,
         damageData: {
             base: 796,
@@ -5048,7 +5186,7 @@
         projType: "energy",
         desc: `
         Next generation of laser weapons, Tonans is a heavy laser weapon that deals quick bursts of damage.
-        It is ideal weapon to use aganist T5 shapes since it deals extra 225% more damage.
+        It is ideal weapon to use aganist T5 shapes since it deals extra 225% more damage (+150% more to titans).
         `,
         damageData: {
             base: 1194,
@@ -5550,7 +5688,7 @@
         type: "Light",
         projType: "normal",
         titan: true,
-        desc: ``,
+        desc: `A light titan machinegun that fires many projectiles in short bursts.`,
         damageData: {
             base: 655,
             level: [0, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 30, 30, 30, 30, 30, 30, 40, 40, 40, 40, 40]
@@ -5575,7 +5713,7 @@
         type: "Heavy",
         projType: "normal",
         titan: true,
-        desc: ``,
+        desc: `A heavy titan machinegun that fires many projectiles in short bursts.`,
         damageData: {
             base: 983,
             level: [0, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 40, 40, 40, 40, 40, 45, 45, 45, 45, 45, 45, 60, 60]
@@ -5598,7 +5736,7 @@
         name: "Rupture",
         type: "Light",
         projType: "rocket",
-        desc: ``,
+        desc: `A light titan rocket weapon that fires many rockets quickly.`,
         damageData: {
             base: 1500,
             level: [0, 50, 50, 50, 75, 75, 75, 75, 75, 150, 150, 150, 150, 200, 200, 200, 200, 200, 200, 200, 200, 250, 250, 250, 350]
@@ -5625,7 +5763,7 @@
         name: "Orkan",
         type: "Heavy",
         projType: "rocket",
-        desc: ``,
+        desc: `A heavy titan rocket weapon that fires many rockets quickly.`,
         damageData: {
             base: 2250,
             level: [0, 75, 75, 75, 113, 113, 113, 113, 113, 225, 225, 225, 225, 300, 300, 300, 300, 300, 300, 300, 300, 375, 375, 375, 525]
@@ -5708,6 +5846,112 @@
             gold: 0,
             workshopPoints: 105e3
         }
+    }, {
+        dontSell: true,
+        tier: 4,
+        industryName: "Pentagon",
+        name: "Discharger",
+        spread: 3,
+        type: "Heavy",
+        projType: "energy",
+        desc: `A heavy titan flamethrower that could fire unlimited ammo. After firing for a extended period of time, the weapon is forced to cooldown for safety purposes.`,
+        damageData: {
+            base: 1275,
+            level: [0, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50]
+        },
+        titan: true,
+        shotsPerFire: 2,
+        overheatTime: 10e3,
+        motherShipCharge: 0.00035,
+        defenseBypassData: { ...defensePointsByPassTo100 },
+        imageSource: "./images/weapons/inferno.png",
+        fireRate: 20,
+        ammo: 1e300,
+        reload: 0,
+        range: 1e3,
+        cost: {
+            sliver: 0,
+            gold: 0,
+            workshopPoints: 205e3
+        }
+    }, {
+        dontSell: true,
+        tier: 4,
+        industryName: "Pentagon",
+        name: "Igniter",
+        spread: 3,
+        type: "Light",
+        projType: "energy",
+        desc: `A light titan flamethrower that could fire unlimited ammo. After firing for a extended period of time, the weapon is forced to cooldown for safety purposes.`,
+        damageData: {
+            base: 850,
+            level: [0, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33]
+        },
+        titan: true,
+        shotsPerFire: 2,
+        overheatTime: 10e3,
+        motherShipCharge: 0.00035,
+        defenseBypassData: { ...defensePointsByPassTo75 },
+        imageSource: "./images/weapons/pyro.png",
+        fireRate: 20,
+        ammo: 1e300,
+        reload: 0,
+        range: 1e3,
+        cost: {
+            sliver: 0,
+            gold: 0,
+            workshopPoints: 205e3
+        }
+    }, {
+        dontSell: true,
+        tier: 4,
+        industryName: "Heptagon",
+        name: "Athos",
+        type: "Light",
+        desc: `Light laser weapon that fires on single targets. It has a life-steal effect that makes it so that 30% of the damage done on enemies is repaired.`,
+        damageData: {
+            base: 941,
+            level: [0, 38, 38, 38, 57, 57, 57, 57, 75, 75, 75, 75],
+        },
+        healBackOnDamage: .3,
+        motherShipCharge: 0.001,
+        imageSource: "./images/weapons/athos.png",
+        continuousReload: true,
+        fireRate: 75,
+        ammo: 120,
+        ammoEachReloadTick: 20,
+        reload: 3e3,
+        range: 800,
+        cost: {
+            sliver: 15e9,
+            gold: 150e3,
+            workshopPoints: 50e3
+        }
+    }, {
+        dontSell: true,
+        tier: 4,
+        industryName: "Heptagon",
+        name: "Aramis",
+        type: "Heavy",
+        desc: `Heavy laser weapon that fires on single targets. It has a life-steal effect that makes it so that 60% of the damage done on enemies is repaired.`,
+        damageData: {
+            base: 1412,
+            level: [0, 57, 57, 57, 86, 86, 86, 86, 113, 113, 113, 113],
+        },
+        healBackOnDamage: .6,
+        motherShipCharge: 0.001,
+        imageSource: "./images/weapons/aramis.png",
+        continuousReload: true,
+        fireRate: 75,
+        ammo: 120,
+        ammoEachReloadTick: 20,
+        reload: 3e3,
+        range: 800,
+        cost: {
+            sliver: 15e9,
+            gold: 150e3,
+            workshopPoints: 50e3
+        }
     }];
     //5000,25000,75000,105000,205000
     class module {
@@ -5719,10 +5963,14 @@
             this.tier = data.tier;
             this.imageSource = data.imageSource;
             this.level = 1;
-            this.titan = data.titan;
+            this.titan = data.titan || false;
             this.healthIncrease = data.healthIncrease;
             if (data.healthIncreaseData) {
                 this.healthIncrease = data.healthIncreaseData.base;
+            }
+            this.grayDamageFixRepair = data.grayDamageFixRepair;
+            if (data.grayDamageFixRepairData) {
+                this.grayDamageFixRepair = data.grayDamageFixRepairData.base;
             }
             this.selfFixRepair = data.selfFixRepair;
             if (data.selfFixRepairData) {
@@ -5774,6 +6022,7 @@
             }
         }
     }
+    const MovementDeltaTime = 1e3 / 60;
     var moduleData = [{
         tier: 0,
         name: "Armor Plating",
@@ -5872,9 +6121,8 @@
         tier: 3,
         name: "Last Stand",
         desc: `
-        Once the shape enters low durability, it stops the shape from taking damage for X seconds.
-        Only can be used once.
-        More modules you put, the quicker you would get the immunity.
+        One the shape enters low durability, it gains a huge amount of defense points for X seconds.
+        This module only can be used once per battle. The more modules to equip, the quicker you'll gain the defense points.
         `,
         immunePercentData: {
             base: 0.05,
@@ -6150,7 +6398,7 @@
             level: [0, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005, 0.005]
         },
         antiControlData: {
-            base: .25,
+            base: .5,
             level: [0, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.02]
         },
         imageSource: "./images/modules/anticontrol.png",
@@ -6160,7 +6408,48 @@
             gold: 0,
             workshopPoints: 15e3
         }
-    }];//2500, 7000, 15000, 35000
+    }, {
+        tier: 4,
+        name: "Titan Repair Amplifier",
+        desc: ``,
+        durabilityLostAmpData: {
+            base: 0.09,
+            level: [0, 0, 0, 0, 0, -.01, 0, 0, 0, 0, 0, 0, 0, -.01, 0, 0, 0, 0, 0, 0, 0, 0, -.01, 0, 0]
+        },
+        grayDamageFixRepairData: {
+            base: 12500,
+            level: [0, 1250, 1250, 1250, 1250, 1250, 1250, 1250, 1250, 1250, 2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500]
+        },
+        selfFixRepairData: {
+            base: 25e3,
+            level: [0, 2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500, 5e3, 5e3, 5e3, 5e3, 5e3, 5e3, 5e3, 5e3, 5e3, 5e3, 5e3, 5e3, 5e3, 5e3, 5e3]
+        },
+        titan: true,
+        imageSource: "./images/modules/repair_amplifier.png",
+        cost: {
+            sliver: 0,
+            gold: 0,
+            workshopPoints: 95e3
+        }
+    }];//2500, 7000, 15000, 35000, 95e3
+    for (let i = 0; i < shapeData.length; i++) {
+        let data = shapeData[i];
+        if (data && !data.titan) {
+            data.titan = false;
+        }
+    }
+    for (let i = 0; i < moduleData.length; i++) {
+        let data = moduleData[i];
+        if (data && !data.titan) {
+            data.titan = false;
+        }
+    }
+    for (let i = 0; i < weaponData.length; i++) {
+        let data = weaponData[i];
+        if (data && !data.titan) {
+            data.titan = false;
+        }
+    }
     function makeNewSpecialEdition(name, {
         health,
         builtInDefensePoints,
@@ -7639,6 +7928,7 @@
             workshopPoints: 0,
             league: 0,
             league2: 0,
+            exterminationIndx: 0,
             tokens: {
                 mk1: 0,
                 mk2: 0,
@@ -9263,6 +9553,27 @@
             </div>
             </div>
             `;
+        } else if (type == "grayDamageFixRepairData" && Module.grayDamageFixRepairData) {
+            let maxdmg = Module.grayDamageFixRepairData.base;
+            for (let i = 0; i < Module.grayDamageFixRepairData.level.length; i++) {
+                maxdmg += Module.grayDamageFixRepairData.level[i];
+            }
+            let indexAdjust = ((module.grayDamageFixRepair / maxdmg) * maxwidth) / maxwidth;
+            let indexAdjusted = (((module.grayDamageFixRepair + Module.grayDamageFixRepairData.level[module.level]) / maxdmg) * maxwidth) / maxwidth;
+            text = `
+            <div style="position: relative; width: ${maxwidth}px;">
+            Gray Damage Repair: ${abbreviateNumber(module.grayDamageFixRepair)}
+            <div style="display: ${Module.grayDamageFixRepairData.level[module.level] ? "block" : "none"};position: absolute; top: 0px; right: 0px; color: #00ff00;">
+            +${abbreviateNumber(Module.grayDamageFixRepairData.level[module.level])}
+            </div>
+            </div>
+            <div style="position: relative; width: ${maxwidth}px; height: 3px; background-color: #fff;">
+            <div style="position: absolute; top: 0px; left: 0px; height: 3px; width: ${indexAdjusted * 100}%; background-color: #02de02;">
+            </div>
+            <div style="position: absolute; top: 0px; left: 0px; height: 3px; width: ${indexAdjust * 100}%; background-color: #00fcec;">
+            </div>
+            </div>
+            `;
         }
         return text;
     }
@@ -9304,6 +9615,7 @@
         ${weapon.dmgIncrease ? "Damage Increase: " + removeDecimals(weapon.dmgIncrease * 100) + "%<br>" : ""}
         ${weapon.healthIncrease ? "Durability Increase: " + removeDecimals(weapon.healthIncrease * 1000) / 10 + "%<br>" : ""}
         ${weapon.selfFixRepair ? "Repair Power: " + abbreviateNumber(weapon.selfFixRepair) + "/SEC<br>" : ""}
+        ${weapon.grayDamageFixRepair ? `Gray Damage Repair: ${abbreviateNumber(weapon.grayDamageFixRepair)}<br>` : ""}
         ${weapon.immunePercent ? "Immunity Threshold: " + (weapon.immunePercent * 100) + "%<br>" : ""}
         ${weapon.lastingTime ? "Effect Duration: " + (weapon.lastingTime / 1000) + " sec<br>" : ""}
         ${weapon.shieldHealth ? "Shield Durability Increase: " + removeDecimals(weapon.shieldHealth * 100) + "%<br>" : ""}
@@ -9395,6 +9707,7 @@
             <div style="position: absolute; left: 300px; top: 65px;">
             ${enterBarForModule("healthIncrease", weapon)}
             ${enterBarForModule("selfFixRepair", weapon)}
+            ${enterBarForModule("grayDamageFixRepairData", weapon)}
             ${enterBarForModule("dmgIncrease", weapon)}
             ${enterBarForModule("immunity", weapon)}
             ${enterBarForModule("lastingTime", weapon)}
@@ -9547,6 +9860,10 @@
             let healthIncrease = Module.selfFixRepairData.level[module.level];
             module.selfFixRepair += healthIncrease;
         }
+        if (Module.grayDamageFixRepairData) {
+            let healthIncrease = Module.grayDamageFixRepairData.level[module.level];
+            module.grayDamageFixRepair += healthIncrease;
+        }
         if (Module.nuclearAmpData) {
             let healthIncrease = Module.nuclearAmpData.level[module.level];
             module.nuclearAmp += healthIncrease;
@@ -9584,6 +9901,7 @@
         if (Module.durabilityLostAmpData) {
             let healthIncrease = Module.durabilityLostAmpData.level[module.level];
             module.durabilityLostAmp += healthIncrease;
+            module.durabilityLostAmp = Math.round(module.durabilityLostAmp * 1e3) / 1e3;
         }
         if (Module.increasedDefensePointsData) {
             let healthIncrease = Module.increasedDefensePointsData.level[module.level];
@@ -9619,7 +9937,6 @@
             for (let i = 0; i < f.length; i++) {
                 let item = f[i];
                 if ((item.owner == shape.sid && item.slot == slot) || item.isSold) {
-                    //console.log(item);
                     continue;
                 }
                 if (filteredWeapons.find(e => e.name == item.name && e.level == item.level)) {
@@ -10084,6 +10401,7 @@
             document.getElementById("chooseSlot").style.bottom = "-200px";
             document.getElementById("shields").innerHTML = "";
             document.getElementById("abilityCharges").innerHTML = "";
+            document.getElementById("abilityCharges2").innerHTML = "";
             document.getElementById("useActiveModule").style.display = "none";
             document.getElementById("useAbility").style.display = "none";
             document.getElementById("useAbility2").style.display = "none";
@@ -10149,6 +10467,16 @@
             "Mechanic"
         ],
         "activeModuleIndex": 3
+    }, {
+        "name": "Luchador",
+        "weapons": {
+            "heavy": "Discharger",
+            "light": "Igniter"
+        },
+        "modules": [
+            "Grand Balance Reactor","Grand Balance Reactor",
+            "Titan Anti Control","Titan Repair Amplifier", "Titan Repair Amplifier"
+        ]
     }, {
         "name": "Blue-Outlined Tan Circle",
         "weapons": {
@@ -10661,24 +10989,30 @@
             newModule.level = modules[t].level;
             robot.modules.push(newModule);
         }
-        let repairAmps = robot.modules.filter(e => e.name == "Repair Amplifier");
+        let repairAmps = robot.modules.filter(e => e.name == "Repair Amplifier" || e.name == "Titan Repair Amplifier");
         if (repairAmps.length) {
             robot.repairAmp = {
                 require: 1e300,
                 requirePercent: 1,
                 defensePoints: 0,
-                amount: 0
+                amount: 0,
+                titan: false,
+                graydmg: 0,
+                normal: 0
             };
             for (let i = 0; i < repairAmps.length; i++) {
                 if (robot.repairAmp.requirePercent >= repairAmps[i].durabilityLostAmp) {
                     robot.repairAmp.requirePercent = repairAmps[i].durabilityLostAmp;
                     robot.repairAmp.require = robot.maxhealth * repairAmps[i].durabilityLostAmp;
                 }
+                robot.repairAmp.titan = repairAmps[i].titan;
+                robot.repairAmp.normal += repairAmps[i].selfFixRepair;
+                robot.repairAmp.graydmg += repairAmps[i].grayDamageFixRepair;
                 robot.repairAmp.defensePoints += repairAmps[i].increasedDefensePoints;
                 robot.repairAmp.amount++;
             }
         }
-        let antiControl = robot.modules.filter(e => e.name == "Anti Control").sort((a, b) => b.antiControl - a.antiControl)[0];
+        let antiControl = robot.modules.filter(e => e.name == "Anti Control" || e.name == "Titan Anti Control").sort((a, b) => b.antiControl - a.antiControl)[0];
         if (antiControl) {
             robot.negEffectReduction = 1 - antiControl.antiControl;
         }
@@ -10796,6 +11130,9 @@
         }
         if (skill.getAbilityBackAtHalfHealth) {
             robot.canGetAbilityBackAtHalfHealth = true;
+        }
+        if (skill.cometSplashV2) {
+            robot.cometSplashV2 = true;
         }
         if (skill.abilityDefenseIncrease) {
             for (let i = 0; i < robot.abilities.length; i++) {
@@ -10982,7 +11319,7 @@
                 name: "forcefield",
                 data: {
                     resistance: .8,
-                    min: .75,
+                    min: .667,
                     maxhealth: robot.health * 2,
                     health: robot.health * 2
                 },
@@ -11033,6 +11370,29 @@
             });
             newWeapon.level = robot.level;
             newWeapon.slot = 2;
+            newWeapon.unbreakable = true;
+            newWeapon.notActive = true;
+            robot.weapons.push(newWeapon);
+        } else if (robot.name == "Light Gray Heptagon") {
+            let newWeapon = new weapon({
+                tier: 4,
+                industryName: "Heptagon",
+                name: "Comet Laser",
+                type: "Heavy",
+                projType: "energy",
+                desc: "",
+                continuousReload: true,
+                dmg: robot.abilities[0].dmg / 5,
+                healBackOnDamage: .6,
+                imageSource: "./images/weapons/aramis.png",
+                fireRate: 125,
+                ammo: 1e300,
+                reload: 1,
+                range: 600,
+                cost: { sliver: 1e300, gold: 1e300 }
+            });
+            newWeapon.level = robot.level;
+            newWeapon.slot = 3;
             newWeapon.unbreakable = true;
             newWeapon.notActive = true;
             robot.weapons.push(newWeapon);
@@ -11113,14 +11473,26 @@
     function makeMothershipData(name) {
         let shape = undefined;
         if (name.includes("bell") && !name.includes("Red")) {
-            shape = new mothership(mothershipData.find(e => e.name == "Purple Rectangle"));
-            for (let i = 0; i < shape.maxlevel - 1; i++) {
-                upgradeMothership(shape);
+            if (name == "Bluebell" || Math.random() > .5) {
+                shape = new mothership(mothershipData.find(e => e.name == "Black Oval"));
+                for (let i = 0; i < shape.maxlevel - 1; i++) {
+                    upgradeMothership(shape);
+                }
+                shape.turrets.push({ ...turretsData.find(e => e.name == "Nuclear Attack Cannon") });
+                shape.turrets.push({ ...turretsData.find(e => e.name == "Life Saver") });
+                shape.turrets.push({ ...turretsData.find(e => e.name == "Anti-Jamming Support") });
+                shape.turrets.push({ ...turretsData.find(e => e.name == "Durability Extender") });
+                shape.turrets.push({ ...turretsData.find(e => e.name == "Durability Extender") });
+            } else {
+                shape = new mothership(mothershipData.find(e => e.name == "Purple Rectangle"));
+                for (let i = 0; i < shape.maxlevel - 1; i++) {
+                    upgradeMothership(shape);
+                }
+                shape.turrets.push({ ...turretsData.find(e => e.name == "Nuclear Attack Cannon") });
+                shape.turrets.push({ ...turretsData.find(e => e.name == "Nuclear Attack Cannon") });
+                shape.turrets.push({ ...turretsData.find(e => e.name == "Durability Extender") });
+                shape.turrets.push({ ...turretsData.find(e => e.name == "Durability Extender") });
             }
-            shape.turrets.push({ ...turretsData.find(e => e.name == "Nuclear Attack Cannon") });
-            shape.turrets.push({ ...turretsData.find(e => e.name == "Nuclear Attack Cannon") });
-            shape.turrets.push({ ...turretsData.find(e => e.name == "Durability Extender") });
-            shape.turrets.push({ ...turretsData.find(e => e.name == "Durability Extender") });
         } else if (name.includes("Redbell")) {
             shape = new mothership(mothershipData.find(e => e.name == "Gray Oval"));
             for (let i = 0; i < shape.maxlevel - 1; i++) {
@@ -11199,7 +11571,6 @@
                     Pilot.skills.push(newSkill);
                 }
             }
-            console.log(Pilot);
             return Pilot;
         }
     }
@@ -11308,6 +11679,7 @@
                         let data = players[tt + 1].name.includes("Redbell") ? redBell[i] : blueBell[i];
                         let ShapeData = shapeData.find(e => e.name == data.name);
                         let orginalRobot = new shape(ShapeData, null, true);
+                        level = (orginalRobot.titan ? 24 : level);
                         for (let i = 0; i < level; i++) {
                             upgradeShape(orginalRobot, true);
                         }
@@ -11382,8 +11754,8 @@
                         }
                         let weapons = [];
                         let possibleWeapons = weaponData.filter(e => e.tier == weapont);
-                        let allHeavy = possibleWeapons.filter(e => e.type == "Heavy");
-                        let allLight = possibleWeapons.filter(e => e.type == "Light");
+                        let allHeavy = possibleWeapons.filter(e => e.type == "Heavy" && !e.titan);
+                        let allLight = possibleWeapons.filter(e => e.type == "Light" && !e.titan);
                         if (orginalRobot.hardpoints.heavy) {
                             let possibleWeapon = allHeavy[Math.floor(Math.random() * allHeavy.length)];
                             let tmpWeapon = new weapon(possibleWeapon);
@@ -12117,10 +12489,97 @@
                 width: 200,
                 height: 1400
             });
+        } else if (mapID == 4) {
+            buildings.push({
+                name: "hill",
+                x: mapInfo.x / 2,
+                y: mapInfo.y / 2,
+                scale: 1000
+            });
+            if (!noBeacons.includes(player.gameMode)) {
+                buildings.push({
+                    name: "beacon",
+                    antiAvoid: true,
+                    x: 2250,
+                    y: 2250
+                });
+                buildings.push({
+                    name: "beacon",
+                    antiAvoid: true,
+                    x: mapInfo.x - 2250,
+                    y: 2250
+                });
+                buildings.push({
+                    name: "beacon",
+                    antiAvoid: true,
+                    x: mapInfo.x / 2,
+                    y: mapInfo.y / 2
+                });
+                buildings.push({
+                    name: "beacon",
+                    antiAvoid: true,
+                    x: 2250,
+                    y: mapInfo.y - 2250
+                });
+                buildings.push({
+                    name: "beacon",
+                    antiAvoid: true,
+                    x: mapInfo.x - 2250,
+                    y: mapInfo.y - 2250
+                });
+            }
+            buildings.push({
+                name: "pond",
+                x: mapInfo.x / 2,
+                y: mapInfo.y / 2,
+                scale: 1500
+            });
+            buildings.push({
+                name: "water",
+                x: 0,
+                y: mapInfo.y / 2 - 500,
+                width: mapInfo.x,
+                height: 1e3
+            });
+            buildings.push({
+                name: "water",
+                x: mapInfo.y / 2 - 500,
+                y: 0,
+                width: 1e3,
+                height: mapInfo.y
+            });
+            buildings.push({
+                name: "wall rect",
+                x: 3e3 - 150,
+                y: 6750,
+                width: 300,
+                height: 2e3
+            });
+            buildings.push({
+                name: "wall rect",
+                x: 6725,
+                y: 6800,
+                width: 2e3,
+                height: 300
+            });
+            buildings.push({
+                name: "wall rect",
+                x: 6800,
+                y: 1250,
+                width: 300,
+                height: 2e3
+            });
+            buildings.push({
+                name: "wall rect",
+                x: 1250,
+                y: 3000,
+                width: 2e3,
+                height: 300
+            });
         }
         setUpCollisionBlocks();
     }
-    var mapInfoData = [{
+    var mapInfoData = [/*{
         id: 0,
         name: "Space Shuttle",
         x: 12500,
@@ -12140,6 +12599,11 @@
         name: "Training Grounds",
         x: 10e3,
         y: 7e3
+    },*/ {
+        id: 4,
+        name: "Lost Forest",
+        x: 10e3,
+        y: 10e3
     }];
     function buildMap() {
         let map = mapInfoData[Math.floor(Math.random() * mapInfoData.length)];
@@ -12159,13 +12623,23 @@
                 y: mapInfo.y / 2
             }]
         } else {
-            spawnLocations = [{
-                x: mapInfo.x / 2,
-                y: 1e3
-            }, {
-                x: mapInfo.x / 2,
-                y: mapInfo.y - 1e3
-            }];
+            if (map.id == 4) {
+                spawnLocations = [{
+                    x: 500,
+                    y: 500
+                }, {
+                    x: mapInfo.x - 500,
+                    y: mapInfo.y - 500
+                }];
+            } else {
+                spawnLocations = [{
+                    x: mapInfo.x / 2,
+                    y: 1e3
+                }, {
+                    x: mapInfo.x / 2,
+                    y: mapInfo.y - 1e3
+                }];
+            }
         }
         return [spawnLocations, spawnid];
     }
@@ -13379,9 +13853,23 @@
             main: "abilityDefenseIncrease",
             onlyFor: "Brown Pentagon",
             imageSource: "./images/modules/heavy_armor_plating.png",
-            desc: "Brown Pentagon gains extra defense points during ability and gains 25% more shield durability.",
+            desc: "Brown Pentagon gains extra defense points during ability and gains 575% more shield durability.",
             abilityDefenseIncrease: 50,
-            extraShieldHealth: .25
+            extraShieldHealth: 5.75
+        }
+    }, {
+        tier: 3,
+        name: "Raptor",
+        industryName: "Heptagon",
+        story: [],
+        legendarySkill: {
+            name: "EMP Blast",
+            main: "cometSplashV2",
+            onlyFor: "Light Gray Heptagon",
+            imageSource: "./images/icons/emp.png",
+            desc: "Light Gray Heptagon gains increased durability and its AoE Effect applies 3 seconds of EMP.",
+            cometSplashV2: 1,
+            healthIncrease: .15
         }
     }];
     class skill {
@@ -14528,6 +15016,8 @@
                         obj.dmg = obj.name == "On Module Use: Block" ? 50 : 1;
                     } else if (obj.name == "Additional Damage Depending DoT") {
                         obj.dmgDependingDoT = _.dmgDependingDoT;
+                    } else if (obj.name == "On Deployment: Protect Hull") {
+                        obj.hullIntegrity = _.hullIntegrity;
                     }
                     this.abilities.push(obj);
                 }
@@ -14893,8 +15383,8 @@
                 level: [0, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100]
             },
             deathmarkData: {
-                base: .05,
-                level: [0, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.02, 0.02, 0.02, 0.02, 0.03]
+                base: .01,
+                level: [0, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01]
             }
         }, {
             name: "On Deployment: Damage",
@@ -15015,6 +15505,58 @@
             main: "dmgIncrease",
             dmgIncrease: .05
         }]
+    }, {
+        dontSell: true,
+        tier: 4,
+        industryName: "Heptagon",
+        name: "Hawkeye",
+        desc: "",
+        visualData: {
+            scale: 35,
+            color: "#ababab",
+            name: "Heptagon"
+        },
+        abilities: [{
+            weapon: true,
+            name: "Imitating Comet Laser",
+            desc: "",
+            icon: "./images/weapons/athos.png",
+            main: "dmg",
+            reload: 200,
+            range: 800,
+            damageData: {
+                base: 2e3,
+                level: [0, 250, 250, 250, 250, 350, 350, 350, 550, 550, 550, 550, 750, 750, 1e3]
+            }
+        }, {
+            name: "On Deployment: Durability",
+            desc: "Increases the shape's max durability by X%.",
+            unlockAtLevel: 4,
+            icon: "./images/modules/armor_plating.png",
+            main: "healthIncrease",
+            healthIncrease: .03
+        }, {
+            name: "On Reflector: Shield Break",
+            desc: "Once the shape has reflector, the shape gains a 15 second shield break.",
+            unlockAtLevel: 9,
+            icon: "./images/icons/shield_break.png",
+            main: "dmg",
+            dmg: 1
+        }, {
+            name: "On Deployment: Durability",
+            desc: "Increases the shape's max durability by X%.",
+            unlockAtLevel: 12,
+            icon: "./images/modules/armor_plating.png",
+            main: "healthIncrease",
+            healthIncrease: .04
+        }, {
+            name: "On Deployment: Protect Hull",
+            desc: "The shape gains minor protection from gray damage from all sources.",
+            unlockAtLevel: 15,
+            icon: "./images/modules/damage_controller.png",
+            main: "hullIntegrity",
+            hullIntegrity: .35
+        }]
     }];
     checkIfDev();
     updateWorkshopDataStuff();
@@ -15061,7 +15603,7 @@
     function getStylesForBarD(value, name, name2) {
         if (name == "On Mild Damage: Fix" || name == "On High Damage: Fix" || name == "On Block: Fix") {
             return abbreviateNumber(value);
-        } else if (name == "On Block: Damage" || name == "On Kill: Fix" || name == "Additional Damage Depending DoT" || name == "On Deployment: Durability" || name == "On Deployment: Damage" || name == "On Kill: Damage") {
+        } else if (name == "On Deployment: Protect Hull" || name == "On Block: Damage" || name == "On Kill: Fix" || name == "Additional Damage Depending DoT" || name == "On Deployment: Durability" || name == "On Deployment: Damage" || name == "On Kill: Damage") {
             return (value * 100).toFixed(1) + "%";
         } else if (name.includes("On High Damage: [") || name.includes("On Low Durability: [") || name.includes("On Mild Damage: [")) {
             return abbreviateNumber(value);
@@ -15069,8 +15611,10 @@
             return (value / 1000) + " seconds";
         } else if (name == "On Threshold: Fix%" || name2 == "Deathmark Power" || name == "On Kill: Speed") {
             return (value * 100).toFixed(1) + "%";
-        } else if (name == "Imitating Frag Shotgun" || name == "Deathmark Affector") {
+        } else if (name == "Imitating Comet Laser" || name == "Imitating Frag Shotgun" || name == "Deathmark Affector") {
             return abbreviateNumber(value);
+        } else if (name == "On Reflector: Shield Break") {
+            return 1;
         } else {
             return value;
         }
@@ -15629,7 +16173,7 @@
             document.getElementById("goToPreCon").style.color = "#fff";
         }
     }
-    var indexToRole = ["Tank", "Assault", "Scout", "Support"];
+    var indexToRole = ["Tank", "Assault", "Scout", "Support", "All"];
     function shapeAbilitiesDisplay(shape) {
         let text = "";
         for (let i = 0; i < shape.abilities.length; i++) {
@@ -15877,8 +16421,9 @@
             `;
         }
         for (let i = 0; i < 8; i++) {
-            let shape = equippedSlots[i];
+            let shape = equippedSlots.find(e => e.slot == i);
             if (shape) {
+                if (!document.getElementById(`slotElement${shape.slot}`)) continue;
                 if (shape.specialOf) {
                     document.getElementById(`slotElement${shape.slot}`).style.backgroundSize = `50px 50px`;
                     document.getElementById(`slotElement${shape.slot}`).style.backgroundImage = `url('${shape.specialOf}')`;
@@ -16148,7 +16693,7 @@
     const SHAPPPPPPPPPE = shape;
     function drawShapeEquip(shapes, currentIndex, oldShape, slot, HA, inInventory) {
         let shape = shapes[currentIndex];
-        if (!shape.isItem) {
+        if (shape && !shape.isItem) {
             shape = new SHAPPPPPPPPPE(shape, null, true);
         }
         let infoDisplayTextThing = `
@@ -17287,6 +17832,16 @@
             type: "weapon", rarity: "Legendary", name: "Havoc"
         }, {
             type: "module", rarity: "Epic", name: "Grand Balance Reactor"
+        }, {
+            type: "weapon", rarity: "Legendary", name: "Igniter"
+        }, {
+            type: "weapon", rarity: "Legendary", name: "Discharger"
+        }, {
+            type: "weapon", rarity: "Legendary", name: "Athos"
+        },  {
+            type: "weapon", rarity: "Legendary", name: "Aramis"
+        }, {
+            type: "drone", rarity: "Epic", name: "Hawkeye"
         }],
         tokenCost: "token 2"
     }, {
@@ -17363,6 +17918,10 @@
             type: "shape", rarity: "Epic", name: "Blue Triangle"
         }, {
             type: "shape", rarity: "Legendary", name: "Indra"
+        }, {
+            type: "shape", rarity: "Legendary", name: "Light Gray Heptagon"
+        }, {
+            type: "shape", rarity: "Mythic", name: "Luchador"
         }],
         tokenCost: "token 3"
     }];
@@ -20254,12 +20813,14 @@
                 y: players[0].robots[players[0].robotIndex].y
             };
         }
-        let map = mapInfoData[player.mapID];
+        let map = mapInfoData.find(e => e.id == player.mapID);
         if (map) {
             if (map.name == "Space Shuttle") {
                 ctx.fillStyle = "#909090";
             } else if (map.name == "Rome" || map.name == "Training Grounds") {
                 ctx.fillStyle = "#0f0";
+            } else if (map.name == "Lost Forest") {
+                ctx.fillStyle = "#2e8b57";
             } else {
                 ctx.fillStyle = "#000";
             }
@@ -20286,12 +20847,17 @@
         }
         ctx.stroke();
         if (map) {
-            if (map.id != 1) {
+            if (map.name == "Lost Forest") {
                 ctx.fillStyle = "#000";
+                ctx.globalAlpha = 0.36;
             } else {
-                ctx.fillStyle = "#fff";
+                if (map.id != 1) {
+                    ctx.fillStyle = "#000";
+                } else {
+                    ctx.fillStyle = "#fff";
+                }
+                ctx.globalAlpha = 1;
             }
-            ctx.globalAlpha = 1;
         } else {
             ctx.fillStyle = "#000";
             ctx.globalAlpha = 0.18;
@@ -20345,8 +20911,8 @@
         }
     }
     function renderDrone(ctx, parent, drone, delta) {
-        ctx.save();
         if (drone) {
+            ctx.save();
             if (drone.visualData.dir == null) drone.visualData.dir = 0;
             let r = (parent.scale + drone.visualData.scale + 40);
             let addon = (delta * .75) / r;
@@ -20374,13 +20940,15 @@
                 x: Math.cos(drone.visualData.dir) * r,
                 y: Math.sin(drone.visualData.dir) * r
             };
+            drone.visualData.addOnCoord = tmp;
             ctx.translate(tmp.x, tmp.y);
             if (drone.visualData.dir2 != null && drone.visualData.dir2 != undefined) {
                 ctx.rotate(drone.visualData.dir2);
+                ctx.rotate(-drone.visualData.dir2);
             }
             renderShapeBody(ctx, drone.visualData, 6);
+            ctx.restore();
         }
-        ctx.restore();
     }
     function interpolateColor(startColor, endColor, percent) {
         let startRGB = hexToRgb(startColor);
@@ -20406,13 +20974,13 @@
         if (robot.effects && robot.effects.find(e => e.name == "reflector") && settingToggles.renderReflector) {
             ctx.rotate(asd);
             ctx.strokeStyle = "#fff";
-            ctx.lineWidth = 12;
-            renderStar(ctx, 5, robot.scale + 10, robot.scale + 10);
+            ctx.lineWidth = 16;
+            renderStar(ctx, 5, robot.scale + 15, robot.scale + 15);
             ctx.stroke();
             ctx.rotate(asd);
             ctx.strokeStyle = "#00f";
-            ctx.lineWidth = 12;
-            renderStar(ctx, 4, robot.scale + 5, robot.scale + 5);
+            ctx.lineWidth = 16;
+            renderStar(ctx, 4, robot.scale + 10, robot.scale + 10);
             ctx.stroke();
             ctx.rotate(-asd * 2);
         }
@@ -20580,11 +21148,9 @@
                 let amount = bond.target.maxhealth * .1;
                 changeHealth(bond.target, {
                     amount: -amount,
-                    defensePointsBypass: 0,
-                    bypassReflector: true,
                     damageTypeName: "Lasso",
                     graydmg: 0
-                }, false, robot);
+                }, false, robot, true);
                 let healing = amount * 2;
                 robot.grayDamage = Math.max(0, robot.grayDamage - (healing * .2));
                 changeHealth(robot, {
@@ -20666,7 +21232,9 @@
                 } else {
                     renderShapeBody(ctx, robot);
                 }
-                if (settingToggles.renderDrone_player) renderDrone(ctx, robot, robot.drone, delta);
+                if (settingToggles.renderDrone_player) {
+                    renderDrone(ctx, robot, robot.drone, delta);
+                }
                 if (robot.bonds) {
                     if (!robot.invis) ctx.globalAlpha = 1;
                     for (let i = 0; i < robot.bonds.length; i++) {
@@ -20691,6 +21259,24 @@
                 }
                 drawCanvasHealthBars(robot, "me", ctx);
                 ctx.restore();
+                if (settingToggles.renderDrone_player) {
+                    let drone = robot.drone;
+                    if (drone && drone.abilities.find(e => e.name == "Imitating Comet Laser")) {
+                        let weapon = drone.abilities.find(e => e.name == "Imitating Comet Laser");
+                        if (weapon.droneIsFiring) {
+                            let color1 = "rgb(255, 165, 0)";
+                            let tmp = drone.visualData.addOnCoord;
+                            ctx.save();
+                            ctx.lineWidth = 16;
+                            ctx.strokeStyle = color1;
+                            ctx.beginPath();
+                            ctx.moveTo((robot.x + tmp.x) - offset.x, (robot.y + tmp.y) - offset.y);
+                            ctx.lineTo(weapon.target.x - offset.x, weapon.target.y - offset.y);
+                            ctx.stroke();
+                            ctx.restore();
+                        }
+                    }
+                }
             }
         }
     }
@@ -20714,7 +21300,7 @@
                 scale = 25;
             } else if (weapon.name == "Maha Vajra" || weapon.name == "Vajra") {
                 scale = 35;
-            } else if (weapon.name == "Inferno" || weapon.name == "Pyro") {
+            } else if (weapon.name == "Igniter" || weapon.name == "Discharger" || weapon.name == "Inferno" || weapon.name == "Pyro") {
                 scale = 25;
             }
             let hScale = scale / 2;
@@ -21423,7 +22009,7 @@
                         level: weapon.level
                     }
                 });
-            } else if (weapon.name == "Inferno" || weapon.name == "Pyro") {
+            } else if (weapon.name == "Inferno" || weapon.name == "Pyro" || weapon.name == "Igniter" || weapon.name == "Discharger") {
                 for (let i = 0; i < 2; i++) projectiles.push({
                     projType: weapon.projType,
                     x: x,
@@ -21432,16 +22018,22 @@
                     oldY: y,
                     velx: 0,
                     vely: 0,
-                    scale: scale,
+                    scale: weapon.name == "Igniter" || weapon.name == "Discharger" ? 20 : scale,
                     avoidBuildings: shape.avoidBuildings,
-                    speed: 0.1,
+                    speed: weapon.name == "Igniter" || weapon.name == "Discharger" ? 0.125 : 0.1,
                     dmg: weapon.dmg,
                     range: weapon.range,
-                    aoeRange: scale * 4,
+                    aoeRange: weapon.name == "Igniter" || weapon.name == "Discharger" ? 120 : scale * 4,
+                    blastEffect: weapon.name == "Igniter" || weapon.name == "Discharger" ? {
+                        name: "blast",
+                        last: 10e3,
+                        power: weapon.name == "Discharger" ? 0.01 : 0.005
+                    } : undefined,
                     dir: dir + getRandomOffset(weapon.spread),
                     isAlly: isAlly,
                     color: `rgb(0, ${(Math.random() < .5 ? 255 : 0)}, 255, ${Math.randInt(8, 10) / 10})`,
                     owner: shape,
+                    defensePointsBypass: (1 - weapon.defenseBypass),
                     motherShipCharge: weapon.motherShipCharge,
                     weaponOwner: {
                         name: weapon.name,
@@ -22076,6 +22668,8 @@
         document.getElementById("sideDisplay").style.display = "block";
         document.getElementById("goToBattle").style.display = "block";
         document.getElementById("gameModesDisplay").style.display = "none";
+        document.getElementById("abilityCharges2").innerHTML = "";
+        document.getElementById("useAbility2").style.display = "none";
         resetDataStuff();
         let allies = [];
         let enemies = [];
@@ -22502,6 +23096,11 @@
         } else if (shape.hullIntegrity) {
             grayDmg *= (1 - shape.hullIntegrity);
         }
+        if (shape.drone) {
+            if (shape.drone.abilities.find(e => e.name == "On Deployment: Protect Hull")) {
+                grayDmg *= .65;
+            }
+        }
         if (shape.grayDamage < 0) shape.grayDamage = 0;
         shape.grayDamage += Math.abs(amount * grayDmg * grayDamageMulti);
         if (shape.effects && shape.effects.find(e => ["Cannonier", "extra health"].includes(e.name) && e.health > 0)) {
@@ -22572,10 +23171,10 @@
         }
     }
     function doBorderCollision(robot, delta) {
-        if (robot.x + (robot.velx * delta) >= robot.scale && robot.x + (robot.velx * delta) <= mapInfo.x - robot.scale) {
-            robot.x += (robot.velx * delta);
+        if (robot.x + (robot.velx * MovementDeltaTime) >= robot.scale && robot.x + (robot.velx * MovementDeltaTime) <= mapInfo.x - robot.scale) {
+            robot.x += (robot.velx * MovementDeltaTime);
         } else {
-            if (robot.x + (robot.velx * delta) >= mapInfo.x - robot.scale) {
+            if (robot.x + (robot.velx * MovementDeltaTime) >= mapInfo.x - robot.scale) {
                 robot.x = mapInfo.x - robot.scale;
                 killIfBorder(robot);
             } else {
@@ -22583,10 +23182,10 @@
                 killIfBorder(robot);
             }
         }
-        if (robot.y + (robot.vely * delta) >= robot.scale && robot.y + (robot.vely * delta) <= mapInfo.y - robot.scale) {
-            robot.y += (robot.vely * delta);
+        if (robot.y + (robot.vely * MovementDeltaTime) >= robot.scale && robot.y + (robot.vely * MovementDeltaTime) <= mapInfo.y - robot.scale) {
+            robot.y += (robot.vely * MovementDeltaTime);
         } else {
-            if (robot.y + (robot.vely * delta) >= mapInfo.y - robot.scale) {
+            if (robot.y + (robot.vely * MovementDeltaTime) >= mapInfo.y - robot.scale) {
                 robot.y = mapInfo.y - robot.scale;
                 killIfBorder(robot);
             } else {
@@ -22595,10 +23194,10 @@
             }
         }
     }
-    function decelerateRobot(robot, delta) {
+    function decelerateRobot(robot) {
         let m = 0.994;
-        if (robot.velx) robot.velx *= Math.pow(m, delta);
-        if (robot.vely) robot.vely *= Math.pow(m, delta);
+        if (robot.velx) robot.velx *= Math.pow(m, MovementDeltaTime);
+        if (robot.vely) robot.vely *= Math.pow(m, MovementDeltaTime);
     }
     function convertDamageToDOT(robot) {
         if (robot.dotConverter && robot.dotConverter.length) {
@@ -22654,7 +23253,7 @@
                 if (robot.movedir != moveDir) {
                     robot.movedir %= (Math.PI * 2);
                     let netAngle = (robot.movedir - moveDir + (Math.PI * 2)) % (Math.PI * 2);
-                    let amnt = Math.min(Math.abs(netAngle - (Math.PI * 2)), netAngle, 0.0018 * delta);
+                    let amnt = Math.min(Math.abs(netAngle - (Math.PI * 2)), netAngle, 0.0018 * MovementDeltaTime);
                     let sign = (netAngle - Math.PI) >= 0 ? 1 : -1;
                     if (!isNaN(netAngle)) {
                         robot.movedir += sign * amnt + (Math.PI * 2);
@@ -22679,8 +23278,8 @@
                     moveSpeed *= (1 / 3);
                 }
             }
-            robot.velx += Math.cos(moveDir) * (moveSpeed * delta);
-            robot.vely += Math.sin(moveDir) * (moveSpeed * delta);
+            robot.velx += Math.cos(moveDir) * (moveSpeed * MovementDeltaTime);
+            robot.vely += Math.sin(moveDir) * (moveSpeed * MovementDeltaTime);
         }
     }
     function doModulesStuff(robot, delta) {
@@ -22714,18 +23313,13 @@
                 }
             }
         });
-        if (robot.effects.find(e => e.name == "last stand")) {
-            if (robot.grayDamage > robot.maxhealth - (robot.lastStandThreshold * robot.maxhealth)) {
-                robot.grayDamage = robot.maxhealth - (robot.lastStandThreshold * robot.maxhealth);
-                robot.health = (robot.lastStandThreshold * robot.maxhealth);
-            }
-        }
         if (!robot.usedLastStand && robot.health <= (robot.lastStandThreshold * robot.maxhealth)) {
             robot.health = (robot.lastStandThreshold * robot.maxhealth);
             robot.effects.push({
                 name: "last stand",
                 lastTime: robot.lastStandDuration
             });
+            robot.killed = false;
             robot.usedLastStand = true;
         }
         let amountOfAmps = robot.effects.filter(e => e.name == "nuclear amps").length;
@@ -23069,7 +23663,7 @@
                     }
                 }
             }
-        } else if (robot.abilities.length && robot.abilities[0].name == "Active Support") {
+        } else if (robot.abilities && robot.abilities.length && robot.abilities[0].name == "Active Support") {
             return [];
         } else {
             if ((robot.name == "Remote Repair" || robot.name == "healfield") && dist(robot.owner, robot) <= abilityRange + robot.owner.scale) {
@@ -23127,6 +23721,18 @@
         let hasBlindImmune = robot.effects.find(e => e.name == "anti blind");
         let hasSuppressionImmune = robot.effects.find(e => e.name == "anti suppression");
         let DoTEffects = robot.effects.filter(e => e.name == "dot" && !e.AdditionalDamageDependingDoT);
+        let hasReflector = robot.effects.find(e => e.name == "reflector" && !e.gottenTheCringeAhhEffect && e.lastTime);
+        if (hasReflector) {
+            if (robot.drone) {
+                if (robot.drone.abilities.find(e => e.name == "On Reflector: Shield Break")) {
+                    hasReflector.gottenTheCringeAhhEffect = true;
+                    robot.effects.push({
+                        name: "shield break",
+                        lastTime: 15e3
+                    });
+                }
+            }
+        }
         if (robot.drone) {
             if (DoTEffects.length) {
                 let hi = robot.drone.abilities.find(e => e.name == "Additional Damage Depending DoT");
@@ -23191,9 +23797,6 @@
                     } else if (effect.name == "suppression" && hasSuppressionImmune) {
                         effect.lastTime = 0;
                         continue;
-                    } else if ((effect.neg || effect.name == "dot" || effect.name == "rust") && robot.name == "Polygon") {
-                        effect.lastTime = 0;
-                        continue;
                     } else {
                         let indexName = effect.name;
                         if (effect.name == "cooldown_timer") {
@@ -23240,6 +23843,10 @@
                     }
                     if (effect.name == "freeze") {
                         robot.isFREEZE = true;
+                    } else if (effect.name == "reflector") {
+                        if (effect.abilityEffect == "Ultimate Reflector") {
+                            speedMulti = 0;
+                        }
                     } else if (effect.name == "dot") {
                         if (effect.dmgOverTime == null) effect.dmgOverTime = 0;
                         effect.dmgOverTime -= delta;
@@ -23284,7 +23891,6 @@
                             }
                         }
                         LMAODJASOUD = true;
-                        robot.LASTSTANDISON = true;
                     } else if (effect.name == "stealth dash") {
                         if (effect.lastTime >= effect.oldLastTime - 350) {
                             let moveSpeed = 0.02 * robot.reloadMoveMulti * slowdownMulti * speedMulti;
@@ -23302,10 +23908,10 @@
                     } else if (effect.name == "phase shift") {
                         if (!effect.isActiveModuleEffect) speedMulti += (effect.speed || 1.5);
                     } else if (effect.name == "dash") {
-                        if (effect.dmg) {
+                        if (effect.dmg || effect.abilityEffect == "Frog Splash") {
                             robot.avoidBuildings = true;
                         }
-                        let moveSpeed = (0.015 * (effect.POWER ? effect.POWER : 1));// * robot.reloadMoveMulti * slowdownMulti * speedMulti;
+                        let moveSpeed = ((effect.abilityEffect == "Comet Splash" ? 0.0085 : effect.abilityEffect == "Frog Splash" ? 0.03 : 0.015) * (effect.POWER ? effect.POWER : 1));
                         robot.velx += Math.cos(effect.dir) * (moveSpeed * delta);
                         robot.vely += Math.sin(effect.dir) * (moveSpeed * delta);
                     } else if (effect.name == "stampede") {
@@ -23481,6 +24087,8 @@
                             let amount = 0;
                             if (effect.type == "percent") {
                                 amount = robot.maxhealth * effect.power;
+                            } else if (effect.type == "fixed") {
+                                amount = effect.power;
                             }
                             if (effect.grayDamage) {
                                 robot.grayDamage = Math.max(0, robot.grayDamage - (amount * effect.grayDamage));
@@ -23736,6 +24344,15 @@
                     }
                 }
                 if (effect.lastTime <= 0) {
+                    if (effect.name == "reflector" && effect.abilityEffect == "Ultimate Reflector") {
+                        robot.effects.push({
+                            name: "healing",
+                            power: 25e3,
+                            type: "fixed",
+                            rate: 1e3,
+                            lastTime: 4e3
+                        });
+                    }
                     if (effect.name == "Clain Blink") {
                         doAbilityEndFunction(robot, 0, effect, robot.abilities.find(e => e.name == effect.name));
                     }
@@ -23805,7 +24422,7 @@
                     }
                     if (effect.name == "overload" || (effect.dmg && effect.name == "dash")) {
                         let near = [];
-                        let abilityRange = effect.name == "overload" ? effect.abilityEffect == "Blast Wave" ? 800 : 500 : 900;
+                        let abilityRange = effect.name == "overload" ? effect.abilityEffect == "Comet Splash" ? 600 : effect.abilityEffect == "Blast Wave" ? 800 : 500 : effect.abilityEffect == "Frog Splash" ? 600 : 900;
                         bombeffect.push({
                             location: robot,
                             doFaster: true,
@@ -23834,10 +24451,26 @@
                                 enemy.vely += Math.sin(angle) * (effect.name == "overload" ? effect.abilityEffect == "Blast Wave" ? 2.5 : 1.5 : 5);
                                 changeHealth(enemy, {
                                     amount: -effect.dmg,
-                                    defensePointsBypass: effect.abilityEffect == "Blast Wave" ? 0 : undefined
+                                    defensePointsBypass: effect.abilityEffect == "Blast Wave" ? 0 : effect.abilityEffect == "Frog Splash" ? 0 : undefined
                                 }, enemy.isMe, robot);
                                 if (enemy.shields) {
                                     doDamageToPhysicalShields(enemy.shields, effect.dmg, robot);
+                                }
+                                if (robot.cometSplashV2) {
+                                    enemy.effects.push({
+                                        neg: true,
+                                        name: "emp",
+                                        lastTime: 3e3
+                                    });
+                                }
+                                if (effect.abilityEffect == "Frog Splash") {
+                                    enemy.effects.push({
+                                        neg: true,
+                                        name: "suppression",
+                                        power: .6,
+                                        lastTime: 10e3,
+                                        owner: robot
+                                    });
                                 }
                                 if (effect.dotDamage) {
                                     enemy.effects.push({
@@ -23903,9 +24536,6 @@
             });
         }
         slowdownMulti = Math.max(slowdownMulti, 0.01);
-        if (!LMAODJASOUD) {
-            robot.LASTSTANDISON = false;
-        }
         for (let i = 0; i < robot.effects.length; i++) {
             let effect = robot.effects[i];
             if (effect) {
@@ -24122,7 +24752,7 @@
         for (let i = 0; i < doWeaponss.length; i++) {
             let weapon = doWeaponss[i];
             let rgb = "";
-            if (weapon.name == "Atomizer" || weapon.name == "Nucleon" || weapon.name == "Inferno" || weapon.name == "Pyro") {
+            if (weapon.name == "Atomizer" || weapon.name == "Nucleon" || weapon.name == "Igniter" || weapon.name == "Discharger" || weapon.name == "Inferno" || weapon.name == "Pyro") {
                 let colorValue = ((weapon.firedTime / weapon.overheatTime) * 100);
                 rgb = `rgb(${Math.min(255, Math.floor((colorValue) * 255 / 100))}, ${Math.min(235, Math.floor((100 - colorValue) * 235 / 100))}, 0)`;
             } else if (weapon.name == "Lance" || weapon.name == "Glaive") {
@@ -24202,6 +24832,11 @@
             } else if (weapon.name == "Skyward") {
                 dmgIncrease = 2.5;
             }
+            if (weapon.name == "Skyward" || weapon.name == "Fulgur" || weapon.name == "Tonans") {
+                if (weapon.name == "Fulgur" || weapon.name == "Tonans") {
+                    dmgIncrease += 1.5;
+                } else dmgIncrease += .5;
+            }
         }
         changeHealth(taker, {
             amount: -(weapon.dmg * dmgIncrease * dmgMulti),
@@ -24222,7 +24857,7 @@
         }
     }
     function doLaserStuff(robot, weapon, isAlly) {
-        if (weapon.name == "Fulgur" || weapon.name == "Tonans") {
+        if (weapon.name == "Athos" || weapon.name == "Aramis" || weapon.name == "Fulgur" || weapon.name == "Tonans") {
             if (weapon.target || robot.target) {
                 let target = weapon.target || robot.target;
                 if (target && dist(target, robot) <= weapon.range) {
@@ -24261,7 +24896,7 @@
             }
         } else {
             let direction = robot.dir;
-            let angle = ["Leiming", "Fengbao"].includes(weapon.name) ? (Math.PI / 2) : 0.72;
+            let angle = weapon.name == "Comet Laser" ? Math.PI : ["Leiming", "Fengbao"].includes(weapon.name) ? (Math.PI / 2) : 0.72;
             if (hasPlayers()) {
                 for (let i = 0; i < players.length; i++) {
                     let player = players[i].robots[players[i].robotIndex];
@@ -24330,6 +24965,13 @@
         let rPressed = keysPressed[82];
         let DateNow = Date.now();
         if (robot.isMe) updateCursorLocation(robot);
+        if (robot.name == "Light Gray Heptagon") {
+            if (robot.effects.find(e => e.name == "reflector" && e.lastTime <= 9e3)) {
+                robot.weapons.find(e => e.name == "Comet Laser").notActive = false;
+            } else {
+                robot.weapons.find(e => e.name == "Comet Laser").notActive = true;
+            }
+        }
         for (let i = 0; i < doWeaponss.length; i++) {
             let weapon = doWeaponss[i];
             if (robot.isMe && document.getElementById(`weaponICON${i}`)) {
@@ -24339,6 +24981,9 @@
             }
             if (weapon.continuousReload) {
                 if (weapon.lastFire == null) weapon.lastFire = 0;
+                if (weapon.name == "Athos" || weapon.name == "Aramis") {
+                    doWeaponTargetStuff(weapon, robot, isAlly);
+                }
                 if (weapon.name == "Discordia" || weapon.name == "Tumultus") {
                     if ((robot.isMe ? spacePressed : robot.fireWeapon)) {
                         increaseFireTime(weapon, delta, 2e3);
@@ -24379,7 +25024,7 @@
                                 maxScale: weapon.range
                             });
                         }
-                    } else if (weapon.name == "Pantagruel" || weapon.name == "Gangantua") {
+                    } else if (weapon.name == "Athos" || weapon.name == "Aramis" || weapon.name == "Comet Laser" || weapon.name == "Pantagruel" || weapon.name == "Gangantua") {
                         doLaserStuff(robot, weapon, isAlly);
                     } else {
                         fireWeapon(weapon, robot, isAlly);
@@ -24419,11 +25064,11 @@
                         } else {
                             increaseFireTime(weapon, -(delta * 2));
                         }
-                    } else if (weapon.name == "Inferno" || weapon.name == "Pyro") {
+                    } else if (weapon.name == "Inferno" || weapon.name == "Pyro" || weapon.name == "Discharger" || weapon.name == "Igniter") {
                         if ((robot.isMe ? spacePressed : robot.fireWeapon) && !weapon.disabled) {
                             increaseFireTime(weapon, delta, weapon.overheatTime, -(delta * 4));
                         } else {
-                            increaseFireTime(weapon, -(delta * (weapon.disabled ? .75 : 4)));
+                            increaseFireTime(weapon, -(delta * (weapon.disabled ? ((weapon.name == "Discharger" || weapon.name == "Igniter") ? 2 : .75) : 4)));
                         }
                         if (weapon.firedTime >= weapon.overheatTime) {
                             weapon.disabled = true;
@@ -24459,7 +25104,7 @@
                     } else if (weapon.name == "Sorrow" || weapon.name == "Grief") {
                         fireRateMulti = (weapon.firedTime / 2e3) == 1 ? .25 : 1;
                     } else if (weapon.name == "Ultimate Punisher" || weapon.name == "Ultimate Destroyer") {
-                        fireRateMulti = (weapon.firedTime / 2e3) == 1 ? .75 : 1;
+                        fireRateMulti = (weapon.firedTime / 2e3) == 1 ? 0.34 : 1;
                     }
                     if (((robot.isMe ? spacePressed : robot.fireWeapon) || weapon.continueToFire) && !robot.isFREEZE) {
                         if (typeof weapon.fireRate == "object") {
@@ -24628,9 +25273,14 @@
                     let Py = Math.max(obj.y, Math.min(robot.y, obj.y + obj.height));
                     let distance = Math.hypot(robot.x - Px, robot.y - Py);
                     if (distance <= robot.scale / 2) {
-                        robot.kill = true;
-                        let player1 = findPlayerBySid(robot.inGameSid);
-                        addLogger({ name: "Game" }, null, player1);
+                        let map = mapInfoData.find(e => e.id == player.mapID);
+                        let half = {
+                            x: map.x / 2,
+                            y: map.y / 2
+                        };
+                        let ang = Math.atan2(half.y - robot.y, half.x - robot.x);
+                        robot.velx += Math.cos(ang) * 0.01;
+                        robot.vely += Math.sin(ang) * 0.01;
                     }
                 }
             }
@@ -24883,10 +25533,10 @@
                     effect.dashLast = null;
                 } else {
                     effect.lastTime = 1;
-                    abilityLast = 1;
+                    ability.abilityLast = 1;
                 }
             }
-        } else if (ability.name == "Blast Wave" || ability.name == "Phalanx Mode" || ability.name == "Stove" || ability.name == "Track" || ability.name == "Absorption" || ability.name == "Skyward" || ability.name == "Ferocity" || ability.name == "Barrier Field" || ability.name == "Blink Assault" || (ability.name == "Clain Blink" && !ability.maxcharge) || ability.name == "Remote Assault" || ability.name == "Cannonier" || ability.name == "Long Shot" || ability.name == "Support" || ability.name == "Matrix" || ability.name == "Reflector" || ability.name == "Clear Sky" || ability.name == "Reinforce Hull" || ability.name == "Ultimate Mending" || ability.name == "Divine Judgement" || ability.name == "Grand Fortitude" || ability.name == "Paladin" || ability.name == "Overload" || ability.name == "Stampede" || ability.name == "Stealth" || ability.name == "Retribution" || ability.name == "Ultimate Defense" || ability.name == "Self Heal" || ability.name == "Dragon Flight" || ability.name == "Shield Regeneration" || ability.name == "Full Action") {
+        } else if (ability.name == "Ultimate Reflector" || ability.name == "Blast Wave" || ability.name == "Phalanx Mode" || ability.name == "Stove" || ability.name == "Track" || ability.name == "Absorption" || ability.name == "Skyward" || ability.name == "Ferocity" || ability.name == "Barrier Field" || ability.name == "Blink Assault" || (ability.name == "Clain Blink" && !ability.maxcharge) || ability.name == "Remote Assault" || ability.name == "Cannonier" || ability.name == "Long Shot" || ability.name == "Support" || ability.name == "Matrix" || ability.name == "Reflector" || ability.name == "Clear Sky" || ability.name == "Reinforce Hull" || ability.name == "Ultimate Mending" || ability.name == "Divine Judgement" || ability.name == "Grand Fortitude" || ability.name == "Paladin" || ability.name == "Overload" || ability.name == "Stampede" || ability.name == "Stealth" || ability.name == "Retribution" || ability.name == "Ultimate Defense" || ability.name == "Self Heal" || ability.name == "Dragon Flight" || ability.name == "Shield Regeneration" || ability.name == "Full Action") {
             if (ability.abilityReload == 0 && ability.abilityLast == 0) {
                 ability.abilityLast = ability.lastingTime;
                 doWonderworkerSkill(robot, ability);
@@ -25265,6 +25915,14 @@
                             }
                         }
                     }
+                } else if (ability.name == "Ultimate Reflector") {
+                    robot.effects.push({
+                        name: "reflector",
+                        return: .25,
+                        block: 1 - defensePointsToResistance(ability.abilityDefensePoints),
+                        abilityEffect: "Ultimate Reflector",
+                        lastTime: ability.lastingTime
+                    });
                 }
             }
         } else if (ability.name == "Cold Pulse" || ability.name == "Mute Blast") {
@@ -25338,7 +25996,7 @@
                 ability.abilityReload = ability.reload;
             }
         } else if (ability.maxcharge) {
-            if (ability.abilityLast == 0 && ability.charges > 0) {
+            if (ability.abilityLast == 0 && ability.charges > 0 && !robot.effects.find(e => e.name == "reflector" && e.abilityEffect == "Ultimate Reflector")) {
                 doWonderworkerSkill(robot, ability);
                 ability.charges--;
                 if (ability.name != "Blink Support") ability.abilityLast = ability.lastingTime;
@@ -25552,6 +26210,41 @@
                         rate: 500,
                         lastTime: 12e3
                     });
+                } else if (ability.name == "Frog Splash") {
+                    let amount = robot.maxhealth * .1;
+                    robot.grayDamage = Math.max(0, robot.grayDamage - (amount * .15));
+                    changeHealth(robot, {
+                        amount: amount
+                    }, false, robot);
+                    robot.effects.push({
+                        name: "reflector",
+                        block: .4,
+                        return: .1,
+                        abilityEffect: "Frog Splash",
+                        lastTime: ability.lastingTime
+                    });
+                    robot.effects.push({
+                        name: "dash",
+                        lastTime: ability.lastingTime,
+                        dmg: ability.dmg,
+                        abilityEffect: "Frog Splash",
+                        dir: (robot.isMe ? robot.dir : moveDir)
+                    });
+                } else if (ability.name == "Comet Splash") {
+                    robot.effects.push({
+                        name: "dash",
+                        lastTime: 3e3,
+                        dmg: ability.dmg,
+                        abilityEffect: "Comet Splash",
+                        dir: (robot.isMe ? robot.dir : moveDir)
+                    });
+                    robot.effects.push({
+                        name: "reflector",
+                        block: .7,
+                        return: .2,
+                        abilityEffect: "Comet Splash",
+                        lastTime: ability.lastingTime
+                    });
                 }
             } else if (ability.name == "Clain Blink") {
                 let effect = robot.effects.find(e => e.name == "Clain Blink");
@@ -25577,6 +26270,13 @@
                             regen: 0
                         });
                     }
+                }
+            } else if (ability.name == "Frog Splash" || ability.name == "Comet Splash") {
+                if (robot.effects.find(e => e.name == "dash" && e.abilityEffect == ability.name && (ability.name == "Comet Splash" ? e.lastTime < 2750 : e.lastTime < 800))) {
+                    robot.effects.find(e => e.name == "dash" && e.abilityEffect == ability.name && (ability.name == "Comet Splash" ? e.lastTime < 2750 : e.lastTime < 800)).lastTime = 0;
+                    robot.velx = 0;
+                    robot.vely = 0;
+                    if (ability.name == "Comet Splash") robot.effects.find(e => e.name == "reflector" && e.abilityEffect == ability.name).lastTime = 5e3;
                 }
             }
         } else if (ability.name == "Nuclear Strike" || ability.name == "Domain Expansion: Infinite Void" || ability.name == "Dismantle") {
@@ -25982,7 +26682,6 @@
     function doAbilityEndFunction(robot, delta, effect, ability) {
         if (!ability) {
             for (let i = 0; i < robot.abilities.length; i++) {
-                console.log("HI :)")
                 doAbilityEndStuff(robot, delta, effect, robot.abilities[i]);
             }
         } else {
@@ -26100,7 +26799,7 @@
                 let lowestRange = robot.weapons.sort((a, b) => a.range - b.range)[0];
                 if (checkIfCanReachTarget(robot, Math.hypot(closest.y - robot.y, closest.x - robot.x), Math.min(dist(closest, robot), lowestRange.range)) && Math.hypot(robot.y - closest.y, robot.x - closest.x) <= lowestRange.range) {
                     if (robot.isBluebell && (closest.effects.find(e => e.name == "Ultimate Reflecting Dash") || closest.shields.find(e => e.type == "purple"))) {
-                        let glame = robot.weapons.find(e => e.name == "Inferno" || e.name == "Pyro");
+                        let glame = robot.weapons.find(e => e.name == "Discharger" || e.name == "Igniter" || e.name == "Inferno" || e.name == "Pyro");
                         if (glame) {
                             if (glame.firedTime == 0 && robot.rechargeGlgamehahahhahah________saoidjsoijdj) {
                                 robot.rechargeGlgamehahahhahah________saoidjsoijdj = false;
@@ -26133,7 +26832,7 @@
                 let ability = robot.abilities[i];
                 let abilityName = ability.name;
                 let indx = i + 1;
-                if (["Absorption", "Skyward", "Barrier Field", "Clain Blink", "Dismantle", "Blink Assault", "Support", "Ultimate Defense", "Matrix", "Blink Support", "Reflector", "Stampede", "Clear Sky", "Reinforce Hull", "Cold Pulse", "Divine Judgement", "Full Action", "Stealth", "Domain Expansion: Infinite Void", "Paladin", "Dragon Flight", "Phase Shift", "Ultimate Mending", "Self Heal", "Retribution"].includes(abilityName) && Date.now() - robot.damagedTime <= 50) {
+                if (["Ultimate Reflector", "Absorption", "Skyward", "Barrier Field", "Clain Blink", "Dismantle", "Blink Assault", "Support", "Ultimate Defense", "Matrix", "Blink Support", "Reflector", "Stampede", "Clear Sky", "Reinforce Hull", "Cold Pulse", "Divine Judgement", "Full Action", "Stealth", "Domain Expansion: Infinite Void", "Paladin", "Dragon Flight", "Phase Shift", "Ultimate Mending", "Self Heal", "Retribution"].includes(abilityName) && Date.now() - robot.damagedTime <= 50) {
                     if (abilityName == "Clain Blink" && robot.movementTarget) {
                         robot["useAbility" + (i == 0 ? "" : indx)] = true;
                     } else if (abilityName != "Clain Blink") {
@@ -26154,9 +26853,9 @@
                             robot["useAbility" + (i == 0 ? "" : indx)] = true;
                         }
                     }
-                } else if (abilityName == "Ultimate Reflecting Dash") {
+                } else if (abilityName == "Frog Splash" || abilityName == "Ultimate Reflecting Dash") {
                     if (robot.isBluebell) {
-                        let effect = robot.effects.find(e => e.name == "Ultimate Reflecting Dash");
+                        let effect = robot.effects.find(e => e.name == "Ultimate Reflecting Dash" || e.name == "dash");
                         if (!effect) {
                             if (Date.now() - robot.damagedTime <= 50) {
                                 robot["useAbility" + (i == 0 ? "" : indx)] = true;
@@ -26516,8 +27215,17 @@
                 if (weapon.lastFire == null) weapon.lastFire = 0;
                 if (nearest && Date.now() - weapon.lastFire >= weapon.reload) {
                     weapon.lastFire = Date.now();
-                    fireProjectileDrone(weapon, isAlly, robot, robot.drone, nearest);
+                    if (weapon.name == "Imitating Comet Laser") {
+                        weapon.healBackOnDamage = 1;
+                        weapon.target = nearest;
+                        weapon.droneIsFiring = true;
+                        doLaserDamage(robot, weapon, nearest);
+                    } else {
+                        fireProjectileDrone(weapon, isAlly, robot, robot.drone, nearest);
+                    }
                 }
+            } else {
+                weapon.droneIsFiring = false;
             }
         }
     }
@@ -26846,7 +27554,7 @@
                     if (!ability.maxcharge && robot.isMe) {
                         document.getElementById("cooldownText" + indx).innerHTML = `${(ability.abilityReload / 1000).toFixed(1)}`;
                         document.getElementById("cooldownText" + indx).style.left = `${60 - (document.getElementById("cooldownText" + indx).clientWidth / 2)}px`;
-                    } else if (ability.maxcharge && !ability.charges && robot.isMe) {
+                    } else if (ability.maxcharge && !ability.charges && !ability.abilityLast && robot.isMe) {
                         document.getElementById("useAbility" + indx).style.backgroundImage = null;
                         document.getElementById("cooldownText" + indx).innerHTML = `${(ability.abilityReload / 1000).toFixed(1)}`;
                         document.getElementById("cooldownText" + indx).style.left = `${60 - (document.getElementById("cooldownText" + indx).clientWidth / 2)}px`;
@@ -26932,7 +27640,7 @@
             </div>
             <div style="position: absolute; top: 0px; right: ${100 - (100 * (robot.health / robot.maxhealth))}%; width: ${robot.effects.find(e => e.name == "phase shift") ? 0 : (100 * (Math.min(robot.dotDamage, robot.health) / robot.maxhealth))}%; height: 100%; background-color: #ffff00;">
             </div>
-            <div id="lastStand" style="display: true; position: absolute; top: 0px; left: 0px; width: ${100 * ((robot.lastStandThreshold * robot.maxhealth) / robot.maxhealth)}%; height: 100%; background-color: rgb(0, 0, 0, .2);">
+            <div id="lastStand" style="display: true; position: absolute; top: 0px; left: 0px; width: ${100 * ((robot.lastStandThreshold * robot.maxhealth) / robot.maxhealth)}%; height: 100%; background-color: rgb(0, 0, 0, .3);">
             </div>
             <div style="position: absolute; top: 0px; left: 5px; font-size: 30px; color: ${player.league <= 300 && player.gameMode == 2 ? "#00f" : "#000"};">
             ${removeDecimals(robot.health)}
@@ -26966,6 +27674,9 @@
             }
         }
         if (robot.isMe) drawWeaponUI(robot, delta);
+        if (buildings.find(e => e.name == "hill" && dist(e, robot) <= e.scale)) {
+            robot.avoidBuildings = true;
+        }
         collideWithBuildings(robot, delta, isAlly);
         doWeaponStuff(robot, delta, isAlly);
         doDroneWeaponStuff(robot, isAlly);
@@ -26990,65 +27701,57 @@
         doBorderCollision(robot, delta);
         decelerateRobot(robot, delta);
         if (robot.health <= 0 || robot.kill || robot.killed) {
-            if (!robot.kill && robot.lastStandThreshold && !robot.usedLastStand) {
-                robot.health = robot.maxhealth * robot.lastStandThreshold;
-                robot.effects.push({
-                    name: "last stand",
-                    lastTime: robot.lastStandDuration
-                });
-                robot.usedLastStand = true;
+            if (robot.revive && !robot.kill) {
+                doReviveFunction(robot);
             } else {
-                if (robot.revive && !robot.kill) {
-                    doReviveFunction(robot);
+                if (robot.isMe) {
+                    robot.dead = true;
+                    players[0].robotIndex = -1;
+                    document.getElementById("shields").innerHTML = "";
+                    document.getElementById("abilityCharges").innerHTML = "";
+                    document.getElementById("abilityCharges2").innerHTML = "";
+                    document.getElementById("useAbility").style.display = "none";
+                    document.getElementById("useAbility2").style.display = "none";
+                    document.getElementById("useActiveModule").style.display = "none";
+                    document.getElementById("weaponThing").style.display = "none";
+                    document.getElementById("healthBar").style.display = "none";//
+                    document.getElementById("mothershipBar").style.display = "none";
+                    document.getElementById("titanChargeBar").style.display = "none";
+                    let hasRobots = players[0].robots.find(e => e && !e.USED);
+                    document.getElementById("chooseSlot").style.bottom = `0px`;
+                    if (document.getElementById("useSlot8")) {
+                        document.getElementById("useSlot8").style.display = "block";
+                    }
+                    document.getElementById("mapName").style.display = "block";
+                    if (!hasRobots) {
+                        document.getElementById("chooseSlot").style.bottom = `-200px`;
+                        document.getElementById("mapName").style.display = "none";
+                        endGame([...players], false);
+                    }
+                    updateChooseSlots();
                 } else {
-                    if (robot.isMe) {
-                        robot.dead = true;
-                        players[0].robotIndex = -1;
-                        document.getElementById("shields").innerHTML = "";
-                        document.getElementById("abilityCharges").innerHTML = "";
-                        document.getElementById("useAbility").style.display = "none";
-                        document.getElementById("useAbility2").style.display = "none";
-                        document.getElementById("useActiveModule").style.display = "none";
-                        document.getElementById("weaponThing").style.display = "none";
-                        document.getElementById("healthBar").style.display = "none";//
-                        document.getElementById("mothershipBar").style.display = "none";
-                        document.getElementById("titanChargeBar").style.display = "none";
-                        let hasRobots = players[0].robots.find(e => e && !e.USED);
-                        document.getElementById("chooseSlot").style.bottom = `0px`;
-                        if (document.getElementById("useSlot8")) {
-                            document.getElementById("useSlot8").style.display = "block";
-                        }
-                        document.getElementById("mapName").style.display = "block";
-                        if (!hasRobots) {
-                            document.getElementById("chooseSlot").style.bottom = `-200px`;
-                            document.getElementById("mapName").style.display = "none";
-                            endGame([...players], false);
-                        }
-                        updateChooseSlots();
-                    } else {
-                        players[index].robots[players[index].robotIndex].USED = true;
-                        players[index].robotIndex++;
-                        if (!players[index].robots[players[index].robotIndex]) {
-                            players[index].robotIndex = -1;
-                            let haveEnemyes = true;
-                            for (let asdasd = 0; asdasd < players.length; asdasd++) {
-                                let ROBOBTS = players[asdasd].robots;
-                                if (players[asdasd].isAlly != true && ROBOBTS.some(e => e && !e.USED)) {
-                                    haveEnemyes = false;
-                                    break;
-                                }
+                    players[index].robots[players[index].robotIndex].USED = true;
+                    players[index].robotIndex++;
+                    if (!players[index].robots[players[index].robotIndex]) {
+                        players[index].robotIndex = -1;
+                        let haveEnemyes = true;
+                        for (let asdasd = 0; asdasd < players.length; asdasd++) {
+                            let ROBOBTS = players[asdasd].robots;
+                            if (players[asdasd].isAlly != true && ROBOBTS.some(e => e && !e.USED)) {
+                                haveEnemyes = false;
+                                break;
                             }
-                            if (haveEnemyes) {
-                                document.getElementById("useAbility").style.display = "none";
-                                document.getElementById("useAbility2").style.display = "none";
-                                document.getElementById("useActiveModule").style.display = "none";
-                                document.getElementById("weaponThing").style.display = "none";
-                                document.getElementById("healthBar").style.display = "none";
-                                document.getElementById("chooseSlot").style.bottom = "-200px";
-                                document.getElementById("mothershipBar").style.display = "none";
-                                document.getElementById("titanChargeBar").style.display = "none";
-                                endGame([...players], true);
-                            }
+                        }
+                        if (haveEnemyes) {
+                            document.getElementById("useAbility").style.display = "none";
+                            document.getElementById("useAbility2").style.display = "none";
+                            document.getElementById("useActiveModule").style.display = "none";
+                            document.getElementById("weaponThing").style.display = "none";
+                            document.getElementById("healthBar").style.display = "none";
+                            document.getElementById("chooseSlot").style.bottom = "-200px";
+                            document.getElementById("mothershipBar").style.display = "none";
+                            document.getElementById("titanChargeBar").style.display = "none";
+                            endGame([...players], true);
                         }
                     }
                 }
@@ -27468,7 +28171,7 @@
                 });
             }
             let Player = players[doer.playersIndexSid];
-            Player.titanCharge += 0.07;
+            if (Player) Player.titanCharge += 0.07;
             if (Player && Player.mothership && Player.mothership.data) {
                 Player.mothership.current += (!hasPlayers() ? .0075 : .07) * (1 + Player.mothership.data.chargeSpeed);
                 if (Player.mothership.current > 1) Player.mothership.current = 1;
@@ -27604,8 +28307,9 @@
     }
     function changeHealth(object, { amount, graydmg, noAmp, onDamageHealBack, maxhealthDamage, isDotDamage, execute, defensePointsBypass, bypassReflector, damageTypeName, motherShipCharge }, isPlayer, doer, noDefense) {
         try {
-            if (object.name == "Polygon") noDefense = false;
-            if (doer && doer.name == "Polygon") motherShipCharge = 1;
+            if (doer && doer.name == "Polygon" && motherShipCharge) {
+                motherShipCharge *= 1.25;
+            }
             amount = parseInt(removeDecimals(amount));
             if (object.killed && object.health <= 0) amount = 0;
             if (!object || (object.health <= 0 && object.type != "purple" && object.type != "purple normal")) return;
@@ -27642,6 +28346,9 @@
             }
             if (object.baseDP) {
                 resistance += object.baseDP;
+            }
+            if (object.effects && object.effects.find(e => e.name == "last stand")) {
+                resistance += 9000;
             }
             let bypassedDefensePoints = false;
             if (defensePointsBypass + 1 >= 1 && resistance > 0) {
@@ -27698,8 +28405,7 @@
                 if (object.isFREEZE) {
                     amount *= 1.2;
                 }
-                if (object.LASTSTANDISON || (object.effects && (object.effects.find(e => e.name == "phase shift") || object.effects.find(e => e.name == "last stand")))) {
-                    amount = 0;
+                if (object.effects && object.effects.find(e => e.name == "phase shift")) {
                     return;
                 }
                 orgnialdmg = amount;
@@ -27906,14 +28612,26 @@
                                 let amount = object.repairAmp.amount;
                                 if (maountofstaks + amount >= 60) {
                                     amount = 60 - maountofstaks;
-                                    let percent = (5 - object.repairAmp.amount) / 5;
-                                    object.grayDamage *= percent;
-                                    object.effects.push({
-                                        name: "defense points",
-                                        amount: object.repairAmp.defensePoints,
-                                        lastForever: true,
-                                        lastTime: 1
-                                    });
+                                    if (object.repairAmp.titan) {
+                                        object.grayDamage = Math.max(0, object.grayDamage - object.repairAmp.graydmg);
+                                        changeHealth(object, {
+                                            amount: object.repairAmp.normal
+                                        }, false, object);
+                                        object.effects.push({
+                                            name: "anti defense mig",
+                                            lastForever: true,
+                                            lastTime: 1
+                                        });
+                                    } else {
+                                        let percent = (5 - object.repairAmp.amount) / 5;
+                                        object.grayDamage *= percent;
+                                        object.effects.push({
+                                            name: "defense points",
+                                            amount: object.repairAmp.defensePoints,
+                                            lastForever: true,
+                                            lastTime: 1
+                                        });
+                                    }
                                 }
                                 let effect = object.effects.find(e => e.name == "repair amp");
                                 if (effect) {
@@ -27932,6 +28650,9 @@
                     }
                     object.health += amount;
                     if (amount < 0) {
+                        if (object.lastStandThreshold && !object.usedLastStand && object.health < object.maxhealth * object.lastStandThreshold) {
+                            object.health = object.maxhealth * object.lastStandThreshold;
+                        }
                         if (object.lastAttackedEnemies == null) object.lastAttackedEnemies = [];
                         if (doer) {
                             let Doer = object.lastAttackedEnemies.find(e => e.inGameSid == doer.inGameSid);
@@ -28104,6 +28825,9 @@
         if (enemy.tier == 3) {
             amount += .75;
         } else if (enemy.tier == 4) {
+            amount += 1.5;
+        }
+        if (enemy.titan) {
             amount += 1.5;
         }
         if (enemy.maxhealth >= 175e3) {
@@ -28655,7 +29379,7 @@
                                 freezeEffect: {
                                     name: "freezing",
                                     last: 20e3,
-                                    power: .5
+                                    power: .1
                                 },
                                 slowEffect: {
                                     name: "slowdown",
@@ -28669,26 +29393,26 @@
                         }
                     }
                 }
-                if (enemy.x + (enemy.velx * delta) >= enemy.scale && enemy.x + (enemy.velx * delta) <= mapInfo.x - enemy.scale) {
-                    enemy.x += (enemy.velx * delta);
+                if (enemy.x + (enemy.velx * MovementDeltaTime) >= enemy.scale && enemy.x + (enemy.velx * MovementDeltaTime) <= mapInfo.x - enemy.scale) {
+                    enemy.x += (enemy.velx * MovementDeltaTime);
                 } else {
-                    if (enemy.x + (enemy.velx * delta) >= mapInfo.x - enemy.scale) {
+                    if (enemy.x + (enemy.velx * MovementDeltaTime) >= mapInfo.x - enemy.scale) {
                         enemy.x = mapInfo.x - enemy.scale;
                     } else {
                         enemy.x = enemy.scale;
                     }
                 }
-                if (enemy.y + (enemy.vely * delta) >= enemy.scale && enemy.y + (enemy.vely * delta) <= mapInfo.y - enemy.scale) {
-                    enemy.y += (enemy.vely * delta);
+                if (enemy.y + (enemy.vely * MovementDeltaTime) >= enemy.scale && enemy.y + (enemy.vely * MovementDeltaTime) <= mapInfo.y - enemy.scale) {
+                    enemy.y += (enemy.vely * MovementDeltaTime);
                 } else {
-                    if (enemy.y + (enemy.vely * delta) >= mapInfo.y - enemy.scale) {
+                    if (enemy.y + (enemy.vely * MovementDeltaTime) >= mapInfo.y - enemy.scale) {
                         enemy.y = mapInfo.y - enemy.scale;
                     } else {
                         enemy.y = enemy.scale;
                     }
                 }
-                if (enemy.velx) enemy.velx *= Math.pow(0.993, delta);
-                if (enemy.vely) enemy.vely *= Math.pow(0.993, delta);
+                if (enemy.velx) enemy.velx *= Math.pow(0.993, MovementDeltaTime);
+                if (enemy.vely) enemy.vely *= Math.pow(0.993, MovementDeltaTime);
                 let touchBullets = projectiles.filter(e => e.isAlly && checkIfHit(e, enemy));
                 for (let t = 0; t < touchBullets.length; t++) {
                     let bullet = touchBullets[t];
@@ -28911,16 +29635,16 @@
                     if (bullet.owner && bullet.owner.effects && bullet.owner.effects.find(e => e.name == "shield break")) {
                         bullet.bypassShields = true;
                     }
-                    bullet.velx = Math.cos(bullet.dir) * (bullet.speed * delta);
-                    bullet.vely = Math.sin(bullet.dir) * (bullet.speed * delta);
+                    bullet.velx = Math.cos(bullet.dir) * (bullet.speed * MovementDeltaTime);
+                    bullet.vely = Math.sin(bullet.dir) * (bullet.speed * MovementDeltaTime);
                     if (bullet.freeze) {
                         bullet.velx = bullet.vely = 0;
                         bullet.freeze = false;
                     }
                     bullet.lastX = bullet.x;
                     bullet.lastY = bullet.y;
-                    bullet.x += (bullet.velx * delta);
-                    bullet.y += (bullet.vely * delta);
+                    bullet.x += (bullet.velx * MovementDeltaTime);
+                    bullet.y += (bullet.vely * MovementDeltaTime);
                     if (bullet.splitData) {
                         if (dist({ x: bullet.oldX, y: bullet.oldY }, bullet) >= bullet.splitData.range) {
                             for (let t = 0; t < bullet.splitData.amount; t++) {
@@ -29189,7 +29913,7 @@
             ctx.fill();
             if (robot.lastStandThreshold) {
                 let invis = "rgb(0, 0, 0, 0)";
-                let color = "rgb(0, 0, 0, 0.2)";
+                let color = "rgb(0, 0, 0, 0.4)";
                 let effect = robot.effects.find(e => e.name == "last stand");
                 ctx.fillStyle = effect ? effect.LOLOL ? color : invis : robot.usedLastStand ? invis : color;
                 ctx.roundRect(x + padding, y + padding, (width * 2) * ((robot.lastStandThreshold * robot.maxhealth) / robot.maxhealth), (20.4 - (padding * 2)), 8);
@@ -29298,6 +30022,22 @@
                     }
                     drawCanvasHealthBars(robot, player.isAlly, ctx);
                     ctx.restore();
+                    let drone = robot.drone;
+                    if (drone && drone.abilities.find(e => e.name == "Imitating Comet Laser")) {
+                        let weapon = drone.abilities.find(e => e.name == "Imitating Comet Laser");
+                        if (weapon.droneIsFiring) {
+                            let color1 = "rgb(255, 165, 0)";
+                            let tmp = drone.visualData.addOnCoord;
+                            ctx.save();
+                            ctx.lineWidth = 16;
+                            ctx.strokeStyle = color1;
+                            ctx.beginPath();
+                            ctx.moveTo((robot.x + tmp.x) - offset.x, (robot.y + tmp.y) - offset.y);
+                            ctx.lineTo(weapon.target.x - offset.x, weapon.target.y - offset.y);
+                            ctx.stroke();
+                            ctx.restore();
+                        }
+                    }
                 }
             }
         }
@@ -29476,7 +30216,7 @@
     function PLAYERKNOCKBACK(robot, isAlly) {
         for (let i = 0; i < players.length; i++) {
             let ROBOT = players[i].robots[players[i].robotIndex];
-            if (ROBOT) {
+            if (ROBOT && (ROBOT.name == "Polygon" ? true : robot.avoidBuildings == ROBOT.avoidBuildings)) {
                 let distance = Math.hypot(ROBOT.y - robot.y, ROBOT.x - robot.x);
                 if (distance <= (robot.scale + ROBOT.scale) * .75) {
                     let angle = Math.atan2(ROBOT.y - robot.y, ROBOT.x - robot.x) + Math.PI;
@@ -29486,10 +30226,11 @@
                         robot.x += (tmpInt * Math.cos(angle));
                         robot.y += (tmpInt * Math.sin(angle));
                         if (ROBOT.name == "Polygon") {
-                            robot.velx *= 10.5;
-                            robot.vely *= 10.5;
+                            let angle = Math.atan2(robot.y - ROBOT.y, robot.x - ROBOT.x);
+                            robot.velx += Math.cos(angle) * .5;
+                            robot.vely += Math.sin(angle) * .5;
                             changeHealth(robot, {
-                                amount: -1e6
+                                amount: -30e3
                             }, true, ROBOT);
                         }
                     }
@@ -29509,7 +30250,7 @@
         for (let i = 1; i < players.length; i++) {
             let robot = players[i].robots[players[i].robotIndex];
             if (robot) {
-                if (!robot.avoidBuildings) PLAYERKNOCKBACK(robot);
+                PLAYERKNOCKBACK(robot, players[i].isAlly);
                 if (!isBlind) drawTracer(robot, i, players[i].isAlly);
                 updateRobot(robot, players[i].isAlly, delta, i);
             } else {
@@ -29899,8 +30640,13 @@
                     }
                     renderCircle(0, 0, obj.scale * 1.15, ctx, true, false, "#ffff00");
                     renderCircle(0, 0, obj.tmpScale, ctx, true, false, "#1ca3ec");
-                } else if (obj.name != "pond") {
+                } else if (obj.name == "coll rect") {
                     ctx.fillStyle = obj.onlyDir != null ? "#000" : obj.onlyDir != undefined ? "#000" : "#1ca3ec";
+                    ctx.fillRect(0, 0, obj.width, obj.height);
+                } else if (obj.name == "hill") {
+                    renderCircle(0, 0, obj.scale, ctx, true, false, "#236b43");
+                } else if (obj.name == "water" && asd) {
+                    ctx.fillStyle = "#1ca3ec";
                     ctx.fillRect(0, 0, obj.width, obj.height);
                 }
                 ctx.restore();
@@ -30392,7 +31138,7 @@
                 y = shape.y + Math.sin(shape.dir - 1.57) * (shape.scale - 7.5);
             }
         }
-        return { x, y };
+        return weapon.name == "Comet Laser" ? { x: shape.x, y: shape.y } : { x, y };
     }
     function renderLasers() {
         ctx.save();
@@ -30441,10 +31187,10 @@
                                 ctx.stroke();
                                 ctx.restore();
                             }
-                        } else if (["Skyward", "Leiming", "Fengbao", "Pantagruel", "Gangantua"].includes(weapon.name)) {
+                        } else if (["Comet Laser", "Skyward", "Leiming", "Fengbao", "Pantagruel", "Gangantua"].includes(weapon.name)) {
                             let Enemies = [];
                             let direction = player.dir;
-                            let angle = ["Leiming", "Fengbao"].includes(weapon.name) ? (Math.PI / 2) : 0.72;
+                            let angle = weapon.name == "Comet Laser" ? Math.PI : ["Leiming", "Fengbao"].includes(weapon.name) ? (Math.PI / 2) : 0.72;
                             if (hasPlayers()) {
                                 for (let t = 0; t < players.length; t++) {
                                     let ROBOTBOTBT = players[t].robots[players[t].robotIndex];
@@ -30496,7 +31242,7 @@
                                 ctx.stroke();
                                 ctx.restore();
                             });
-                        } else if (["Fulgur", "Tonans"].includes(weapon.name) && (player.target || weapon.target)) {
+                        } else if (["Athos", "Aramis", "Fulgur", "Tonans"].includes(weapon.name) && (player.target || weapon.target)) {
                             let target = player.target || weapon.target;
                             if (!target.invis) {
                                 ctx.save();
@@ -30517,16 +31263,28 @@
                                         }
                                     }
                                 }
-                                ctx.shadowBlur = 30;
-                                ctx.shadowColor = "#fff";
-                                ctx.lineWidth = 16;
-                                ctx.strokeStyle = players[i].isAlly ? "#fff" : "#f00";
-                                ctx.lineCap = "round";//"Skyward"
-                                ctx.beginPath();
-                                ctx.moveTo(Offset.x - offset.x, Offset.y - offset.y);
-                                ctx.lineTo(tmp.x - offset.x, tmp.y - offset.y);
-                                ctx.stroke();
-                                ctx.restore();
+                                if (["Athos", "Aramis"].includes(weapon.name)) {
+                                    let color1 = players[i].isAlly == true ? "rgb(0, 150, 0, .6)" : "rgb(255, 165, 0, .6)";
+                                    ctx.save();
+                                    ctx.lineWidth = 16;
+                                    ctx.strokeStyle = color1;
+                                    ctx.beginPath();
+                                    ctx.moveTo(Offset.x - offset.x, Offset.y - offset.y);
+                                    ctx.lineTo(tmp.x - offset.x, tmp.y - offset.y);
+                                    ctx.stroke();
+                                    ctx.restore();
+                                } else {
+                                    ctx.shadowBlur = 30;
+                                    ctx.shadowColor = "#fff";
+                                    ctx.lineWidth = 16;
+                                    ctx.strokeStyle = players[i].isAlly ? "#fff" : "#f00";
+                                    ctx.lineCap = "round";
+                                    ctx.beginPath();
+                                    ctx.moveTo(Offset.x - offset.x, Offset.y - offset.y);
+                                    ctx.lineTo(tmp.x - offset.x, tmp.y - offset.y);
+                                    ctx.stroke();
+                                    ctx.restore();
+                                }
                             }
                         }
                     }
