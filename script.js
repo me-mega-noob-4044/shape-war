@@ -29647,17 +29647,17 @@
                 amount: healing
             }, false, robot);
         } else if (mothership.name == "Yellow Rectangle") {
-            for (let i = 0; i < 7; i++) {
+            for (let i = 0; i < 14; i++) {
                 robot.effects.push({
                     name: "attack",
                     power: mothership.effectPower,
-                    lastTime: 3e3 + (i * 500)
+                    lastTime: 3e3 + (i * 1e3)
                 });
 
                 robot.effects.push({
                     name: "speed",
                     power: mothership.effectPower,
-                    lastTime: 3e3 + (i * 500)
+                    lastTime: 3e3 + (i * 1e3)
                 });
             }
         }
