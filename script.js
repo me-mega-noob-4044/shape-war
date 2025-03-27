@@ -640,6 +640,9 @@
                     } else if (data.name == "Cannonier") {
                         ability.lastingTime = data.lastingTime;
                         ability.additionalHealth = data.additionalHealthData ? data.additionalHealthData.base : data.additionalHealth;
+                    } else if (data.name == "Annihilation Mode") {
+                        ability.lastingTime = data.lastingTime;
+                        ability.healingPower = data.healingPowerData ? data.healingPowerData.base : data.healingPower;
                     } else if (data.name == "Remote Repair" || data.name == "Support" || data.name == "Long Shot") {
                         ability.lastingTime = data.lastingTime;
                         if (data.name == "Support" || data.name == "Remote Repair") ability.healingPower = data.healingPowerData ? data.healingPowerData.base : data.healingPower;
@@ -3279,7 +3282,7 @@
         Polygon has every shape's abilities, taking all the good and leaving out the bad. It adapts to any situation, offering flexibility and strength. With Polygon, every action is at its best, making sure you succeed in any challenge.<br><br>
         This shape increases all mothership charge by 25%.
         `,
-        dotResistance: .5,
+        dotResistance: .99,
         revive: 1,
         indexRole: 4,
         builtInDefensePoints: 900,
@@ -3767,17 +3770,17 @@
             Max Rocket Damage: 250,000<br>
             Rocket Range: 4000PX<br>
             Duration: .75 seconds<br>
-            Charges: 3<br>
-            Cooldown (per charge): 4 seconds
+            Charges: 6<br>
+            Cooldown (per charge): 2 seconds
             `,
             iconSource: "./images/weapons/landslide.png",
-            charges: 3,
+            charges: 6,
             damageData: {
-                base: 3500,
+                base: 1500,
                 level: [0, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 1e3, 1e3, 1e3, 1e3, 1e3, 1e3, 1e3, 1500, 2e3, 2e3, 2e3, 2e3]
             },
-            lastingTime: 750,
-            reload: 4e3
+            lastingTime: 500,
+            reload: 2e3
         }],
         hardpoints: {
             light: 0,
@@ -3926,15 +3929,15 @@
             name: "Dark Light",
             desc: `
             <span style="font-width: bolder; color: #fff;">Dark Light</span> The shape opens up its inner core, unveiling a dark light that inflicts deathmark to enemies every .5 seconds.<br><br>
-            Duration: 8 seconds<br>
+            Duration: 6 seconds<br>
             Cooldown: 14 seconds
             `,
             deathmarkData: {
-                base: .075,
-                level: [0, .005, .005, .005, .005, .005, .005, .01, .01, .01, .01, .01, .01, .01, .01, .02, .02, .02, .02, .02, .02, .02, .02, .02, .04],
+                base: .075 / 2,
+                level: [0, .005, .005, .005, .005, .005, .005, .01, .01, .01, .01, .01, .01, .01, .01, .02, .02, .02, .02, .02, .02, .02, .02, .02, .04].map(e => e / 2)
             },
             iconSource: "./images/abilities/matrix.png",
-            lastingTime: 8e3,
+            lastingTime: 6e3,
             reload: 14e3
         }],
         dotResistance: .4,
@@ -3971,7 +3974,7 @@
                 base: 750,
                 level: [0, 125, 125, 125, 125, 125, 250, 250, 500, 500, 500, 500]
             },
-            lastingTime: 8e3,
+            lastingTime: 6e3,
             reload: 14e3
         }],
         hardpoints: {
@@ -3981,6 +3984,38 @@
         color: "#446879",
         moduleHardpoints: 3,
         costParts: true
+    }, {
+        tier: 4,
+        name: "Orange Triangle",
+        speed: 0.0022,
+        indexRole: 3,
+        speedLevel: [0, 0.0001, 0.0001, 0.0001, 0, 0.0001, 0, 0.0001, 0.0001, 0.0001, 0.0003, 0.0006],
+        scale: 75,
+        fieldOfViewMulti: 1.85,
+        desc: ``,
+        healthData: {
+            base: 123e3,
+            level: [0, 14e3, 14e3, 14e3, 16e3, 16e3, 18e3, 18e3, 20e3, 20e3, 20e3, 22e3],
+        },
+        abilities: [{
+            name: "Annihilation Mode",
+            desc: ``,
+            iconSource: "./images/abilities/self_heal.png",
+            healingPowerData: {
+                base: 12e3,
+                level: [0, 2e3, 2e3, 5e3, 7e3, 10e3, 12e3, 12e3, 12e3, 12e3, 12e3, 12e3]
+            },
+            lastingTime: 8e3,
+            reload: 16e3
+        }],
+        hardpoints: {
+            light: 3,
+            heavy: 2
+        },
+        color: "#ffb400",
+        moduleHardpoints: 4,
+        costParts: true
+
     }];// 15000,55000,105000,175000,305000
     function defensePointsToResistance(defense) {
         return (100) / (100 + defense);
@@ -6216,8 +6251,8 @@
         type: "Light",
         desc: `Light laser weapon that fires on single targets. It has a life-steal effect that makes it so that 30% of the damage done on enemies is repaired.`,
         damageData: {
-            base: 941,
-            level: [0, 38, 38, 38, 57, 57, 57, 57, 75, 75, 75, 75],
+            base: 941 * 3.5,
+            level: [0, 38, 38, 38, 57, 57, 57, 57, 75, 75, 75, 75].map(e => e * 1.5),
         },
         healBackOnDamage: .6,
         motherShipCharge: 0.0005,
@@ -6227,7 +6262,7 @@
         ammo: 120,
         ammoEachReloadTick: 20,
         reload: 3e3,
-        range: 800,
+        range: 1200,
         cost: {
             sliver: 15e9,
             gold: 150e3,
@@ -6240,8 +6275,8 @@
         type: "Heavy",
         desc: `Heavy laser weapon that fires on single targets. It has a life-steal effect that makes it so that 60% of the damage done on enemies is repaired.`,
         damageData: {
-            base: 1412,
-            level: [0, 57, 57, 57, 86, 86, 86, 86, 113, 113, 113, 113],
+            base: 1412 * 4,
+            level: [0, 57, 57, 57, 86, 86, 86, 86, 113, 113, 113, 113].map(e => e * 2),
         },
         healBackOnDamage: .9,
         motherShipCharge: 0.0005,
@@ -6250,8 +6285,7 @@
         fireRate: 75,
         ammo: 120,
         ammoEachReloadTick: 20,
-        reload: 3e3,
-        range: 800,
+        range: 1200,
         cost: {
             sliver: 15e9,
             gold: 150e3,
@@ -6441,16 +6475,16 @@
         },
         defenseBypass: 1,
         effectIncreaseData: {
-            base: .00125,
+            base: .05,
             level: [0, .00125, .00125, .00125, .00125, .00125, .00125, .00125, .00125, .00125, .00125, .00125]
         },
         motherShipCharge: 0.0001,
         imageSource: "./images/weapons/ultimate_halo.png",
         fireRate: 150,
         continuousReload: true,
-        ammoEachReloadTick: 3,
-        ammo: 16,
-        reload: 2400,
+        ammoEachReloadTick: 2,
+        ammo: 10,
+        reload: 1e3,
         range: 1500,
         cost: {
             sliver: 1e9,
@@ -6473,16 +6507,16 @@
         },
         defenseBypass: 1,
         effectIncreaseData: {
-            base: .00125,
+            base: .05,
             level: [0, .00125, .00125, .00125, .00125, .00125, .00125, .00125, .00125, .00125, .00125, .00125]
         },
         motherShipCharge: 0.0001,
         imageSource: "./images/weapons/ultimate_glory.png",
         fireRate: 150,
         continuousReload: true,
-        ammoEachReloadTick: 3,
-        ammo: 16,
-        reload: 2400,
+        ammoEachReloadTick: 2,
+        ammo: 10,
+        reload: 1e3,
         range: 1500,
         cost: {
             sliver: 1e9,
@@ -6544,12 +6578,12 @@
         projType: "normal",
         desc: `THERE'S A STAR MAN WAITING IN THE SKY HE LIKE TO COME AND SEE US BUT HE THINK HE'LL BLOW OUR MIND THERE'S A STAR MANNNN.`,
         damageData: {
-            base: 35500 * 1.5,
-            level: [0, 450, 450, 450, 450, 900, 900, 900, 900, 900, 900, 900, 900, 1800, 1800, 1800, 1800, 1800, 1800, 1800, 1800, 3600, 3600, 3600, 3600].map(e => e * 1.5)
+            base: 35500,
+            level: [0, 450, 450, 450, 450, 900, 900, 900, 900, 900, 900, 900, 900, 1800, 1800, 1800, 1800, 1800, 1800, 1800, 1800, 3600, 3600, 3600, 3600]
         },
         dotData: {
-            base: 5000 * 1.5,
-            level: [0, 50, 50, 50, 50, 50, 50, 50, 50, 50, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 150, 150, 150, 150, 150].map(e => e * 1.5)
+            base: 5000,
+            level: [0, 50, 50, 50, 50, 50, 50, 50, 50, 50, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 150, 150, 150, 150, 150]
         },
         titan: true,
         motherShipCharge: 0.000175,
@@ -6575,12 +6609,12 @@
         projType: "normal",
         desc: `.`,
         damageData: {
-            base: 35500,
-            level: [0, 450, 450, 450, 450, 900, 900, 900, 900, 900, 900, 900, 900, 1800, 1800, 1800, 1800, 1800, 1800, 1800, 1800, 3600, 3600, 3600, 3600]
+            base: 35500 * .75,
+            level: [0, 450, 450, 450, 450, 900, 900, 900, 900, 900, 900, 900, 900, 1800, 1800, 1800, 1800, 1800, 1800, 1800, 1800, 3600, 3600, 3600, 3600].map(e => e * .75)
         },
         dotData: {
-            base: 5000,
-            level: [0, 50, 50, 50, 50, 50, 50, 50, 50, 50, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 150, 150, 150, 150, 150]
+            base: 5000 * .75,
+            level: [0, 50, 50, 50, 50, 50, 50, 50, 50, 50, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 150, 150, 150, 150, 150].map(e => e * .75)
         },
         titan: true,
         motherShipCharge: 0.000175,
@@ -6594,6 +6628,100 @@
             sliver: 0,
             gold: 0,
             workshopPoints: 205e3
+        }
+    }, {
+        tier: 4,
+        industryName: "Hexagon",
+        name: "Screamer",
+        projType: "normal",
+        type: "Heavy",
+        spread: 8,
+        desc: ``,
+        damageData: {
+            base: 4800,
+            level: [0, 896, 933, 1036, 1118, 1200, 1332, 1407, 1581, 1662, 1729, 2051]
+        },
+        motherShipCharge: 0.0003,
+        imageSource: "./images/weapons/scatter.png",
+        fireRate: [450, 50],
+        ammo: 16,
+        reload: 4600,
+        range: 1700,
+        cost: {
+            sliver: 5e6,
+            gold: 5e3
+        }
+    }, {
+        tier: 4,
+        industryName: "Hexagon",
+        name: "Growler",
+        projType: "normal",
+        type: "Light",
+        spread: 8,
+        desc: ``,
+        damageData: {
+            base: 4800 * .75,
+            level: [0, 896, 933, 1036, 1118, 1200, 1332, 1407, 1581, 1662, 1729, 2051].map(e => e * .75)
+        },
+        motherShipCharge: 0.0003,
+        imageSource: "./images/weapons/scatter.png",
+        fireRate: [450, 50],
+        ammo: 16,
+        reload: 4600,
+        range: 1700,
+        cost: {
+            sliver: 5e6,
+            gold: 5e3
+        }
+    }, {
+        tier: 4,
+        industryName: "Pentagon",
+        name: "Volt",
+        type: "Light",
+        projType: "normal",
+        desc: ``,
+        damageData: {
+            base: 7e3,
+            level: [0, 500, 500, 500, 1e3, 1e3, 2e3, 2e3, 3e3, 4e3, 5e3, 7e3]
+        },
+        chargingMechanic: true,
+        chargingDelay: 2e3,
+        motherShipCharge: 0.0017,
+        defenseBypass: 1,
+        imageSource: "./images/weapons/lance.png",
+        fireRate: 0,
+        ammo: 1,
+        reload: 8e3,
+        range: 3e3,
+        cost: {
+            sliver: 0,
+            gold: 0,
+            workshopPoints: 75e3
+        }
+    }, {
+        tier: 4,
+        industryName: "Pentagon",
+        name: "Gauss",
+        type: "Heavy",
+        projType: "normal",
+        desc: ``,
+        damageData: {
+            base: 7e3 * 1.5,
+            level: [0, 500, 500, 500, 1e3, 1e3, 2e3, 2e3, 3e3, 4e3, 5e3, 7e3].map(e => e * 1.5)
+        },
+        chargingMechanic: true,
+        chargingDelay: 2e3,
+        motherShipCharge: 0.0017,
+        defenseBypass: 1,
+        imageSource: "./images/weapons/glaive.png",
+        fireRate: 0,
+        ammo: 1,
+        reload: 8e3,
+        range: 3e3,
+        cost: {
+            sliver: 0,
+            gold: 0,
+            workshopPoints: 175e3
         }
     }];
     //5000,25000,75000,105000,205000
@@ -7148,7 +7276,6 @@
             ` + (newDesc || newshape.desc);
             if (tier) newshape.tier = tier;
             newshape.healthData.base *= health;
-            if (speed) newshape.speed *= health;
             if (scale) newshape.scale = scale;
             if (reflectorData) newshape.reflectorData = reflectorData;
             if (!cantGet) newshape.dontSell = true;
@@ -7511,21 +7638,56 @@
             DoT Duration (per stack): 7 seconds<br>
             Magnetic Field Range: 400PX<br>
             Speed Increase: +200%<br>
-            Charges: 2<br>
-            Duration: 8 seconds<br>
-            Cooldown (per charge): 20 seconds
+            Charges: 3<br>
+            Duration: 5 seconds<br>
+            Cooldown (per charge): 16 seconds
             `,
             iconSource: "./images/abilities/stampede.png",
             damageData: {
                 base: 440,
                 level: [0, 270, 600, 660, 720, 780, 840, 900, 960, 1020, 1080, 1140],
             },
-            charges: 2,
-            lastingTime: 8e3,
-            reload: 20e3
+            charges: 3,
+            lastingTime: 5e3,
+            reload: 16e3
         }],
-        dotResistance: .25,
+        dotResistance: .333,
         moduleHardpoints: 4,
+        borderColor: "#ffff00"
+    }, "shape", "Ultimate");
+    makeNewSpecialEdition("Purple Hexagon", {
+        tier: 4,
+        health: 1.75,
+        cantGet: true,
+        speed: 1.8,
+        scale: 65,
+        topDesc: `
+        ULTIMATE SHAPE VERSION<br>
+        The rarest modification of the Purple Hexagon.
+        Surpassing the original in all aspects,
+        it is a desirable shape for any player.
+        `,
+        abilities: [{
+            name: "Stealth Dash",
+            desc: `
+            <span style="font-width: bolder; color: #fff;">Stealth Dash</span>
+            The shape leaps forward in a chosen direction. During that, the shape activates stealth that lasts during and after the dash.<br><br>
+            Max Charges: 3<br>
+            Usage Interval: 3 seconds<br>
+            Cooldown (per charge): 18 seconds
+            `,
+            iconSource: "./images/abilities/stealth_dash.png",
+            charges: 3,
+            lastingTime: 3e3,
+            reload: 18e3
+        }],
+        hardpoints: {
+            heavy: 3,
+            light: 0
+        },
+        builtInDefensePoints: 100,
+        moduleHardpoints: 4,
+        hullIntegrity: .25,
         borderColor: "#ffff00"
     }, "shape", "Ultimate");
     var activeModuleData = [{
@@ -9484,7 +9646,7 @@
                 tmpCtx.fill();
             } else if (obj.name.includes("Hexagon") || obj.industryName.includes("Hexagon")) {
                 tmpCtx.rotate(Math.PI / 2);
-                tmpCtx.strokeStyle = "#000";
+                tmpCtx.strokeStyle = (obj.borderColor || "#000");
                 tmpCtx.lineWidth = 12 * (obj.increaseLine ? obj.increaseLine : 1);
                 tmpCtx.fillStyle = obj.color;
                 renderStar(tmpCtx, 3, obj.scale, obj.scale);
@@ -11371,12 +11533,12 @@
         }
         if (e.key == "ArrowLeft") {
             if (document.getElementById("goToPre") && (!document.getElementById("goToPre").style.display || document.getElementById("goToPre").style.display == "block")) {
-                document.getElementById("goToPre").click();
+                for (let i = 0; i < 1; i++) document.getElementById("goToPre").click();
             }
         }
         if (e.key == "ArrowRight") {
             if (document.getElementById("goToNext") && (!document.getElementById("goToNext").style.display || document.getElementById("goToNext").style.display == "block")) {
-                document.getElementById("goToNext").click();
+                for (let i = 0; i < 1; i++) document.getElementById("goToNext").click();
             }
         }
         if (e.keyCode == 13) {
@@ -11421,18 +11583,19 @@
         keysPressed[e.keyCode] = 0;
     });
     var blueBell = [{
-        "name": "Grayish Blue Triangle",
+        "name": "Ultimate Purple Hexagon",
         "weapons": {
             "heavy": "Ultimate Destroyer",
             "light": "Ultimate Punisher"
         },
         "modules": [
             "Repair Amplifier",
-            "Nuclear Amplifier",
+            "Nuclear Amplifier", ,
+            "Immune Amplifier",
             "Last Stand"
         ],
-        "drone": "Pascal",
-        "pilotName": "Sux",
+        "drone": "Superman",
+        "pilotName": "Everest Oded",
         "skills": [
             "Road Hog",
             "Deft Survivor",
@@ -11440,10 +11603,7 @@
             "Armor Expert",
             "Mechanic",
             "Stubborn Warrior",
-            "Medicine Expert",
-            "Armor Expert",
-            "Armor Expert",
-            "Armor Expert"
+            "Medicine Expert"
         ],
         "activeModuleIndex": 6
     }, {
@@ -11520,18 +11680,19 @@
         ],
         "activeModuleIndex": 6
     }, {
-        "name": "Grayish Blue Triangle",
+        "name": "Ultimate Purple Hexagon",
         "weapons": {
             "heavy": "Ultimate Destroyer",
             "light": "Ultimate Punisher"
         },
         "modules": [
             "Repair Amplifier",
-            "Nuclear Amplifier",
+            "Nuclear Amplifier", ,
+            "Immune Amplifier",
             "Last Stand"
         ],
-        "drone": "Pascal",
-        "pilotName": "Sux",
+        "drone": "Superman",
+        "pilotName": "Everest Oded",
         "skills": [
             "Road Hog",
             "Deft Survivor",
@@ -11591,28 +11752,29 @@
         ],
         "activeModuleIndex": 6
     }, {
-        "name": "Ultimate Green Triangle",
+        "name": "Ultimate Purple Hexagon",
         "weapons": {
-            "heavy": "Maha Vajra",
-            "light": "Vajra"
+            "heavy": "Ultimate Destroyer",
+            "light": "Ultimate Punisher"
         },
         "modules": [
             "Repair Amplifier",
-            "Nuclear Amplifier",
-            "Defense Amplifier"
+            "Nuclear Amplifier", ,
+            "Immune Amplifier",
+            "Last Stand"
         ],
-        "drone": "Pascal",
+        "drone": "Superman",
         "pilotName": "Everest Oded",
         "skills": [
-            "Stubborn Warrior",
             "Road Hog",
-            "Cautious Pilot",
-            "Mechanic",
+            "Deft Survivor",
+            "Master Gunsmith",
             "Armor Expert",
-            "Tough Guy",
-            "Deft Survivor"
+            "Mechanic",
+            "Stubborn Warrior",
+            "Medicine Expert"
         ],
-        "activeModuleIndex": 7
+        "activeModuleIndex": 6
     }, {
         "name": "Light Gray Heptagon",
         "weapons": {
@@ -12267,21 +12429,52 @@
             robot.drones.push({ ...Drone });
         }
 
-        if (robot.name == "Grayish Blue Triangle") {
-            let drone1 = new DRONEAJDOIASJDISAOJDAOSDJ(dronesData.find(e => e.name == "Dux Drone #1"));
-            drone1.abilities[0].dmg = robot.abilities[0].dmg / 3;
-
-            let drone2 = new DRONEAJDOIASJDISAOJDAOSDJ(dronesData.find(e => e.name == "Dux Drone #2"));
-            drone2.abilities[0].dmg = robot.abilities[0].dmg / 3;
-
-            let drone3 = new DRONEAJDOIASJDISAOJDAOSDJ(dronesData.find(e => e.name == "Dux Drone #3"));
-            drone3.abilities[0].dmg = robot.abilities[0].dmg / 3;
+        if (robot.name == "Grayish Blue Triangle" || robot.name == "Polygon") {
+            let drone1 = new DRONEAJDOIASJDISAOJDAOSDJ(dronesData.find(e => e.name == (robot.name == "Polygon" ? "Dux Drone #3" : "Dux Drone #1")));
+            drone1.abilities[0].dmg = robot.name == "Polygon" ? 6e3 : robot.abilities[0].dmg / 3;
 
             robot.drones.push(drone1);
-            robot.drones.push(drone2);
-            robot.drones.push(drone3);
 
-            console.log(drone1, drone2, drone3);
+            if (robot.name != "Polygon") {
+                let drone2 = new DRONEAJDOIASJDISAOJDAOSDJ(dronesData.find(e => e.name == "Dux Drone #2"));
+                drone2.abilities[0].dmg = robot.abilities[0].dmg / 3;
+
+                let drone3 = new DRONEAJDOIASJDISAOJDAOSDJ(dronesData.find(e => e.name == "Dux Drone #3"));
+                drone3.abilities[0].dmg = robot.abilities[0].dmg / 3;
+
+                robot.drones.push(drone2);
+                robot.drones.push(drone3);
+            }
+
+            for (let i = 0; i < 3; i++) if (robot.name == "Polygon") {
+                let drone1 = new DRONEAJDOIASJDISAOJDAOSDJ(dronesData.find(e => e.name == "Dux Drone #3"));
+                drone1.abilities[0].dmg = robot.name == "Polygon" ? 6e3 : robot.abilities[0].dmg / 3;
+
+                let drone2 = new DRONEAJDOIASJDISAOJDAOSDJ(dronesData.find(e => e.name == "Dux Drone #3"));
+                drone2.abilities[0].dmg = robot.name == "Polygon" ? 6e3 : robot.abilities[0].dmg / 3;
+
+                let drone3 = new DRONEAJDOIASJDISAOJDAOSDJ(dronesData.find(e => e.name == "Dux Drone #3"));
+                drone3.abilities[0].dmg = robot.name == "Polygon" ? 6e3 : robot.abilities[0].dmg / 3;
+
+                robot.drones.push(drone1);
+                robot.drones.push(drone2);
+                robot.drones.push(drone3);
+            }
+        } else if (robot.name == "Ultimate Purple Hexagon") {
+            let names = ["Pascal", "Kestrel", "Beak", "Armadillo", "Good Guy", "Defender", "Starter"];
+
+            for (let i = 0; i < names.length; i++) {
+                let data = dronesData.find(e => e.name == names[i]);
+                let drone = new DRONEAJDOIASJDISAOJDAOSDJ(data);
+
+                if (data.name.includes("Dux")) continue;
+
+                for (let t = 0; t < drone.maxLevel; t++) {
+                    upgradeDrone(drone, false, false, true);
+                }
+
+                robot.drones.push(drone);
+            }
         }
 
         if (pilot && pilot.skills && pilot.skills.length) {
@@ -12327,6 +12520,19 @@
                 lastTime: 1,
                 lastForever: true
             });
+        } else if (robot.name == "Orange Triangle") {
+            robot.effects.push({
+                name: "forcefield",
+                data: {
+                    resistance: .9,
+                    min: .667,
+                    maxhealth: robot.maxhealth,
+                    health: robot.maxhealth
+                },
+                rechargeTime: 15e3,
+                lastTime: 1,
+                lastForever: true
+            });
         } else if (robot.name == "Yellow Heptagon") {
             robot.effects.push({
                 name: "forcefield",
@@ -12366,24 +12572,30 @@
                 lastForever: true
             });
             robot.effects.push({
+                name: "stampede",
+                a: true,
+                lastForever: true,
+                lastTime: 1
+            });
+            /*robot.effects.push({
                 name: "reflector",
                 return: 1,
-                block: .9,
+                block: .8,
                 lastForever: true,
                 lastTime: 1
             });
             robot.effects.push({
                 name: "forcefield",
                 data: {
-                    resistance: .99,
-                    min: .9,
-                    maxhealth: robot.health * 10,
-                    health: robot.health * 10
+                    resistance: .8,
+                    min: .667,
+                    maxhealth: robot.health * 5,
+                    health: robot.health * 5
                 },
-                rechargeTime: 1e3,
+                rechargeTime: 500,
                 lastTime: 1,
                 lastForever: true
-            });
+            });*/
         }
     }
     function adjustStats(robot, statAdjustments) {
@@ -14525,7 +14737,7 @@
         if (!settingToggles.dmgHealText) return;
         value = Math.abs(value);
         let dirs = [-0.78, -2.34, -0.39, -1.17, -1.95];
-        let hi = text.find(e => color == e.color && dist({ x, y }, e) <= 20);
+        let hi = text.find(e => color == e.color && dist({ x, y }, e) <= 80);
         if (hi) {
             hi.value += value;
             if (hi.stroke == null) hi.stroke = 0;
@@ -22710,7 +22922,7 @@
             ctx.rotate(-(dir + Math.PI / 2));
         } else if (robot.name.includes("Hexagon") || robot.industryName.includes("Hexagon")) {
             ctx.rotate(dir + Math.PI / 2);
-            ctx.strokeStyle = robot.lockdown ? "#800080" : robot.isFREEZE ? "#fff" : "#000";
+            ctx.strokeStyle = robot.lockdown ? "#800080" : robot.isFREEZE ? "#fff" : (robot.borderColor || "#000");
             ctx.lineWidth = robot.effects.filter(e => e.name == "Blink Support").length ? w * (robot.effects.filter(e => e.name == "Blink Support").length + 1) : w;
             ctx.fillStyle = robot.color;
             renderStar(ctx, 3, robot.scale, robot.scale);
@@ -22741,6 +22953,19 @@
             ctx.rotate(-(dir + Math.PI / 2));
         } else if (robot.name.includes("Triangle") || robot.industryName.includes("Triangle")) {
             ctx.rotate(dir + Math.PI / 2);
+            if (robot.effects) {
+                let force = robot.effects.find(e => e.name == "forcefield");
+                if (force) {
+                    let percent = 1 - (force.data.health / force.data.maxhealth);
+                    let startColor = "#00ffff";
+                    let endColor = "#ff0000";
+                    let interpolatedColor = interpolateColor(startColor, endColor, percent);
+                    ctx.strokeStyle = interpolatedColor;
+                    ctx.lineWidth = 15;
+                    renderStar(ctx, 1.5, robot.scale + 10, robot.scale + 10);
+                    ctx.stroke();
+                }
+            }
             ctx.strokeStyle = robot.lockdown ? "#800080" : robot.isFREEZE ? "#fff" : (robot.borderColor || "#000");
             ctx.lineWidth = w;
             ctx.fillStyle = robot.color;
@@ -22885,7 +23110,7 @@
                 }
                 if (robot.globalAlpha == null) robot.globalAlpha = 1;
                 if (robot.invis) {
-                    robot.globalAlpha = Math.max(robot.globalAlpha - (delta * 0.005), 0.025);
+                    robot.globalAlpha = Math.max(robot.globalAlpha - (delta * 0.005), 0);
                 } else if (robot.effects.find(e => e.name == "phase shift")) {
                     robot.globalAlpha = Math.max(robot.globalAlpha - (delta * 0.0025), 0.4);
                 } else {
@@ -23593,7 +23818,7 @@
                         level: weapon.level
                     }
                 });
-            } else if (weapon.name == "Shocker" || weapon.name == "Reaper" || weapon.name == "Vendicatore") {
+            } else if (weapon.name == "Shocker" || weapon.name == "Reaper" || weapon.name == "Vendicatore" || weapon.name == "Volt" || weapon.name == "Gauss") {
                 projectiles.push({
                     projType: weapon.projType,
                     x: x,
@@ -23605,7 +23830,7 @@
                     vely: 0,
                     scale: scale,
                     speed: .4,
-                    dmg: weapon.dmg,
+                    dmg: weapon.dmg * (weapon.chargingMechanic ? (weapon.ammo / weapon.maxammo) : 1),
                     range: weapon.range,
                     dir: dir,
                     isAlly: isAlly,
@@ -23812,8 +24037,8 @@
                         level: weapon.level
                     }
                 });
-            } else if (weapon.name == "Devastator" || weapon.name == "Scatter") {
-                for (let i = 0; i < 10; i++) {
+            } else if (weapon.name == "Devastator" || weapon.name == "Scatter" || weapon.name == "Screamer" || weapon.name == "Growler") {
+                for (let i = 0; i < (weapon.name == "Screamer" || weapon.name == "Growler" ? 4 : 10); i++) {
                     projectiles.push({
                         projType: weapon.projType,
                         x: x,
@@ -23824,7 +24049,7 @@
                         vely: 0,
                         scale: scale,
                         speed: 0.25,
-                        dmg: weapon.dmg / 10,
+                        dmg: weapon.dmg / (weapon.name == "Screamer" || weapon.name == "Growler" ? 4 : 10),
                         range: weapon.range,
                         dir: dir + getRandomOffset(weapon.spread),
                         isAlly: isAlly,
@@ -23832,7 +24057,7 @@
                         avoidBuildings: shape.avoidBuildings,
                         color: "./images/bullets/sonic_blast.png",
                         owner: shape,
-                        knockback: 0.07,
+                        knockback: weapon.name == "Screamer" || weapon.name == "Growler" ? undefined : 0.07,
                         grayDamageAmount: 1,
                         weaponOwner: {
                             name: weapon.name,
@@ -24807,8 +25032,10 @@
             grayDmg *= (1 - shape.hullIntegrity);
         }
         if (shape.drones && shape.drones.length) {
-            if (shape.drones[0].abilities.find(e => e.name == "On Deployment: Protect Hull")) {
-                grayDmg *= .65;
+            for (let i = 0; i < shape.drones.length; i++) {
+                if (shape.drones[i].abilities.find(e => e.name == "On Deployment: Protect Hull")) {
+                    grayDmg *= .65;
+                }
             }
         }
         if (maxhealthDamage) grayDmg *= .5;
@@ -25056,11 +25283,18 @@
                     }
                 }
             }
-            let drone = robot.drones.length ? robot.drones[0].abilities.find(e => e.weapon) : undefined;
-            if (drone) {
-                drone.dmg /= 1 + (highestMultiAmp * robot.oldAmountOfAmps);
-                drone.dmg *= 1 + (highestMultiAmp * amountOfAmps);
+            let drone = undefined;
+
+            if (robot.drones.length) {
+                for (let i = 0; i < robot.drones.length; i++) {
+                    let ahah = robot.drones[i].abilities.find(e => e.weapon);
+                    if (ahah) {
+                        ahah.dmg /= 1 + (highestMultiAmp * robot.oldAmountOfAmps);
+                        ahah.dmg *= 1 + (highestMultiAmp * amountOfAmps);
+                    }
+                }
             }
+
             robot.weapons.forEach(item => {
                 item.dmg /= 1 + (highestMultiAmp * robot.oldAmountOfAmps);
                 item.dmg *= 1 + (highestMultiAmp * amountOfAmps);
@@ -25313,9 +25547,15 @@
                         }
                     }
                 }
+                if (robot.NRS == null) robot.NRS = 0;
+
+                if (bullet.weaponOwner && bullet.weaponOwner.name == "Nuclear Rocket Shot") {
+                    robot.NRS++;
+                }
+
                 if (!bullet.aoeRange) {
                     changeHealth(robot, {
-                        amount: -bullet.dmg,
+                        amount: -bullet.dmg * (bullet.weaponOwner && bullet.weaponOwner.name == "Nuclear Rocket Shot" ? (robot.NRS == 1 ? 1 : 2 ** (robot.NRS - 1)) : 1),
                         graydmg: bullet.grayDamageAmount,
                         defensePointsBypass: bullet.defensePointsBypass,
                         bypassReflector: bullet.bypassReflector,
@@ -25331,7 +25571,7 @@
                     }, bullet.aoeRange, bullet.isAlly);
                     nearest.forEach(e => {
                         changeHealth(e, {
-                            amount: -bullet.dmg,
+                            amount: -bullet.dmg * (bullet.weaponOwner && bullet.weaponOwner.name == "Nuclear Rocket Shot" ? (robot.NRS == 1 ? 1 : 2 ** (robot.NRS - 1)) : 1),
                             graydmg: bullet.grayDamageAmount,
                             defensePointsBypass: bullet.defensePointsBypass,
                             bypassReflector: bullet.bypassReflector,
@@ -25457,28 +25697,32 @@
         let hasReflector = robot.effects.find(e => e.name == "reflector" && !e.gottenTheCringeAhhEffect && e.lastTime);
         if (hasReflector) {
             if (robot.drones && robot.drones.length) {
-                if (robot.drones[0].abilities.find(e => e.name == "On Reflector: Shield Break")) {
-                    hasReflector.gottenTheCringeAhhEffect = true;
-                    robot.effects.push({
-                        name: "shield break",
-                        lastTime: 15e3
-                    });
+                for (let i = 0; i < robot.drones.length; i++) {
+                    if (robot.drones[i].abilities.find(e => e.name == "On Reflector: Shield Break")) {
+                        hasReflector.gottenTheCringeAhhEffect = true;
+                        robot.effects.push({
+                            name: "shield break",
+                            lastTime: 15e3
+                        });
+                    }
                 }
             }
         }
         if (robot.drones && robot.drones.length) {
             if (DoTEffects.length) {
-                let hi = robot.drones[0].abilities.find(e => e.name == "Additional Damage Depending DoT");
-                if (hi && robot.effects.filter(e => e.name == "attack" && e.AdditionalDamageDependingDoT).length < hi.limit) {
-                    DoTEffects.forEach(e => {
-                        e.AdditionalDamageDependingDoT = true;
-                        robot.effects.push({
-                            name: "attack",
-                            AdditionalDamageDependingDoT: true,
-                            power: hi.dmgDependingDoT,
-                            lastTime: e.lastTime
+                for (let i = 0; i < robot.drones.length; i++) {
+                    let hi = robot.drones[i].abilities.find(e => e.name == "Additional Damage Depending DoT");
+                    if (hi && robot.effects.filter(e => e.name == "attack" && e.AdditionalDamageDependingDoT).length < hi.limit) {
+                        DoTEffects.forEach(e => {
+                            e.AdditionalDamageDependingDoT = true;
+                            robot.effects.push({
+                                name: "attack",
+                                AdditionalDamageDependingDoT: true,
+                                power: hi.dmgDependingDoT,
+                                lastTime: e.lastTime
+                            });
                         });
-                    });
+                    }
                 }
             }
             if (robot.effects.find(e => e.name == "blind" && e.lastTime > 0)) {
@@ -26258,12 +26502,14 @@
                     }
                     if (effect.name == "stampede" && !effect.a && robot.name == "Ultimate Tan Circle") {
                         let dotStacks = robot.effects.filter(e => e.name == "dot" && e.lastTime > 0);
-                        for (let t = 0; t < Math.min(100, dotStacks.length); t++) {
+
+                        for (let t = 0; t < dotStacks.length; t++) {
                             let DoT = dotStacks[t];
                             DoT.lastTime = 0;
+
                             robot.effects.push({
                                 name: "block",
-                                lastTime: 15e3
+                                lastTime: 30e3
                             });
                         }
                     }
@@ -27128,6 +27374,54 @@
                 });
             }
         }
+
+        if (robot.name == "Orange Triangle") {
+            if (robot.remoteAssaultLast == null) robot.remoteAssaultLast = 0;
+
+            if (Date.now() - robot.remoteAssaultLast >= 75) {
+                robot.remoteAssaultLast = Date.now();
+
+                projectiles.push({
+                    x: robot.x,
+                    y: robot.y,
+                    oldX: robot.x,
+                    oldY: robot.y,
+                    projType: "rocket",
+                    velx: 0,
+                    vely: 0,
+                    scale: 35,
+                    speed: 0.35,
+                    aoeRange: 120,
+                    dmg: 1111 + ((robot.level - 1) * 666),
+                    dotEffect: {
+                        name: "dot",
+                        owner: robot,
+                        dmg: 444 + ((robot.level - 1) * 111),
+                        last: 7e3
+                    },
+                    slowEffect: {
+                        name: "slowdown",
+                        last: 7e3,
+                        power: 0.05
+                    },
+                    range: 2300,
+                    dir: robot.dir,
+                    autoTargetData: {
+                        type: "nearest",
+                        range: 600,
+                        better: true
+                    },
+                    changeDirSpeed: 0.03,
+                    isAlly: isAlly,
+                    color: "./images/bullets/rocket.png",
+                    owner: robot,
+                    weaponOwner: {
+                        name: "Triangle's Aura",
+                        level: robot.level
+                    }
+                });
+            }
+        }
     }
     function collideWithBuildings(robot, delta, isAlly) {
         for (let i = 0; i < ACTUALBUILDINGSTOTOUCH.length; i++) {
@@ -27444,7 +27738,7 @@
                     ability.abilityLast = 1;
                 }
             }
-        } else if (ability.name == "Mastermind" || ability.name == "Dark Light" || ability.name == "Blink" || ability.name == "Debut" || ability.name == "Absorber" || ability.name == "Defense Breach" || ability.name == "Overpower" || ability.name == "Ultimate Reflector" || ability.name == "Blast Wave" || ability.name == "Phalanx Mode" || ability.name == "Stove" || ability.name == "Track" || ability.name == "Absorption" || ability.name == "Skyward" || ability.name == "Ferocity" || ability.name == "Barrier Field" || ability.name == "Blink Assault" || (ability.name == "Clain Blink" && !ability.maxcharge) || ability.name == "Remote Assault" || ability.name == "Cannonier" || ability.name == "Long Shot" || ability.name == "Support" || ability.name == "Matrix" || ability.name == "Reflector" || ability.name == "Clear Sky" || ability.name == "Reinforce Hull" || ability.name == "Ultimate Mending" || ability.name == "Divine Judgement" || ability.name == "Grand Fortitude" || ability.name == "Paladin" || ability.name == "Overload" || (ability.name == "Stampede" && !ability.maxcharge) || ability.name == "Stealth" || ability.name == "Retribution" || ability.name == "Ultimate Defense" || ability.name == "Self Heal" || ability.name == "Dragon Flight" || ability.name == "Shield Regeneration" || ability.name == "Full Action") {
+        } else if (ability.name == "Annihilation Mode" || ability.name == "Mastermind" || ability.name == "Dark Light" || ability.name == "Blink" || ability.name == "Debut" || ability.name == "Absorber" || ability.name == "Defense Breach" || ability.name == "Overpower" || ability.name == "Ultimate Reflector" || ability.name == "Blast Wave" || ability.name == "Phalanx Mode" || ability.name == "Stove" || ability.name == "Track" || ability.name == "Absorption" || ability.name == "Skyward" || ability.name == "Ferocity" || ability.name == "Barrier Field" || ability.name == "Blink Assault" || (ability.name == "Clain Blink" && !ability.maxcharge) || ability.name == "Remote Assault" || ability.name == "Cannonier" || ability.name == "Long Shot" || ability.name == "Support" || ability.name == "Matrix" || ability.name == "Reflector" || ability.name == "Clear Sky" || ability.name == "Reinforce Hull" || ability.name == "Ultimate Mending" || ability.name == "Divine Judgement" || ability.name == "Grand Fortitude" || ability.name == "Paladin" || ability.name == "Overload" || (ability.name == "Stampede" && !ability.maxcharge) || ability.name == "Stealth" || ability.name == "Retribution" || ability.name == "Ultimate Defense" || ability.name == "Self Heal" || ability.name == "Dragon Flight" || ability.name == "Shield Regeneration" || ability.name == "Full Action") {
             if (ability.abilityReload == 0 && ability.abilityLast == 0) {
                 ability.abilityLast = ability.lastingTime;
                 doWonderworkerSkill(robot, ability);
@@ -27709,14 +28003,14 @@
                         maxhealth: robot.normalMaxHealth * 2.5,
                         lastTime: ability.lastingTime
                     });
-                    for (let i = 0; i < 2; i++) buildings.push({
-                        dmg: ability.dmg,
+                    for (let i = 0; i < 4; i++) buildings.push({
+                        dmg: ability.dmg * 3,
                         range: 2e3,
-                        rate: 50,
+                        rate: 100,
                         name: "Blink Assault",
                         scale: 40,
-                        y: robot.y + Math.sin((robot.target ? Math.atan2(robot.target.y - robot.y, robot.target.x - robot.x) : robot.dir) + (Math.PI / 6 * (!i ? -1 : 1))) * (robot.scale * 3),
-                        x: robot.x + Math.cos((robot.target ? Math.atan2(robot.target.y - robot.y, robot.target.x - robot.x) : robot.dir) + (Math.PI / 6 * (!i ? -1 : 1))) * (robot.scale * 3),
+                        y: robot.y + Math.sin((robot.target ? Math.atan2(robot.target.y - robot.y, robot.target.x - robot.x) : robot.dir) + (Math.PI / 2 * i)) * (robot.scale * 3),
+                        x: robot.x + Math.cos((robot.target ? Math.atan2(robot.target.y - robot.y, robot.target.x - robot.x) : robot.dir) + (Math.PI / 2 * i)) * (robot.scale * 3),
                         owner: robot,
                         duration: ability.lastingTime,
                         isAlly: isAlly
@@ -27895,7 +28189,7 @@
                 } else if (ability.name == "Mastermind") {
                     robot.effects.push({
                         name: "speed",
-                        power: 2.2,
+                        power: 2.6,
                         abilityEffect: "Mastermind",
                         lastTime: ability.lastingTime
                     });
@@ -27910,7 +28204,7 @@
 
                     robot.effects.push({
                         name: "attack",
-                        power: .6,
+                        power: .4,
                         abilityEffect: "Mastermind",
                         lastTime: ability.lastingTime
                     });
@@ -27923,7 +28217,7 @@
 
                     robot.effects.push({
                         name: "healing",
-                        grayDamage: .5,
+                        grayDamage: 1,
                         type: "percent",
                         power: .14,
                         abilityEffect: "Mastermind",
@@ -27933,9 +28227,9 @@
 
                     robot.shields.push({
                         type: "yellow",
-                        maxhealth: 1700e3 * (robot.mastermindV2 * 1.8),
-                        health: 1700e3 * (robot.mastermindV2 * 1.8),
-                        lastTime: ability.lastingTime * 1.5,
+                        maxhealth: 1700e3 * (robot.mastermindV2 * 1.2),
+                        health: 1700e3 * (robot.mastermindV2 * 1.2),
+                        lastTime: ability.lastingTime,
                         regen: 0
                     });
 
@@ -27945,11 +28239,43 @@
                         if (drone.name.includes("Dux")) {
                             drone.effects.push({
                                 name: "speed",
-                                amount: 7,
+                                amount: 6,
                                 lastTime: ability.lastingTime
                             })
                         }
                     }
+                } else if (ability.name == "Annihilation Mode") {
+                    robot.effects.push({
+                        name: "attack",
+                        power: 1.6,
+                        abilityEffect: "Annihilation Mode",
+                        lastTime: ability.lastingTime
+                    });
+
+                    for (let i = 0; i < 5; i++) robot.effects.unshift({
+                        name: "counter suppression",
+                        lastTime: 15e3,
+                        power: .999999,
+                        durationOfSuppression: 6e3
+                    });
+
+                    robot.grayDamage = Math.max(0, robot.grayDamage - ability.healingPower);
+
+                    changeHealth(robot, {
+                        amount: ability.healingPower
+                    });
+
+                    robot.effects.push({
+                        name: "speed",
+                        power: 3.6,
+                        abilityEffect: "Annihilation Mode",
+                        lastTime: ability.lastingTime
+                    });
+
+                    robot.effects.push({
+                        name: "shield break",
+                        lastTime: ability.lastingTime * 3
+                    });
                 }
             } else if (robot.effects.find(e => e.name == "Blink" && Date.now() - e.lastPressed >= 2e3)) {
                 let effect = robot.effects.find(e => e.name == "Blink" && Date.now() - e.lastPressed >= 2e3);
@@ -28036,9 +28362,64 @@
                 if (ability.name == "Stealth Dash") {
                     robot.effects.push({
                         name: "stealth dash",
-                        lastTime: 2500,
+                        lastTime: 2500 + (robot.name.includes("Ultimate") ? -1e3 : 0),
                         dir: (robot.isMe ? robot.dir : moveDir)
                     });
+
+                    if (robot.name.includes("Ultimate")) {
+                        for (let i = 0; i < 10; i++) robot.effects.push({
+                            name: "block",
+                            lastTime: 30e3
+                        });
+
+                        robot.effects.filter(e => ["lockdown", "slowdown", "frag", "emp", "blind", "rust", "suppression"].includes(e.name)).forEach(e => {
+                            e.lastTime = 0;
+                        });
+
+                        robot.effects.unshift({
+                            name: "counter suppression",
+                            lastTime: 15e3,
+                            power: .999,
+                            durationOfSuppression: 3e3
+                        });
+
+                        robot.effects.push({
+                            name: "attack",
+                            power: .02,
+                            lastTime: 5e3
+                        });
+
+                        let gHealing = robot.maxhealth * .05;
+                        let healing = robot.maxhealth * .1;
+                        robot.grayDamage = Math.max(robot.grayDamage - gHealing, 0);
+                        changeHealth(robot, {
+                            amount: healing
+                        }, false, robot);
+
+                        robot.effects.push({
+                            name: "shield break",
+                            lastTime: 2e3
+                        });
+
+                        for (let i = 0; i < 2; i++) robot.effects.unshift({
+                            name: "cleanse",
+                            lastTime: 1,
+                            lastForever: true
+                        });
+
+                        robot.shields.push({
+                            type: "purple",
+                            health: 0,
+                            lastTime: 2e3
+                        });
+
+                        robot.shields.push({
+                            type: "yellow",
+                            maxhealth: 75e3,
+                            health: 75e3,
+                            regen: 0
+                        });
+                    }
                 } else if (ability.name == "Phase Shift") {
                     robot.effects.push({
                         name: "phase shift",
@@ -28290,6 +28671,7 @@
                             lastTime: 7e3
                         });
                     }
+
                     projectiles.push({
                         projType: "rocket",
                         x: robot.x,
@@ -29126,66 +29508,68 @@
             if (robot.activeModuleReload == 0) {
                 if (robot.isMe && !noCost) updateMoneyDisplay("workshopPoints", -module.cost);
                 if (robot.drones.length && !noCost) {
-                    let yay = robot.drones[0].abilities.find(e => e.name == "On Module Use: More Durability With DOT");
-                    let yay1 = robot.drones[0].abilities.find(e => e.name == "On Module Use: Block");
-                    let yay3 = robot.drones[0].abilities.find(e => e.name == "On Module Use: Resist");
-                    let yay4 = robot.drones[0].abilities.find(e => e.name == "On Module Use: Damage");
-                    if (yay3) {
-                        robot.drones[0].effects.push({
-                            name: "speed",
-                            amount: 2,
-                            lastTime: 7e3
-                        });
-                        robot.effects.push({
-                            name: "defense points",
-                            amount: yay3.defenseIncrease,
-                            lastTime: 10e3
-                        });
-                    }
-                    if (yay4) {
-                        robot.drones[0].effects.push({
-                            name: "speed",
-                            amount: 2,
-                            lastTime: 7e3
-                        });
-                        robot.effects.push({
-                            name: "attack",
-                            power: yay4.onActiveModuleUseDamage,
-                            lastTime: 10e3
-                        });
-                    }
-                    if (yay) {
-                        robot.drones[0].effects.push({
-                            name: "speed",
-                            amount: 2,
-                            lastTime: 7e3
-                        });
-                        robot.normalMaxHealth += 45e3;
-                        robot.maxhealth += 45e3;
-                        changeHealth(robot, {
-                            amount: 45e3
-                        }, false, robot);
-                        for (let i = 0; i < 28; i++) robot.effects.push({
-                            name: "dot",
-                            noGrayDamage: true,
-                            noAmp: true,
-                            owner: robot,
-                            dmg: 45e3 / 56,
-                            lastTime: 7e3
-                        });
-                    }
-                    if (yay1) {
-                        robot.drones[0].effects.push({
-                            name: "speed",
-                            amount: 2,
-                            lastTime: 7e3
-                        });
-                        for (let i = 0; i < yay1.dmg; i++) {
-                            robot.effects.push({
-                                name: "block",
-                                lastTime: 1,
-                                lastForever: true
+                    for (let i = 0; i < robot.drones.length; i++) {
+                        let yay = robot.drones[i].abilities.find(e => e.name == "On Module Use: More Durability With DOT");
+                        let yay1 = robot.drones[i].abilities.find(e => e.name == "On Module Use: Block");
+                        let yay3 = robot.drones[i].abilities.find(e => e.name == "On Module Use: Resist");
+                        let yay4 = robot.drones[i].abilities.find(e => e.name == "On Module Use: Damage");
+                        if (yay3) {
+                            robot.drones[0].effects.push({
+                                name: "speed",
+                                amount: 2,
+                                lastTime: 7e3
                             });
+                            robot.effects.push({
+                                name: "defense points",
+                                amount: yay3.defenseIncrease,
+                                lastTime: 10e3
+                            });
+                        }
+                        if (yay4) {
+                            robot.drones[0].effects.push({
+                                name: "speed",
+                                amount: 2,
+                                lastTime: 7e3
+                            });
+                            robot.effects.push({
+                                name: "attack",
+                                power: yay4.onActiveModuleUseDamage,
+                                lastTime: 10e3
+                            });
+                        }
+                        if (yay) {
+                            robot.drones[0].effects.push({
+                                name: "speed",
+                                amount: 2,
+                                lastTime: 7e3
+                            });
+                            robot.normalMaxHealth += 45e3;
+                            robot.maxhealth += 45e3;
+                            changeHealth(robot, {
+                                amount: 45e3
+                            }, false, robot);
+                            for (let i = 0; i < 28; i++) robot.effects.push({
+                                name: "dot",
+                                noGrayDamage: true,
+                                noAmp: true,
+                                owner: robot,
+                                dmg: 45e3 / 56,
+                                lastTime: 7e3
+                            });
+                        }
+                        if (yay1) {
+                            robot.drones[0].effects.push({
+                                name: "speed",
+                                amount: 2,
+                                lastTime: 7e3
+                            });
+                            for (let i = 0; i < yay1.dmg; i++) {
+                                robot.effects.push({
+                                    name: "block",
+                                    lastTime: 1,
+                                    lastForever: true
+                                });
+                            }
                         }
                     }
                 }
@@ -29498,7 +29882,7 @@
     }
     function doDroneWeaponStuff(robot, isAlly) {
         if (robot.blind) return;
-        if (robot.name == "Grayish Blue Triangle" && !(robot.isMe ? keysPressed[32] : robot.fireWeapon)) return;
+        if ((robot.name == "Grayish Blue Triangle" || robot.name == "Polygon") && !(robot.isMe ? keysPressed[32] : robot.fireWeapon)) return;
 
         for (let i = 0; i < robot.drones.length; i++) {
             let abilities = robot.drones[i].abilities;
@@ -29822,15 +30206,15 @@
                 }
             }
         }
-        if (robot.name == "Teal Heptagon") {
+        if (robot.name == "Teal Heptagon" || robot.name == "Orange Triangle") {
             if (robot.lastAddCounterSuppression == null) robot.lastAddCounterSuppression = 0;
-            if (Date.now() - robot.lastAddCounterSuppression >= 7e3) {
+            if (Date.now() - robot.lastAddCounterSuppression >= (robot.name == "Orange Triangle" ? 5e3 : 7e3)) {
                 robot.lastAddCounterSuppression = Date.now();
                 robot.effects.unshift({
                     name: "counter suppression",
                     lastTime: 1,
-                    power: .4,
-                    durationOfSuppression: 4e3,
+                    power: (robot.name == "Orange Triangle" ? .9 : .4),
+                    durationOfSuppression: (robot.name == "Orange Triangle" ? 12e3 : .4e3),
                     lastForever: true
                 });
             }
@@ -30267,117 +30651,119 @@
         if (!robot.drones || !robot.drones.length) return;
         amount = Math.abs(amount);
         let health = robot.health - amount;
-        for (let i = 0; i < robot.drones[0].abilities.length; i++) {
-            let data = robot.drones[0].abilities[i];
-            if (data) {
-                if (data.name == "On Threshold: Resist" || data.name == "On Threshold: Fix%") {
-                    let thresholds = [robot.maxhealth * .7, robot.maxhealth * .5, robot.maxhealth * .3];
-                    for (let i = 0; i < thresholds.length; i++) {
-                        let threshold = thresholds[i];
-                        if (!robot.effects.find(e => e.name == "cooldown_timer" && e.threshold == (i + 1) && e.reason == data.name)) {
-                            if (robot.health > threshold && health <= threshold) {
-                                robot.effects.push({
-                                    name: "cooldown_timer",
-                                    reason: data.name,
-                                    threshold: i + 1,
-                                    lastTime: data.reload
-                                });
-                                if (data.name == "On Threshold: Fix%") {
-                                    let amount = robot.maxhealth * data.healPower;
-                                    robot.grayDamage = Math.max(0, robot.grayDamage - (amount * data.grayDamageHeal_p));
-                                    changeHealth(robot, {
-                                        amount: amount
-                                    }, false, robot);
-                                } else {
+        for (let j = 0; j < robot.drones.length; j++) {
+            for (let i = 0; i < robot.drones[j].abilities.length; i++) {
+                let data = robot.drones[j].abilities[i];
+                if (data) {
+                    if (data.name == "On Threshold: Resist" || data.name == "On Threshold: Fix%") {
+                        let thresholds = [robot.maxhealth * .7, robot.maxhealth * .5, robot.maxhealth * .3];
+                        for (let i = 0; i < thresholds.length; i++) {
+                            let threshold = thresholds[i];
+                            if (!robot.effects.find(e => e.name == "cooldown_timer" && e.threshold == (i + 1) && e.reason == data.name)) {
+                                if (robot.health > threshold && health <= threshold) {
                                     robot.effects.push({
-                                        name: "defense points",
-                                        amount: data.defenseIncrease,
-                                        lastTime: 5e3
+                                        name: "cooldown_timer",
+                                        reason: data.name,
+                                        threshold: i + 1,
+                                        lastTime: data.reload
                                     });
+                                    if (data.name == "On Threshold: Fix%") {
+                                        let amount = robot.maxhealth * data.healPower;
+                                        robot.grayDamage = Math.max(0, robot.grayDamage - (amount * data.grayDamageHeal_p));
+                                        changeHealth(robot, {
+                                            amount: amount
+                                        }, false, robot);
+                                    } else {
+                                        robot.effects.push({
+                                            name: "defense points",
+                                            amount: data.defenseIncrease,
+                                            lastTime: 5e3
+                                        });
+                                    }
                                 }
                             }
                         }
-                    }
-                } else if (data.name == "On First Hit: Stealth") {
-                    if (!data.used) {
-                        data.used = true;
-                        robot.effects.push({
-                            name: "stealth",
-                            lastTime: data.stealthTime
-                        })
-                        robot.drones[0].effects.push({
-                            name: "speed",
-                            amount: 3,
-                            lastTime: 5e3
-                        });
-                    }
-                } else if (data.name == "On Low Durability: [Y_Shield]") {
-                    if (health > robot.maxhealth * .3) continue;
-                    if (data.oneTimeUse) {
+                    } else if (data.name == "On First Hit: Stealth") {
                         if (!data.used) {
                             data.used = true;
-                            robot.drones[0].effects.push({
-                                name: "speed",
-                                amount: 1,
-                                lastTime: 5e3
-                            });
-                            robot.shields.push({
-                                type: data.type,
-                                health: data.shielding,
-                                maxhealth: data.shielding
-                            });
-                        }
-                    }
-                } else if (data.name == "On High Damage: Stealth" || data.name == "On Mild Damage: [B_Shield]" || data.name == "On Mild Damage: [P_Shield]" || data.name == "On High Damage: [P_Shield]" || data.name == "On Mild Damage: Fix" || data.name == "On High Damage: Fix") {
-                    if (data.damageTook == null) data.damageTook = 0;
-                    if (data.damageTook2 == null) data.damageTook2 = [];
-                    if (data.damageTook < 0) data.damageTook = 0;
-                    if (!robot.effects.find(e => e.name == "cooldown_timer" && e.reason == data.name)) {
-                        data.damageTook += amount;
-                        data.damageTook2.push(setTimeout(() => {
-                            data.damageTook -= amount;
-                        }, data.in));
-                        if (data.damageTook >= data.required) {
                             robot.effects.push({
-                                name: "cooldown_timer",
-                                reason: data.name,
-                                lastTime: data.reload
-                            });
-                            if (data.name == "On Mild Damage: [P_Shield]") {
-                                robot.grayDamage *= .85;
-                            }
-                            if (data.name == "On High Damage: Stealth") {
-                                robot.effects.push({
-                                    name: "stealth",
-                                    lastTime: data.stealthTime
-                                });
-                            } else if (data.name == "On Mild Damage: Fix" || data.name == "On High Damage: Fix") {
-                                changeHealth(robot, {
-                                    amount: data.healing
-                                }, false, robot);
-                            } else {
-                                robot.shields.unshift({
-                                    type: data.type,
-                                    lastTime: data.duration,
-                                    droneShield: true,
-                                    health: data.shielding,
-                                    maxhealth: data.shielding
-                                });
-                            }
+                                name: "stealth",
+                                lastTime: data.stealthTime
+                            })
                             robot.drones[0].effects.push({
                                 name: "speed",
                                 amount: 3,
                                 lastTime: 5e3
                             });
+                        }
+                    } else if (data.name == "On Low Durability: [Y_Shield]") {
+                        if (health > robot.maxhealth * .3) continue;
+                        if (data.oneTimeUse) {
+                            if (!data.used) {
+                                data.used = true;
+                                robot.drones[0].effects.push({
+                                    name: "speed",
+                                    amount: 1,
+                                    lastTime: 5e3
+                                });
+                                robot.shields.push({
+                                    type: data.type,
+                                    health: data.shielding,
+                                    maxhealth: data.shielding
+                                });
+                            }
+                        }
+                    } else if (data.name == "On High Damage: Stealth" || data.name == "On Mild Damage: [B_Shield]" || data.name == "On Mild Damage: [P_Shield]" || data.name == "On High Damage: [P_Shield]" || data.name == "On Mild Damage: Fix" || data.name == "On High Damage: Fix") {
+                        if (data.damageTook == null) data.damageTook = 0;
+                        if (data.damageTook2 == null) data.damageTook2 = [];
+                        if (data.damageTook < 0) data.damageTook = 0;
+                        if (!robot.effects.find(e => e.name == "cooldown_timer" && e.reason == data.name)) {
+                            data.damageTook += amount;
+                            data.damageTook2.push(setTimeout(() => {
+                                data.damageTook -= amount;
+                            }, data.in));
+                            if (data.damageTook >= data.required) {
+                                robot.effects.push({
+                                    name: "cooldown_timer",
+                                    reason: data.name,
+                                    lastTime: data.reload
+                                });
+                                if (data.name == "On Mild Damage: [P_Shield]") {
+                                    robot.grayDamage *= .85;
+                                }
+                                if (data.name == "On High Damage: Stealth") {
+                                    robot.effects.push({
+                                        name: "stealth",
+                                        lastTime: data.stealthTime
+                                    });
+                                } else if (data.name == "On Mild Damage: Fix" || data.name == "On High Damage: Fix") {
+                                    changeHealth(robot, {
+                                        amount: data.healing
+                                    }, false, robot);
+                                } else {
+                                    robot.shields.unshift({
+                                        type: data.type,
+                                        lastTime: data.duration,
+                                        droneShield: true,
+                                        health: data.shielding,
+                                        maxhealth: data.shielding
+                                    });
+                                }
+                                robot.drones[0].effects.push({
+                                    name: "speed",
+                                    amount: 3,
+                                    lastTime: 5e3
+                                });
+                                data.damageTook2.forEach(e => {
+                                    clearTimeout(e);
+                                });
+                            }
+                        } else {
+                            data.damageTook = 0;
                             data.damageTook2.forEach(e => {
-                                clearTimeout(e);
+                                if (e) clearTimeout(e);
                             });
                         }
-                    } else {
-                        data.damageTook = 0;
-                        data.damageTook2.forEach(e => {
-                            if (e) clearTimeout(e);
-                        });
                     }
                 }
             }
@@ -30561,69 +30947,71 @@
                 if (Player.mothership.current > 1) Player.mothership.current = 1;
             }
             if (doer.drones.length) {
-                for (let t = 0; t < doer.drones[0].abilities.length; t++) {
-                    let data = doer.drones[0].abilities[t];
-                    if (data) {
-                        if (data.name == "On Kill: Defense") {
-                            if (!doer.effects.find(e => e.name == "cooldown_timer" && e.reason == data.name)) {
-                                doer.effects.push({
-                                    name: "defense points",
-                                    lastForever: true,
-                                    amount: data.defenseIncrease,
-                                    lastTime: 1
-                                });
-                                doer.effects.push({
-                                    name: "cooldown_timer",
-                                    reason: data.name,
-                                    lastTime: data.reload
-                                });
-                                doer.drones[0].effects.push({
-                                    name: "speed",
-                                    amount: 1,
-                                    lastTime: 5e3
-                                });
-                            }
-                        } else if (data.name == "On Kill: Damage") {
-                            if (!doer.effects.find(e => e.name == "cooldown_timer" && e.reason == data.name)) {
-                                doer.effects.push({
-                                    name: "cooldown_timer",
-                                    reason: data.name,
-                                    lastTime: data.reload
-                                });
-                                doer.effects.push({
-                                    name: "attack",
-                                    power: data.onKillDamage,
-                                    lastTime: 1,
-                                    lastForever: true
-                                });
-                            }
-                        } else if (data.name == "On Kill: Speed") {
-                            if (doer.effects.filter(e => e.name == "speed" && e.typeOfHAHAHAHAHAHAHA).length < data.limit && !doer.effects.find(e => e.name == "cooldown_timer" && e.reason == data.name)) {
-                                doer.effects.push({
-                                    name: "cooldown_timer",
-                                    reason: data.name,
-                                    lastTime: data.reload
-                                });
-                                doer.effects.push({
-                                    name: "speed",
-                                    power: data.onKillSpeed,
-                                    typeOfHAHAHAHAHAHAHA: true,
-                                    lastTime: 1,
-                                    lastForever: true
-                                });
-                            }
-                        } else if (data.name == "On Kill: Fix") {
-                            if (!doer.effects.find(e => e.name == "cooldown_timer" && e.reason == data.name)) {
-                                doer.effects.push({
-                                    name: "cooldown_timer",
-                                    reason: data.name,
-                                    lastTime: data.reload
-                                });
-                                let amount = doer.maxhealth * data.onKillFix;
-                                doer.grayDamage = Math.max(0, doer.grayDamage - (amount * data.grayDamageHeal_p));
-                                changeHealth(doer, {
-                                    amount: amount
-                                }, false, doer);
+                for (let j = 0; j < doer.drones.length; j++) {
+                    for (let t = 0; t < doer.drones[j].abilities.length; t++) {
+                        let data = doer.drones[j].abilities[t];
+                        if (data) {
+                            if (data.name == "On Kill: Defense") {
+                                if (!doer.effects.find(e => e.name == "cooldown_timer" && e.reason == data.name)) {
+                                    doer.effects.push({
+                                        name: "defense points",
+                                        lastForever: true,
+                                        amount: data.defenseIncrease,
+                                        lastTime: 1
+                                    });
+                                    doer.effects.push({
+                                        name: "cooldown_timer",
+                                        reason: data.name,
+                                        lastTime: data.reload
+                                    });
+                                    doer.drones[0].effects.push({
+                                        name: "speed",
+                                        amount: 1,
+                                        lastTime: 5e3
+                                    });
+                                }
+                            } else if (data.name == "On Kill: Damage") {
+                                if (!doer.effects.find(e => e.name == "cooldown_timer" && e.reason == data.name)) {
+                                    doer.effects.push({
+                                        name: "cooldown_timer",
+                                        reason: data.name,
+                                        lastTime: data.reload
+                                    });
+                                    doer.effects.push({
+                                        name: "attack",
+                                        power: data.onKillDamage,
+                                        lastTime: 1,
+                                        lastForever: true
+                                    });
+                                }
+                            } else if (data.name == "On Kill: Speed") {
+                                if (doer.effects.filter(e => e.name == "speed" && e.typeOfHAHAHAHAHAHAHA).length < data.limit && !doer.effects.find(e => e.name == "cooldown_timer" && e.reason == data.name)) {
+                                    doer.effects.push({
+                                        name: "cooldown_timer",
+                                        reason: data.name,
+                                        lastTime: data.reload
+                                    });
+                                    doer.effects.push({
+                                        name: "speed",
+                                        power: data.onKillSpeed,
+                                        typeOfHAHAHAHAHAHAHA: true,
+                                        lastTime: 1,
+                                        lastForever: true
+                                    });
+                                }
+                            } else if (data.name == "On Kill: Fix") {
+                                if (!doer.effects.find(e => e.name == "cooldown_timer" && e.reason == data.name)) {
+                                    doer.effects.push({
+                                        name: "cooldown_timer",
+                                        reason: data.name,
+                                        lastTime: data.reload
+                                    });
+                                    let amount = doer.maxhealth * data.onKillFix;
+                                    doer.grayDamage = Math.max(0, doer.grayDamage - (amount * data.grayDamageHeal_p));
+                                    changeHealth(doer, {
+                                        amount: amount
+                                    }, false, doer);
+                                }
                             }
                         }
                     }
@@ -30692,7 +31080,9 @@
     function changeHealth(object, { amount, graydmg, noAmp, onDamageHealBack, maxhealthDamage, isDotDamage, execute, defensePointsBypass, bypassReflector, damageTypeName, motherShipCharge }, isPlayer, doer, noDefense) {
         try {
             if (doer && doer.name == "Polygon") {
-                motherShipCharge = 1;
+                if (!motherShipCharge || motherShipCharge <= 0) {
+                    motherShipCharge = 0.0000125;
+                }
             }
             if (doer && doer.effects) {
                 if (doer.effects.find(e => e.name == "defense breach")) {
@@ -31005,7 +31395,7 @@
                 }
                 doOnDamageEffects(object, amount, noAmp);
                 if (object.turnDmgIntoDOT && amount < 0 && doer && !noDefense) {
-                    let duration = object.name == "Mauler" ? 12 : object.name == "Pink Circle" ? 10 : 7;
+                    let duration = object.name == "Polygon" ? 30 : object.name == "Mauler" ? 12 : object.name == "Pink Circle" ? 10 : 7;
                     if (object.dotConverter == null) object.dotConverter = [];
                     object.dotConverter.push({
                         amount: amount,
@@ -31616,13 +32006,16 @@
                 if (enemy.health <= 0 || enemy.kill) {
                     if (enemy.name == "Bastion") {
                         let pos = exterminationEnemies.filter(e => !e.boss);
-                        for (let t = 0; t < 50; t++) {
-                            let en = new ENEMEMENENMEMMEMEMEMEY(pos[Math.floor(Math.random() * pos.length)], data.modifiers);
-                            let rng = Math.random() * (Math.PI * 2);
-                            en.x = enemy.x + Math.cos(rng) * Math.randInt(0, 600);
-                            en.y = enemy.y + Math.sin(rng) * Math.randInt(0, 600);
-                            enemies.push(en);
+                        if (pos.length && data.modifiers) {
+                            for (let t = 0; t < 50; t++) {
+                                let en = new ENEMEMENENMEMMEMEMEMEY(pos[Math.floor(Math.random() * pos.length)], data.modifiers);
+                                let rng = Math.random() * (Math.PI * 2);
+                                en.x = enemy.x + Math.cos(rng) * Math.randInt(0, 600);
+                                en.y = enemy.y + Math.sin(rng) * Math.randInt(0, 600);
+                                enemies.push(en);
+                            }
                         }
+
                         enemies.splice(i, 1);
                     } else {
                         enemies.splice(i, 1);
@@ -31710,20 +32103,6 @@
                     bullet.lastY = bullet.y;
                     bullet.x += (bullet.velx * delta);
                     bullet.y += (bullet.vely * delta);
-                    if (bullet.weaponOwner && bullet.weaponOwner.name == "Nuclear Rocket Shot") {
-                        let disttt = Math.hypot(bullet.vely * delta, bullet.velx * delta);
-                        if (bullet.movementDistance == null) bullet.movementDistance = 0;
-                        bullet.movementDistance += disttt;
-                        if (bullet.movementDistance >= 100 && bullet.dmg < 250e3) {
-                            let amount = Math.floor(bullet.movementDistance / 100);
-                            bullet.movementDistance = bullet.movementDistance - (amount * 100);
-                            for (let i = 0; i < amount; i++) {
-                                bullet.dmg *= 1.075;
-                            }
-                        } else if (bullet.dmg >= 250e3) {
-                            bullet.dmg = 250e3;
-                        }
-                    }
                     if (bullet.splitData) {
                         if (dist({ x: bullet.oldX, y: bullet.oldY }, bullet) >= bullet.splitData.range) {
                             for (let t = 0; t < bullet.splitData.amount; t++) {
@@ -32359,27 +32738,29 @@
                         if (Player.mothership.current > 1) Player.mothership.current = 1;
                     }
                     if (player.drones.length) {
-                        for (let t = 0; t < player.drones[0].abilities.length; t++) {
-                            let data = player.drones[0].abilities[t];
-                            if (data) {
-                                if (data.name == "On Beacon Capture: Defense") {
-                                    if (!player.effects.find(e => e.name == "cooldown_timer" && e.reason == data.name)) {
-                                        player.effects.push({
-                                            name: "defense points",
-                                            lastForever: true,
-                                            amount: data.defenseIncrease,
-                                            lastTime: 1
-                                        });
-                                        player.effects.push({
-                                            name: "cooldown_timer",
-                                            reason: data.name,
-                                            lastTime: data.reload
-                                        });
-                                        player.drones[0].effects.push({
-                                            name: "speed",
-                                            amount: 1,
-                                            lastTime: 5e3
-                                        });
+                        for (let k = 0; k < player.drones.length; k++) {
+                            for (let t = 0; t < player.drones[k].abilities.length; t++) {
+                                let data = player.drones[k].abilities[t];
+                                if (data) {
+                                    if (data.name == "On Beacon Capture: Defense") {
+                                        if (!player.effects.find(e => e.name == "cooldown_timer" && e.reason == data.name)) {
+                                            player.effects.push({
+                                                name: "defense points",
+                                                lastForever: true,
+                                                amount: data.defenseIncrease,
+                                                lastTime: 1
+                                            });
+                                            player.effects.push({
+                                                name: "cooldown_timer",
+                                                reason: data.name,
+                                                lastTime: data.reload
+                                            });
+                                            player.drones[0].effects.push({
+                                                name: "speed",
+                                                amount: 1,
+                                                lastTime: 5e3
+                                            });
+                                        }
                                     }
                                 }
                             }
@@ -32519,8 +32900,8 @@
                             owner: obj.owner,
                             slowEffect: obj.name == "Blink Assault" ? {
                                 name: "slowdown",
-                                power: .0125,
-                                last: 5e3
+                                power: .0075,
+                                last: 3e3
                             } : undefined,
                             weaponOwner: {
                                 name: obj.name,
@@ -32546,8 +32927,8 @@
                             owner: obj.owner,
                             slowEffect: obj.name == "Blink Assault" ? {
                                 name: "slowdown",
-                                power: .0125,
-                                last: 5e3
+                                power: .0075,
+                                last: 3e3
                             } : undefined,
                             weaponOwner: {
                                 name: obj.name,
